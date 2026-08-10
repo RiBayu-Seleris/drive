@@ -52,7 +52,7 @@ export function CheckConditionPage() {
           <img src={current.image} alt="" className="max-h-[260px] w-full object-contain" />
         </div>
 
-        <section className="relative -mx-5 mt-8 min-h-[300px] px-5 pt-14">
+        <section className="relative -mx-5 mt-8 min-h-[300px] px-5 pt-8">
           <img
             src="/assets/checkup_vehicle/tutorial_bg.png"
             alt=""

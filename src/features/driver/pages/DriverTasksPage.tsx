@@ -356,9 +356,7 @@ export function DriverTasksPage() {
       // Cache diperbarui langsung agar layar turunan URL menampilkan status baru
       // tanpa menunggu refetch.
       queryClient.setQueryData<DriverTask[]>(['driver-tasks'], (old) =>
-        (old ?? []).map((t) =>
-          t.orderCode === variables.task.orderCode ? { ...t, status } : t,
-        ),
+        (old ?? []).map((t) => (t.orderCode === variables.task.orderCode ? { ...t, status } : t)),
       );
       void queryClient.invalidateQueries({ queryKey: ['driver-tasks'] });
       // Perpindahan antar-langkah alur memakai REPLACE: gestur back dari layar
@@ -675,7 +673,7 @@ function DriverHome({
               )}
               <div className="min-w-0">
                 <h1 className="text-14 truncate leading-tight font-semibold">{displayName}</h1>
-                <p className="text-10 mt-1 truncate text-white/85">{serviceName}</p>
+                <p className="mt-1 truncate text-[12px] text-white/85">{serviceName}</p>
               </div>
             </div>
             <button
@@ -685,7 +683,7 @@ function DriverHome({
             >
               <Bell className="size-6" />
               {assignedTasks.length > 0 && (
-                <span className="text-10 absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-[#F5455C] px-1 font-bold text-white">
+                <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-[#F5455C] px-1 text-[12px] font-bold text-white">
                   {assignedTasks.length}
                 </span>
               )}
@@ -737,7 +735,7 @@ function DriverHome({
               ))}
               <span className="text-14 ml-2 font-bold text-neutral-900">{rating}</span>
             </div>
-            <p className="text-10 mt-2 whitespace-nowrap text-[#4B5568]">
+            <p className="mt-2 text-[12px] whitespace-nowrap text-[#4B5568]">
               Telah mengantar {monthlyFinishedCount} kali dalam 1 bulan
             </p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
@@ -808,7 +806,7 @@ function DriverOrders({
       <main className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-24">
         <section className="relative min-h-[120px] overflow-hidden rounded-xl bg-linear-to-br from-[#33427B] to-[#4A5FA8] p-4 text-white shadow-sm">
           <div className="relative z-10">
-            <p className="text-10 font-semibold tracking-wide text-white/60 uppercase">
+            <p className="text-[12px] font-semibold tracking-wide text-white/60 uppercase">
               Status Driver
             </p>
             <h1 className="mt-1 text-[20px] leading-tight font-medium">{copy.title}</h1>
@@ -1063,7 +1061,9 @@ function DriverAccount({
         </Card>
 
         <section>
-          <p className="text-10 mb-3 font-bold tracking-wide text-[#8A93AC] uppercase">Akun Saya</p>
+          <p className="mb-3 text-[12px] font-bold tracking-wide text-[#8A93AC] uppercase">
+            Akun Saya
+          </p>
           <div className="overflow-hidden rounded-xl border border-[#C1C7D2]/30 bg-white">
             <AccountMenuItem
               icon={<UserPen className="size-5" />}
@@ -1263,7 +1263,7 @@ function AcceptedOrderScreen({
         </Card>
 
         <Card className={DRIVER_CARD}>
-          <p className="text-10 font-medium text-[#747C8B] uppercase">Kendaraan</p>
+          <p className="text-[12px] font-medium text-[#747C8B] uppercase">Kendaraan</p>
           <h2 className="text-16 mt-2 font-medium text-neutral-900">
             {task.userFullname || taskVehicleTitle(task)}
           </h2>
@@ -2122,7 +2122,7 @@ function TimelinePoint({
         {showLine && <span className="h-9 border-l border-dashed border-neutral-300" />}
       </div>
       <div className={cn(showLine && 'pb-3')}>
-        <p className="text-10 font-medium text-[#747C8B] uppercase">{title}</p>
+        <p className="text-[12px] font-medium text-[#747C8B] uppercase">{title}</p>
         <p className="text-13 mt-1 font-medium text-neutral-900">{text || '-'}</p>
       </div>
     </div>
@@ -2141,7 +2141,7 @@ function SectionIconTitle({ icon, title }: { icon: ReactNode; title: string }) {
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-[#C1C7D2]/60 bg-white p-3 text-center">
-      <p className="text-10 text-[#4B5563] uppercase">{label}</p>
+      <p className="text-[12px] text-[#4B5563] uppercase">{label}</p>
       <p className="text-18 mt-1 font-semibold text-neutral-900">{value}</p>
     </div>
   );
@@ -2302,10 +2302,10 @@ function HistoryStatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        'text-11 rounded-full px-3 py-1 font-medium whitespace-nowrap',
-        finished && 'bg-[#E8F5EC] text-[#2F9B54]',
-        canceled && 'bg-[#FBE7E5] text-[#CE4136]',
-        !finished && !canceled && 'bg-[#E3F2FE] text-[#3F5FA8]',
+        'rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap',
+        finished && 'bg-[#E8F5EC] text-[12px] text-[#2F9B54]',
+        canceled && 'bg-[#FBE7E5] text-[12px] text-[#CE4136]',
+        !finished && !canceled && 'bg-[#E3F2FE] text-[12px] text-[#3F5FA8]',
       )}
     >
       {label}
@@ -2392,7 +2392,7 @@ function OrderStat({ value, label }: { value: string; label: string }) {
   return (
     <div className="px-2">
       <p className="text-[18px] font-semibold text-[#00508A]">{value}</p>
-      <p className="text-10 mt-1 font-medium text-[#4B5563] uppercase">{label}</p>
+      <p className="mt-1 text-[12px] font-medium text-[#4B5563] uppercase">{label}</p>
     </div>
   );
 }

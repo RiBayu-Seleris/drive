@@ -9,6 +9,7 @@ import { toast } from '@/components/feedback/toast';
 import { ROUTES } from '@/app/routes';
 import { STORAGE_KEYS } from '@/config/constants';
 import { storage } from '@/lib/storage/storage';
+import { formatCurrency } from '@/lib/utils/format';
 import { useScanServices } from '@/features/vehicle-scan/services/scanServicesContext';
 import {
   fetchDamageDetail,
@@ -31,6 +32,8 @@ export function EstimatedCostPage() {
     fromApprovedClaim?: boolean;
     selfPay?: boolean;
     inferenceTicket?: string;
+    /** Sisa yang benar-benar dibayar user setelah klaim disetujui. */
+    customerPayable?: number;
   } | null;
   const result = useDamageStore((s) => s.result);
   const setResult = useDamageStore((s) => s.setResult);
@@ -51,6 +54,10 @@ export function EstimatedCostPage() {
     routeState?.inferenceTicket ?? storage.getString(STORAGE_KEYS.guestInferenceTicket) ?? '';
   const selfPay = Boolean(routeState?.selfPay) || flowMode === 'self_pay';
   const fromApprovedClaim = Boolean(routeState?.fromApprovedClaim && claimNumber);
+  // Angka ini datang dari layar klaim supaya tidak dihitung ulang di sini —
+  // satu sumber, satu nilai, tidak mungkin berbeda antar halaman.
+  const claimCustomerPayable = routeState?.customerPayable ?? 0;
+  const coveredByClaim = fromApprovedClaim && typeof routeState?.customerPayable === 'number';
   const currentTicket = result?.ticket ?? inferenceTicket;
   const isReportUnlocked = reportUnlocked || Boolean(result?.reportUnlocked);
   const ticketPlateNumber = result?.plateNumber ?? getRememberedInferencePlate(currentTicket) ?? '';
@@ -255,10 +262,32 @@ export function EstimatedCostPage() {
                 <div key={index} className="h-full w-full bg-[#E5E7EB]" />
               ))}
             </div>
-            <div className="text-16 flex justify-between">
-              <span className="font-[500[ text-[#374151]">Total</span>
-              <span className="font-[600] text-[#37AB87]">{normalizeIDRLabel(totalPrice)}</span>
+            <div className="text-16 flex items-baseline justify-between gap-3">
+              <span className="font-medium text-[#374151]">
+                {coveredByClaim ? 'Anda bayar' : 'Total'}
+              </span>
+              {/* Klaim disetujui: harga penuh dicoret, diganti sisa yang benar-benar
+                  dibayar user. Angkanya sama dengan yang tampil di layar klaim. */}
+              {coveredByClaim ? (
+                <span className="flex items-baseline gap-2">
+                  <span className="text-12 text-neutral-500 line-through">
+                    {normalizeIDRLabel(totalPrice)}
+                  </span>
+                  <span className="font-[600] text-[#37AB87]">
+                    {formatCurrency(claimCustomerPayable)}
+                  </span>
+                </span>
+              ) : (
+                <span className="font-[600] text-[#37AB87]">{normalizeIDRLabel(totalPrice)}</span>
+              )}
             </div>
+            {coveredByClaim && (
+              <p className="text-11 pt-1 text-neutral-500">
+                {claimCustomerPayable > 0
+                  ? 'Sisanya ditanggung asuransi.'
+                  : 'Seluruh biaya ditanggung asuransi.'}
+              </p>
+            )}
           </div>
         </section>
 

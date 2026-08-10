@@ -12,6 +12,7 @@ import {
   ImageOff,
   Search,
   LocateFixed,
+  Wrench,
 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -29,13 +30,10 @@ import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { buildPath, ROUTES } from '@/app/routes';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { createTowingOrder } from '@/features/towing/api/towingApi';
+import { createRepairJob } from '@/features/claim/api';
 import { reverseGeocode } from '@/lib/geo/nominatim';
 import { getAccuratePosition } from '@/lib/geo/geolocation';
-import {
-  createWorkshopVisitRequest,
-  getWorkshopReviews,
-  type RecommendationPlace,
-} from '../api';
+import { createWorkshopVisitRequest, getWorkshopReviews, type RecommendationPlace } from '../api';
 
 type DetailTab = 'overview' | 'ulasan' | 'galeri';
 type WorkshopDetailState =
@@ -71,7 +69,9 @@ function resolveWorkshopDetailState(state: WorkshopDetailState): {
   if ('place' in state || 'claimNumber' in state) {
     return {
       place: state.place ?? null,
-      claimNumber: state.claimNumber ?? '',
+      // Di-trim: nomor berisi spasi saja tetap "truthy" dan akan memunculkan
+      // tombol perbaikan yang pasti ditolak backend.
+      claimNumber: (state.claimNumber ?? '').trim(),
     };
   }
   if ('id' in state) return { place: state, claimNumber: '' };
@@ -110,6 +110,23 @@ export function WorkshopDetailPage() {
     },
     onError: (error) =>
       toast.error(extractErrorMessage(error, 'Gagal membuat rencana kunjungan bengkel.')),
+  });
+
+  // Mendaftarkan bengkel tujuan perbaikan. Hanya mungkin untuk klaim yang sudah
+  // disetujui — di sinilah izin perbaikan terbit di tiket klaim user.
+  const repairMutation = useMutation({
+    mutationFn: () => {
+      if (!place) throw new Error('Bengkel tidak ditemukan.');
+      return createRepairJob(claimNumber, place.id);
+    },
+    // Nominalnya sudah ditampilkan di layar estimasi & status klaim; jangan
+    // diulang di sini supaya tidak ada dua angka yang harus dipercaya user.
+    onSuccess: () => {
+      toast.success('Bengkel perbaikan terdaftar. Tunjukkan kode klaim Anda saat tiba.');
+      navigate(ROUTES.claims);
+    },
+    onError: (error) =>
+      toast.error(extractErrorMessage(error, 'Gagal mendaftarkan bengkel perbaikan.')),
   });
 
   const towingMutation = useMutation({
@@ -173,7 +190,7 @@ export function WorkshopDetailPage() {
   const isOpen = place.openStatus.toUpperCase() !== 'CLOSED' && place.openStatus !== 'Tutup';
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-white pb-10">
       {/* Hero */}
       <div className="relative h-44 w-full shrink-0 bg-neutral-300">
         {place.imageUrl ? (
@@ -192,11 +209,11 @@ export function WorkshopDetailPage() {
       <div className="px-5 pt-4">
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-deep-blue-600 text-18 font-semibold">{place.name}</h1>
-          <span className="text-warning inline-flex shrink-0 items-center gap-1 text-14 font-semibold">
+          <span className="text-warning text-14 inline-flex shrink-0 items-center gap-1 font-semibold">
             <Star className="size-4 fill-current" /> {place.rating.toFixed(1)}
           </span>
         </div>
-        <p className="mt-1 text-12">
+        <p className="text-12 mt-1">
           <span className={isOpen ? 'text-success font-medium' : 'text-danger font-medium'}>
             {isOpen ? 'Buka' : 'Tutup'}
           </span>
@@ -216,8 +233,10 @@ export function WorkshopDetailPage() {
               type="button"
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 rounded-lg py-2 text-12 font-medium transition',
-                tab === t.id ? 'bg-deep-blue-500 text-white shadow-sm' : 'text-neutral-700',
+                'flex-1 rounded-lg py-2 text-[12px] font-medium transition',
+                tab === t.id
+                  ? 'bg-deep-blue-500 text-[12px] text-white shadow-sm'
+                  : 'text-[12px] text-neutral-700',
               )}
             >
               {t.label}
@@ -227,32 +246,48 @@ export function WorkshopDetailPage() {
       </div>
 
       {/* Konten tab */}
-      <div className="flex-1 px-5 py-5">
+      <div className="text-12 flex-1 px-5 py-5">
         {tab === 'overview' && <OverviewTab place={place} isOpen={isOpen} />}
         {tab === 'ulasan' && (
-          <ReviewsTab workshopId={place.id} onWrite={() => navigate(ROUTES.workshopReview, { state: place })} />
+          <ReviewsTab
+            workshopId={place.id}
+            onWrite={() => navigate(ROUTES.workshopReview, { state: place })}
+          />
         )}
         {tab === 'galeri' && <GalleryTab gallery={place.gallery} fallback={place.imageUrl} />}
       </div>
 
       {/* Footer aksi */}
-      <div className="sticky bottom-0 border-t border-neutral-300 bg-white px-5 py-3 pb-safe">
+      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-white px-5 py-3">
         {tab === 'overview' ? (
-          <div className="flex gap-3">
-            <Button
-              leftIcon={<Truck className="size-5" />}
-              onClick={() => setTowingSheetOpen(true)}
-            >
-              Pesan Towing
-            </Button>
-            <Button
-              variant="outline"
-              leftIcon={<Navigation className="size-5" />}
-              isLoading={visitMutation.isPending}
-              onClick={() => visitMutation.mutate()}
-            >
-              Antar Mandiri
-            </Button>
+          <div className="flex flex-col gap-3">
+            {/* Klaim yang sudah disetujui: pilih bengkel ini sebagai tempat perbaikan. */}
+            {claimNumber && (
+              <Button
+                leftIcon={<Wrench className="size-4.5" />}
+                isLoading={repairMutation.isPending}
+                onClick={() => repairMutation.mutate()}
+              >
+                <span className="text-[14px]">Perbaiki di Bengkel Ini</span>
+              </Button>
+            )}
+            <div className="flex gap-3">
+              <Button
+                variant={claimNumber ? 'outline' : 'primary'}
+                leftIcon={<Truck className="size-5" />}
+                onClick={() => setTowingSheetOpen(true)}
+              >
+                Pesan Towing
+              </Button>
+              <Button
+                variant="outline"
+                leftIcon={<Navigation className="size-5" />}
+                isLoading={visitMutation.isPending}
+                onClick={() => visitMutation.mutate()}
+              >
+                Antar Mandiri
+              </Button>
+            </div>
           </div>
         ) : (
           <Button leftIcon={<Navigation className="size-5" />} onClick={() => setTab('overview')}>
@@ -304,14 +339,14 @@ export function WorkshopDetailPage() {
               type="button"
               onClick={handleUseCurrentLocation}
               disabled={locating}
-              className="text-deep-blue-600 mt-2 inline-flex items-center gap-1.5 text-12 font-medium disabled:opacity-60"
+              className="text-deep-blue-600 text-12 mt-2 inline-flex items-center gap-1.5 font-medium disabled:opacity-60"
             >
               {locating ? <Spinner className="size-4" /> : <LocateFixed className="size-4" />}
               {locating ? 'Mengambil lokasi…' : 'Gunakan lokasi saya saat ini'}
             </button>
           </div>
           <div className="flex items-center justify-between rounded-xl border border-neutral-400 px-4 py-3">
-            <span className="text-success inline-flex items-center gap-2 text-14 font-medium">
+            <span className="text-success text-14 inline-flex items-center gap-2 font-medium">
               <Truck className="size-5" /> Towing
             </span>
             <span className="text-14 font-semibold text-neutral-900">
@@ -319,13 +354,13 @@ export function WorkshopDetailPage() {
             </span>
           </div>
           {place.towingAvailable ? (
-            <p className="text-10 text-neutral-600">
+            <p className="text-[12px] text-neutral-600">
               Estimasi; biaya final dikonfirmasi penyedia towing.
             </p>
           ) : (
             <p className="text-12 text-orange">
-              Saat ini layanan towing bengkel belum tersedia. Silakan menggunakan layanan towing dari
-              mitra lain.
+              Saat ini layanan towing bengkel belum tersedia. Silakan menggunakan layanan towing
+              dari mitra lain.
             </p>
           )}
         </div>
@@ -356,10 +391,10 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
           <span
             key={t}
             className={cn(
-              'rounded-full px-3 py-1 text-12 font-medium',
-              i === 0 && 'bg-orange/15 text-orange',
-              i === 1 && 'bg-deep-blue-50 text-deep-blue-600',
-              i === 2 && 'bg-neutral-300 text-neutral-800',
+              'rounded-full px-3 py-1 text-[12px] font-medium',
+              i === 0 && 'bg-orange/15 text-orange text-[12px]',
+              i === 1 && 'bg-deep-blue-50 text-deep-blue-600 text-[12px]',
+              i === 2 && 'bg-neutral-300 text-[12px] text-neutral-800',
             )}
           >
             {t}
@@ -373,7 +408,8 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
           <div>
             <p className="text-14 font-semibold text-neutral-900">Siap Menerima Kendaraan</p>
             <p className="text-12 text-neutral-700">
-              Bengkel buka dan menerima order baru. Pesan sekarang untuk mendapatkan slot lebih cepat.
+              Bengkel buka dan menerima order baru. Pesan sekarang untuk mendapatkan slot lebih
+              cepat.
             </p>
           </div>
         </div>
@@ -382,7 +418,10 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
       <Section title="Spesialisasi">
         <div className="flex flex-wrap gap-2">
           {DEFAULT_SPECIALTIES.map((s) => (
-            <span key={s} className="bg-deep-blue-50 text-deep-blue-600 rounded-lg px-3 py-1.5 text-12">
+            <span
+              key={s}
+              className="bg-deep-blue-50 text-deep-blue-600 text-12 rounded-lg px-3 py-1.5"
+            >
               {s}
             </span>
           ))}
@@ -393,7 +432,7 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
         <Section title="Kontak">
           <a
             href={`tel:${place.phone}`}
-            className="text-deep-blue-600 inline-flex items-center gap-2 text-14 font-medium"
+            className="text-deep-blue-600 text-14 inline-flex items-center gap-2 font-medium"
           >
             <Phone className="size-5" /> {place.phone}
           </a>
@@ -403,7 +442,7 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
       <Section title="Ketentuan Harga">
         <ul className="flex flex-col gap-2">
           {PRICE_TERMS.map((term) => (
-            <li key={term} className="flex items-start gap-2 text-12 text-neutral-700">
+            <li key={term} className="text-12 flex items-start gap-2 text-neutral-700">
               <CheckCircle2 className="text-green-cust mt-0.5 size-4 shrink-0" /> {term}
             </li>
           ))}
@@ -441,19 +480,21 @@ function ReviewsTab({ workshopId, onWrite }: { workshopId: number; onWrite: () =
                 key={i}
                 className={cn(
                   'size-3.5',
-                  i < Math.round(summary.average) ? 'text-warning fill-current' : 'text-neutral-500',
+                  i < Math.round(summary.average)
+                    ? 'text-warning fill-current'
+                    : 'text-neutral-500',
                 )}
               />
             ))}
           </div>
-          <p className="text-10 mt-1 text-neutral-600">{summary.count} ulasan</p>
+          <p className="mt-1 text-[12px] text-neutral-600">{summary.count} ulasan</p>
         </div>
         <div className="flex-1">
           {[5, 4, 3, 2, 1].map((star) => {
             const count = summary.distribution[star] ?? 0;
             return (
               <div key={star} className="flex items-center gap-2">
-                <span className="w-3 text-10 text-neutral-600">{star}</span>
+                <span className="w-3 text-[12px] text-neutral-600">{star}</span>
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-300">
                   <div
                     className="bg-warning h-full rounded-full"
@@ -481,12 +522,12 @@ function ReviewsTab({ workshopId, onWrite }: { workshopId: number; onWrite: () =
             <div key={r.id} className="border-t border-neutral-300 pt-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="bg-deep-blue-100 text-deep-blue-600 flex size-9 items-center justify-center rounded-full text-12 font-semibold">
+                  <div className="bg-deep-blue-100 text-deep-blue-600 text-12 flex size-9 items-center justify-center rounded-full font-semibold">
                     U
                   </div>
                   <div>
                     <p className="text-12 font-semibold text-neutral-900">Pengguna AutoClaim</p>
-                    <p className="text-10 text-neutral-600">{formatDate(r.createdAt)}</p>
+                    <p className="text-[12px] text-neutral-600">{formatDate(r.createdAt)}</p>
                   </div>
                 </div>
                 <div className="flex gap-0.5">
@@ -513,9 +554,7 @@ function ReviewsTab({ workshopId, onWrite }: { workshopId: number; onWrite: () =
 function GalleryTab({ gallery, fallback }: { gallery: string[]; fallback: string }) {
   const images = gallery.length > 0 ? gallery : fallback ? [fallback] : [];
   if (images.length === 0) {
-    return (
-      <EmptyState icon={<ImageOff className="size-7" />} title="Belum ada galeri" />
-    );
+    return <EmptyState icon={<ImageOff className="size-7" />} title="Belum ada galeri" />;
   }
   return (
     <div className="grid grid-cols-2 gap-3">

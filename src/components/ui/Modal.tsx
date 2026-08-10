@@ -41,7 +41,7 @@ export function Modal({
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-50 flex bg-black/40 p-4',
+        'fixed inset-0 z-50 flex bg-black/40 p-0',
         variant === 'sheet' ? 'items-end justify-center' : 'items-center justify-center',
       )}
       onClick={onClose}

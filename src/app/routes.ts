@@ -57,7 +57,9 @@ export const ROUTES = {
   // Asuransi & klaim
   insuranceSearch: '/insurance/search',
   insuranceDetail: '/insurance/detail',
-  insurancePurchase: '/insurance/purchase',
+	insurancePurchase: '/insurance/purchase',
+	insurancePolicies: '/insurance/policies',
+	insurancePolicyDetail: '/insurance/policies/:policyNumber',
   claims: '/claims',
   claimInsuranceData: '/claim/insurance-data',
   claimSelectPolicy: '/claim/select-policy',
@@ -67,6 +69,7 @@ export const ROUTES = {
   claimDetail: '/claim/detail',
   claimReview: '/claim/review',
   claimStatus: '/claim/status',
+  claimTicket: '/claim/ticket',
   claimApproved: '/claim/approved',
 
   // Towing (sisi user)
@@ -88,6 +91,7 @@ export const ROUTES = {
   mitraArmada: '/mitra/armada',
   mitraArmadaTambah: '/mitra/armada/tambah',
   mitraArmadaDetail: '/mitra/armada/:id',
+  mitraKemitraan: '/mitra/kemitraan',
   mitraOrder: '/mitra/order',
   mitraOrderTerima: '/mitra/order/diterima',
   mitraOrderTracking: '/mitra/order/tracking',
@@ -122,5 +126,7 @@ export const buildPath = {
   mitraSopirDetail: (id: string) => `/mitra/sopir/${encodeURIComponent(id)}`,
   mitraArmadaDetail: (id: string) => `/mitra/armada/${encodeURIComponent(id)}`,
   mitraLaporanDetail: (id: string) => `/mitra/laporan/${encodeURIComponent(id)}`,
-  mitraWorkshopJobDetail: (id: string) => `/mitra/workshop/jobs/${encodeURIComponent(id)}`,
+	mitraWorkshopJobDetail: (id: string) => `/mitra/workshop/jobs/${encodeURIComponent(id)}`,
+	insurancePolicyDetail: (policyNumber: string) =>
+		`/insurance/policies/${encodeURIComponent(policyNumber)}`,
 };

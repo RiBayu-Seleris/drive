@@ -251,3 +251,91 @@ export function claimStatusLabel(status: string): string {
 export async function cancelClaim(claimNumber: string): Promise<void> {
   await userApi.post(`/v1/member/claims/${encodeURIComponent(claimNumber)}/cancel`);
 }
+
+/**
+ * Daftarkan bengkel tujuan perbaikan untuk klaim yang SUDAH disetujui. Di titik
+ * inilah izin perbaikan terbit di tiket klaim — sebelum ini bengkel tidak bisa
+ * memindai apa pun. Backend menolak bila klaimnya belum disetujui (409).
+ */
+export type ClaimRepairJobStatus = 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELED';
+
+/** Pekerjaan perbaikan milik user — sumber status "tiket sudah dipakai/belum". */
+export interface ClaimRepairJob {
+  jobCode: string;
+  claimNumber: string;
+  repairStationId: number;
+  repairStationName: string;
+  estimatedCost: number;
+  insuranceCoverage: number;
+  userPayable: number;
+  status: ClaimRepairJobStatus;
+  scannedAt: string;
+  completedAt: string;
+}
+
+function parseRepairJob(json: Record<string, unknown>): ClaimRepairJob {
+  const status = str(json.status);
+  return {
+    jobCode: str(json.job_code),
+    claimNumber: str(json.claim_number),
+    repairStationId: num(json.repair_station_id),
+    repairStationName: str(json.repair_station_name),
+    estimatedCost: num(json.estimated_cost),
+    insuranceCoverage: num(json.insurance_coverage),
+    userPayable: num(json.user_payable),
+    status:
+      status === 'IN_PROGRESS' || status === 'COMPLETED' || status === 'CANCELED'
+        ? status
+        : 'QUEUED',
+    scannedAt: str(json.scanned_at),
+    completedAt: str(json.completed_at),
+  };
+}
+
+/**
+ * Pekerjaan perbaikan untuk satu klaim. Mengembalikan null bila user belum
+ * mendaftarkan bengkel tujuan (backend membalas 404) — tiket tetap tampil,
+ * hanya belum bisa dipindai bengkel mana pun.
+ */
+export async function getClaimRepairJob(claimNumber: string): Promise<ClaimRepairJob | null> {
+  const number = claimNumber.trim();
+  if (!number) return null;
+  try {
+    const res = await userApi.get<{ data?: Record<string, unknown> }>(
+      `/v1/member/claims/${encodeURIComponent(number)}/repair-job`,
+    );
+    return parseRepairJob(res.data?.data ?? {});
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
+ * Tiket hangus setelah dipindai bengkel: pemindaian mengubah status pekerjaan
+ * menjadi IN_PROGRESS dan mengisi `scanned_at`.
+ */
+export function isClaimTicketUsed(job: ClaimRepairJob | null): boolean {
+  if (!job) return false;
+  return Boolean(job.scannedAt) || job.status === 'IN_PROGRESS' || job.status === 'COMPLETED';
+}
+
+export async function createRepairJob(
+  claimNumber: string,
+  repairStationId: number,
+  notes = '',
+): Promise<{ jobCode: string; userPayable: number }> {
+  // Nomor klaim ikut di path; bila kosong backend membalas 400 "claim_number
+  // wajib diisi" yang tidak berarti apa-apa buat user. Hentikan lebih awal.
+  const number = claimNumber.trim();
+  if (!number) throw new Error('Nomor klaim tidak ditemukan. Buka bengkel ini dari klaim Anda.');
+  const res = await userApi.post<{ data?: Record<string, unknown> }>(
+    `/v1/member/claims/${encodeURIComponent(number)}/repair-job`,
+    { repair_station_id: repairStationId, notes },
+  );
+  const data = res.data?.data ?? {};
+  return {
+    jobCode: typeof data.job_code === 'string' ? data.job_code : '',
+    userPayable: typeof data.user_payable === 'number' ? data.user_payable : 0,
+  };
+}

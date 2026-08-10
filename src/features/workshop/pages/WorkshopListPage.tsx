@@ -49,31 +49,33 @@ export function WorkshopListPage() {
           <h1 className="mb-4 text-[20px] leading-tight font-bold text-gray-900">
             Rekomendasi Bengkel untuk Kendaraan Anda
           </h1>
-          <p className="text-[16px] leading-relaxed text-gray-600">
-            {claimNumber
+          <p className="text-[14px] leading-relaxed text-gray-600">
+            {/* {claimNumber
               ? 'Bengkel rekanan asuransi ditampilkan lebih dahulu, kemudian diurutkan berdasarkan jarak dan rating.'
-              : 'Pilih bengkel terdekat dan terpercaya untuk memperbaiki kerusakan mobil Anda'}
+              : 'Pilih bengkel terdekat dan terpercaya untuk memperbaiki kerusakan mobil Anda'} */}
+            Berikut adalah rekomendasi bengkel terdekat dan terpercaya untuk memperbaiki kerusakan
+            mobil Anda.
           </p>
         </div>
 
-        <div className="mx-auto mb-6 flex max-w-2xl gap-3">
+        <div className="mx-auto mb-6 flex max-w-2xl items-center gap-2">
           <div className="relative flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-              <Search className="size-8 text-gray-400" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="size-4 text-gray-400" />
             </div>
             <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               type="text"
               placeholder="Search"
-              className="h-14 w-full rounded-lg border border-gray-300 pr-4 pl-14 text-lg focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="h-10 w-full rounded-lg border border-gray-300 pr-3 pl-9 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <button
             type="button"
-            className="flex size-14 items-center justify-center rounded-lg border border-gray-300 transition-colors hover:bg-gray-50"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-300 transition-colors hover:bg-gray-50"
           >
-            <img className="w-6" src="/assets/rekomendasi_bengkel/document-filter.png" alt="" />
+            <img className="size-4" src="/assets/rekomendasi_bengkel/document-filter.png" alt="" />
           </button>
         </div>
 
@@ -152,12 +154,12 @@ function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick:
               >
                 {isOpen ? 'Buka' : 'Tutup'}
               </span>
-              <span className="text-[12px] text-gray-600">{closeText}</span>
+              <span className="text-[10px] text-gray-600">{closeText}</span>
             </div>
           </div>
           <p className="mb-3 line-clamp-2 text-[13px] text-gray-600">{place.address}</p>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-[12px] text-gray-600">
+            <div className="flex items-center gap-4 text-[10px] text-gray-600">
               <span>{Math.max(1, Math.round(place.estimatedMinutes || 15))} min</span>
               <span>•</span>
               <span>{Math.max(0.1, place.distanceKm || 0).toFixed(1)} km</span>

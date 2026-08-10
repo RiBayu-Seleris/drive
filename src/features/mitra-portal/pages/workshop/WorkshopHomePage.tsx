@@ -1,15 +1,16 @@
 import { Bell, Wrench } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/app/routes';
+import { EmptyState } from '@/components/feedback/StateViews';
+import { toast } from '@/components/feedback/toast';
 import { useMitraStore } from '@/features/auth/store/mitraStore';
+import { extractErrorMessage } from '@/lib/api/client';
 import { MitraShell } from '../../components/MitraShell';
 import { BalanceCard } from '../../components/BalanceCard';
 import { QuickActionGrid } from '../../components/QuickActionGrid';
-import {
-  WORKSHOP_ACTIVITIES,
-  WORKSHOP_BALANCE,
-  WORKSHOP_QUICK_ACTIONS,
-} from '../../data/workshopMock';
+import { WORKSHOP_QUICK_ACTIONS } from '../../data/workshopMock';
+import { getMitraSaldo } from '../../financeApi';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -22,6 +23,19 @@ function initials(name: string): string {
 export function WorkshopHomePage() {
   const navigate = useNavigate();
   const name = useMitraStore((s) => s.name);
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    getMitraSaldo()
+      .then((saldo) => {
+        if (active) setBalance(saldo.balance);
+      })
+      .catch((error) => toast.error(extractErrorMessage(error, 'Gagal memuat data mitra.')));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <MitraShell className="bg-neutral-100">
@@ -47,9 +61,6 @@ export function WorkshopHomePage() {
             className="relative grid size-10 shrink-0 place-items-center rounded-full bg-white/15"
           >
             <Bell className="size-5" />
-            <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-[#E11D48] text-[9px] font-bold text-white">
-              2
-            </span>
           </button>
         </div>
         <Wrench
@@ -60,7 +71,7 @@ export function WorkshopHomePage() {
 
       <div className="relative z-10 -mt-16">
         <div className="px-5">
-          <BalanceCard amount={WORKSHOP_BALANCE} onWithdraw={() => navigate(ROUTES.mitraTarikSaldo)} />
+          <BalanceCard amount={balance} onWithdraw={() => navigate(ROUTES.mitraTarikSaldo)} />
         </div>
 
         <section className="mt-5 px-5">
@@ -69,25 +80,11 @@ export function WorkshopHomePage() {
 
         <section className="mt-6 px-5">
           <h2 className="text-14 font-semibold text-neutral-900">Aktivitas Bengkel</h2>
-          <div className="mt-3 space-y-3">
-            {WORKSHOP_ACTIVITIES.map((act) => (
-              <div
-                key={act.id}
-                className="flex items-center gap-3 border-b border-neutral-200 pb-3 last:border-0"
-              >
-                <div className="bg-deep-blue-50 text-deep-blue-600 grid size-10 shrink-0 place-items-center rounded-full text-xs font-semibold">
-                  {initials(act.driverName)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-12 font-semibold text-neutral-900">{act.driverName}</p>
-                  <p className="truncate text-[11px] text-neutral-600">{act.description}</p>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="text-[11px] text-neutral-700">{act.time}</p>
-                  <p className="text-[11px] text-neutral-500">{act.fleetLabel}</p>
-                </div>
-              </div>
-            ))}
+          <div className="mt-3">
+            <EmptyState
+              title="Belum ada aktivitas"
+              description="Aktivitas bengkel akan muncul di sini."
+            />
           </div>
         </section>
       </div>

@@ -26,7 +26,8 @@ interface PaymentNavState {
   payment_type?: PaymentType;
   redirect_route?: string;
   redirect_state?: Record<string, unknown>;
-  ticket?: string;
+	ticket?: string;
+	policy_number?: string;
   amount?: number;
   item_name?: string;
 }
@@ -88,16 +89,17 @@ export function PaymentPage() {
   const redirectRoute = state.redirect_route ?? ROUTES.damageAnalysis;
   const redirectState = state.redirect_state;
   const damageTicket = useDamageStore((s) => s.result?.ticket ?? '');
-  const ticket = state.ticket || damageTicket;
-  const dynamicPricing =
-    paymentType === 'TOWING'
-      ? {
+	const policyNumber = state.policy_number ?? '';
+	const ticket = paymentType === 'POLICY_PREMIUM' ? policyNumber : state.ticket || damageTicket;
+	const dynamicPricing =
+		paymentType === 'TOWING' || paymentType === 'POLICY_PREMIUM'
+			? {
           paymentType,
           currency: 'IDR',
           baseAmount: Math.max(0, state.amount ?? 0),
           adminFee: 0,
           chargeAmount: Math.max(0, state.amount ?? 0),
-          itemName: state.item_name ?? 'Biaya Towing',
+				itemName: state.item_name ?? (paymentType === 'POLICY_PREMIUM' ? 'Premi Asuransi' : 'Biaya Towing'),
         }
       : null;
 
@@ -130,8 +132,9 @@ export function PaymentPage() {
   const buildContext = (amount: number): PaymentContext => ({
     paymentType,
     redirectRoute,
-    redirectState,
-    ticket,
+		redirectState,
+		ticket,
+		policyNumber: paymentType === 'POLICY_PREMIUM' ? policyNumber : undefined,
     amount,
     itemName: pricing?.itemName,
     method: selected?.label,
@@ -150,16 +153,19 @@ export function PaymentPage() {
     }
     if (!ticket) {
       toast.error(
-        paymentType === 'TOWING'
-          ? 'Referensi order towing tidak ditemukan.'
-          : 'Tiket analisis tidak ditemukan. Jalankan analisis ulang.',
+		paymentType === 'TOWING'
+			? 'Referensi order towing tidak ditemukan.'
+			: paymentType === 'POLICY_PREMIUM'
+				? 'Nomor polis tidak ditemukan.'
+				: 'Tiket analisis tidak ditemukan. Jalankan analisis ulang.',
       );
       return;
     }
     setIsSubmitting(true);
     try {
-      const invoice = await createInvoice({
-        inferenceTicket: ticket,
+		const invoice = await createInvoice({
+			inferenceTicket: ticket,
+			policyNumber: paymentType === 'POLICY_PREMIUM' ? policyNumber : undefined,
         paymentType,
         paymentMethod: selected.kind,
         paymentChannel: selected.kind === 'EWALLET' ? selected.value : '',

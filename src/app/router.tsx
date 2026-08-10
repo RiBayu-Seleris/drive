@@ -147,6 +147,11 @@ const TarikSaldoPage = lazy(() =>
     default: m.TarikSaldoPage,
   })),
 );
+const KemitraanPage = lazy(() =>
+  import('@/features/mitra-portal/pages/towing/KemitraanPage').then((m) => ({
+    default: m.KemitraanPage,
+  })),
+);
 const SopirListPage = lazy(() =>
   import('@/features/mitra-portal/pages/towing/SopirListPage').then((m) => ({
     default: m.SopirListPage,
@@ -273,6 +278,16 @@ const InsurancePurchasePage = lazy(() =>
     default: m.InsurancePurchasePage,
   })),
 );
+const InsurancePoliciesPage = lazy(() =>
+	import('@/features/insurance/pages/InsurancePoliciesPage').then((m) => ({
+		default: m.InsurancePoliciesPage,
+	})),
+);
+const InsurancePolicyDetailPage = lazy(() =>
+	import('@/features/insurance/pages/InsurancePolicyDetailPage').then((m) => ({
+		default: m.InsurancePolicyDetailPage,
+	})),
+);
 const ClaimsPage = lazy(() =>
   import('@/features/claim/pages/ClaimsPage').then((m) => ({ default: m.ClaimsPage })),
 );
@@ -307,6 +322,9 @@ const ClaimReviewPage = lazy(() =>
 );
 const ClaimStatusPage = lazy(() =>
   import('@/features/claim/pages/ClaimStatusPage').then((m) => ({ default: m.ClaimStatusPage })),
+);
+const ClaimTicketPage = lazy(() =>
+  import('@/features/claim/pages/ClaimTicketPage').then((m) => ({ default: m.ClaimTicketPage })),
 );
 const ClaimApprovedPage = lazy(() =>
   import('@/features/claim/pages/ClaimApprovedPage').then((m) => ({
@@ -400,6 +418,8 @@ export const router = createBrowserRouter([
       { path: ROUTES.insuranceSearch, element: protect(<InsuranceSearchPage />) },
       { path: ROUTES.insuranceDetail, element: protect(<InsuranceDetailPage />) },
       { path: ROUTES.insurancePurchase, element: protect(<InsurancePurchasePage />) },
+		{ path: ROUTES.insurancePolicies, element: protect(<InsurancePoliciesPage />) },
+		{ path: ROUTES.insurancePolicyDetail, element: protect(<InsurancePolicyDetailPage />) },
       { path: ROUTES.claims, element: protect(<ClaimsPage />) },
       { path: ROUTES.claimInsuranceData, element: protect(<ClaimInsuranceDataPage />) },
       { path: ROUTES.claimSelectPolicy, element: protect(<ClaimSelectPolicyPage />) },
@@ -409,6 +429,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.claimDetail, element: protect(<ClaimDetailPage />) },
       { path: ROUTES.claimReview, element: protect(<ClaimReviewPage />) },
       { path: ROUTES.claimStatus, element: protect(<ClaimStatusPage />) },
+      { path: ROUTES.claimTicket, element: protect(<ClaimTicketPage />) },
       { path: ROUTES.claimApproved, element: protect(<ClaimApprovedPage />) },
       { path: ROUTES.rating, element: protect(<RatingPage />) },
       { path: ROUTES.towingOrder, element: protect(<TowingOrderPage />) },
@@ -429,6 +450,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.mitraArmada, element: <ArmadaListPage /> },
           { path: ROUTES.mitraArmadaTambah, element: <ArmadaTambahPage /> },
           { path: ROUTES.mitraArmadaDetail, element: <ArmadaDetailPage /> },
+          { path: ROUTES.mitraKemitraan, element: <KemitraanPage /> },
           { path: ROUTES.mitraOrder, element: <OrderListPage /> },
           { path: ROUTES.mitraOrderTerima, element: <OrderTerimaPage /> },
           { path: ROUTES.mitraOrderTracking, element: <OrderTrackingPage /> },

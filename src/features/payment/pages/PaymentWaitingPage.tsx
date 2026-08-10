@@ -193,6 +193,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
         redirect_route: ctx.redirectRoute,
         redirect_state: ctx.redirectState,
         ticket: ctx.ticket,
+		policy_number: ctx.policyNumber,
         amount: ctx.amount,
         item_name: ctx.itemName,
       },

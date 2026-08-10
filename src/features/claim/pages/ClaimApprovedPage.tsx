@@ -87,6 +87,7 @@ export function ClaimApprovedPage() {
                   claimNumber: claim?.claimNumber,
                   fromApprovedClaim: true,
                   inferenceTicket: claim?.inferenceTicket,
+                  customerPayable: claim?.settlementPass.customerPayable,
                 },
               })
             }

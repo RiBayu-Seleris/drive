@@ -9,7 +9,7 @@ export function AppShell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <div className="h-20" />
+      {/* <div className="h-20" /> */}
       <BottomNav />
     </PageContainer>
   );

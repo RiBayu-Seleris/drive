@@ -47,19 +47,26 @@ export function ClaimsPage() {
                 type="button"
                 onClick={() => navigate(ROUTES.claimStatus, { state: claim })}
               >
-                <Card className="flex items-center gap-3">
-                  <div className="bg-deep-blue-50 text-deep-blue-500 flex size-10 items-center justify-center rounded-lg">
+                <Card className="flex flex-row items-center gap-3">
+                  <div className="bg-deep-blue-50 text-deep-blue-500 flex size-10 shrink-0 items-center justify-center rounded-lg">
                     <FileText className="size-5" />
                   </div>
-                  <div className="min-w-0 flex-1 text-left">
-                    <p className="text-14 truncate font-semibold text-neutral-900">
-                      {claim.claimNumber || `Klaim ${claim.vehiclePlate}`}
-                    </p>
-                    <p className="text-12 text-neutral-700">{claim.claimType}</p>
-                    <p className="text-10 text-neutral-600">{formatDate(claim.createdAt)}</p>
+                  <div className="flex h-auto w-full flex-col items-start justify-between gap-y-3">
+                    <div className="flex min-w-0 flex-col gap-y-1 text-left">
+                      <p className="text-12 truncate font-semibold text-neutral-900">
+                        {claim.claimNumber || `Klaim ${claim.vehiclePlate}`}
+                      </p>
+                      <p className="text-10 text-neutral-700">{claim.claimType}</p>
+                      <p className="text-10 text-neutral-600">{formatDate(claim.createdAt)}</p>
+                    </div>
+                    <Badge
+                      tone={statusTone(claim.status)}
+                      className="flex items-start justify-start"
+                    >
+                      <span className="text-10">{claimStatusLabel(claim.status)}</span>
+                    </Badge>
                   </div>
-                  <Badge tone={statusTone(claim.status)}>{claimStatusLabel(claim.status)}</Badge>
-                  <ChevronRight className="size-5 text-neutral-600" />
+                  <ChevronRight className="size-5 shrink-0 text-neutral-600" />
                 </Card>
               </button>
             ))}

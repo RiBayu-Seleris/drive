@@ -88,7 +88,8 @@ export async function getSupportedEwalletChannels(): Promise<string[]> {
 }
 
 export interface CreateInvoiceArgs {
-  inferenceTicket: string;
+	inferenceTicket: string;
+	policyNumber?: string;
   paymentType: PaymentType;
   /** EWALLET / QRIS / VA. */
   paymentMethod: string;
@@ -101,7 +102,8 @@ export interface CreateInvoiceArgs {
 /** Buat invoice Xendit. Dipakai hanya pada mode backend (bukan mock). */
 export async function createInvoice(args: CreateInvoiceArgs): Promise<Invoice> {
   const res = await userApi.post<{ data?: unknown; stat_msg?: string }>('/v1/payment/invoice', {
-    inference_ticket: args.inferenceTicket,
+		inference_ticket: args.inferenceTicket,
+		policy_number: args.policyNumber,
     payment_method: args.paymentMethod,
     payment_channel: args.paymentChannel,
     bank_code: args.bankCode,

@@ -1,4 +1,4 @@
-export type PaymentType = 'AI_REPORT' | 'CLAIM_FEE' | 'TOWING' | 'OTHER';
+export type PaymentType = 'AI_REPORT' | 'CLAIM_FEE' | 'TOWING' | 'POLICY_PREMIUM' | 'OTHER';
 export type PaymentMethodKind = 'QRIS' | 'EWALLET' | 'VA';
 
 /** Konteks pembayaran yang dibawa antar-halaman (payment → waiting → success). */
@@ -19,6 +19,8 @@ export interface PaymentContext {
   redirectState?: Record<string, unknown>;
   /** Tiket inferensi yang dibayar (kunci invoice di backend). */
   ticket: string;
+	/** Nomor polis untuk pembayaran premi. */
+	policyNumber?: string;
   /** Total yang ditagih (charge amount) — sumber kebenaran = backend. */
   amount: number;
   /** Nama item yang ditampilkan pada ringkasan lokal. */
@@ -168,6 +170,14 @@ export const DEFAULT_PRICING: Record<PaymentType, PaymentPricing> = {
     adminFee: 0,
     chargeAmount: 0,
     itemName: 'Biaya Towing',
+  },
+  POLICY_PREMIUM: {
+    paymentType: 'POLICY_PREMIUM',
+    currency: 'IDR',
+    baseAmount: 0,
+    adminFee: 0,
+    chargeAmount: 0,
+    itemName: 'Premi Asuransi',
   },
   OTHER: {
     paymentType: 'OTHER',

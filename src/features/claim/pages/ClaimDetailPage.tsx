@@ -37,7 +37,10 @@ type SpeechRecognitionWindow = Window & {
   webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
 };
 
-const CLAIM_TYPES = ['Kecelakaan', 'Tabrakan', 'Bencana Alam', 'Pencurian', 'Lainnya'];
+// "Bencana Alam" & "Pencurian" sementara dihilangkan: alur klaim ini bertumpu
+// pada foto kerusakan 4 sisi, yang tidak mungkin dipenuhi untuk mobil hilang.
+// Kembalikan bila alur khusus untuk keduanya sudah tersedia.
+const CLAIM_TYPES = ['Kecelakaan', 'Tabrakan', 'Lainnya'];
 
 export function ClaimDetailPage() {
   const navigate = useNavigate();

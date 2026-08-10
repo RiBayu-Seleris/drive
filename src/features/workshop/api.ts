@@ -122,7 +122,9 @@ export async function getRecommendations(
   coords: { latitude: number; longitude: number } = DEFAULT_LOCATION,
   claimNumber = '',
 ): Promise<RecommendationPlace[]> {
-  const res = await userApi.post<{ data?: { recommendations?: unknown[] } }>('/v1/recommender', {
+  // Route backend terdaftar dengan trailing slash (`/recommender/`); tanpa slash
+  // chi membalas 404 → UI "Gagal memuat data". Berlaku untuk bengkel/RS/towing.
+  const res = await userApi.post<{ data?: { recommendations?: unknown[] } }>('/v1/recommender/', {
     latitude: coords.latitude,
     longitude: coords.longitude,
     target: RECOMMENDER_TARGET[target],

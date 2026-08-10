@@ -47,7 +47,7 @@ export function SelectVehiclePage() {
       <AppHeader title="Pilih Kendaraan" />
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
           {!isAuthenticated ? (
             <GuestNotice />
           ) : isLoading ? (
@@ -97,8 +97,8 @@ function EmptyVehicles({ onManage }: { onManage: () => void }) {
         Belum ada kendaraan tersimpan
       </h2>
       <p className="mt-2 max-w-[320px] text-[12px] leading-relaxed text-neutral-600">
-        Daftarkan kendaraan dari menu "Kendaraan Saya" supaya cek kerusakan berikutnya cukup
-        pilih tanpa isi ulang.
+        Daftarkan kendaraan dari menu "Kendaraan Saya" supaya cek kerusakan berikutnya cukup pilih
+        tanpa isi ulang.
       </p>
       <Button
         className="mt-4 w-auto"
@@ -152,7 +152,7 @@ function SelectableVehicleTile({
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-xl text-left focus-visible:ring-2 focus-visible:ring-deep-blue-300 focus-visible:outline-none"
+      className="focus-visible:ring-deep-blue-300 w-full rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
     >
       <div className="flex items-center gap-3 rounded-xl border border-neutral-300 bg-white p-3">
         <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-neutral-300">
@@ -173,7 +173,7 @@ function SelectableVehicleTile({
           <p className="truncate text-[14px] font-semibold text-neutral-900">
             {vehicle.vehicleName || '-'}
           </p>
-          <p className="mt-1 text-[12px] font-semibold text-deep-blue-500">
+          <p className="text-deep-blue-500 mt-1 text-[12px] font-semibold">
             {vehicle.vehiclePlate}
           </p>
         </div>

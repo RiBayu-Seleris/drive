@@ -131,9 +131,9 @@ function SopirCard({ sopir, onOpen }: { sopir: MitraTowingDriver; onOpen: () => 
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-14 font-semibold text-neutral-900">{sopir.fullname}</p>
-          <p className="text-[11px] text-neutral-500">ID: {driverCode(sopir.id)}</p>
+          <p className="text-[12px] text-neutral-500">ID: {driverCode(sopir.id)}</p>
         </div>
-        <span className={cn('text-[11px] rounded-full px-2.5 py-1 font-medium', meta.tone)}>
+        <span className={cn('rounded-full px-2.5 py-1 text-[12px] font-medium', meta.tone)}>
           {meta.label}
         </span>
       </div>

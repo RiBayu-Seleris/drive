@@ -25,7 +25,7 @@ export function MapPreview({
     >
       {/* jalan utama dekoratif */}
       <span className="absolute top-0 -left-6 h-full w-7 rotate-12 bg-white/70" />
-      <span className="absolute top-1/3 left-0 h-3 w-full -rotate-3 bg-warning/30" />
+      <span className="bg-warning/30 absolute top-1/3 left-0 h-3 w-full -rotate-3" />
       <span className="absolute bottom-6 left-0 h-2.5 w-full rotate-2 bg-white/60" />
 
       {marker && (

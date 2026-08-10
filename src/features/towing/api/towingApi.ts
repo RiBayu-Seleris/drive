@@ -22,8 +22,14 @@ export interface CreateTowingPayload {
   notes?: string;
 }
 
+/*
+ * Rute koleksi towing-orders terdaftar di backend DENGAN trailing slash
+ * (`/member/towing-orders/`). chi tidak mengalihkan bentuk tanpa slash, jadi
+ * memanggil `/v1/member/towing-orders` dibalas 404 "We couldn't find that page".
+ * Sama seperti `/v1/recommender/`. Endpoint per-kode di bawah tidak berslash.
+ */
 export async function createTowingOrder(payload: CreateTowingPayload): Promise<TowingOrder> {
-  const res = await userApi.post<{ data?: Record<string, unknown> }>('/v1/member/towing-orders', {
+  const res = await userApi.post<{ data?: Record<string, unknown> }>('/v1/member/towing-orders/', {
     inference_ticket: payload.inferenceTicket ?? '',
     claim_number: payload.claimNumber ?? '',
     pickup_address: payload.pickupAddress,
@@ -41,7 +47,7 @@ export async function createTowingOrder(payload: CreateTowingPayload): Promise<T
 
 export async function getTowingOrders(): Promise<TowingOrder[]> {
   const res = await userApi.get<{ data?: { orders?: unknown[] } | unknown[] }>(
-    '/v1/member/towing-orders',
+    '/v1/member/towing-orders/',
   );
   const data = res.data?.data;
   const list = Array.isArray(data) ? data : (data?.orders ?? []);

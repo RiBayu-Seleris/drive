@@ -1,86 +1,152 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarClock, Car, ChevronRight } from 'lucide-react';
+import { Car, QrCode, Wrench } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
 import { buildPath } from '@/app/routes';
 import { AppHeader } from '@/components/layout/AppHeader';
-import { cn } from '@/lib/utils/cn';
+import { Button } from '@/components/ui/Button';
+import { LoadingState } from '@/components/ui/Spinner';
+import { toast } from '@/components/feedback/toast';
+import { extractErrorMessage } from '@/lib/api/client';
+import { formatCurrency } from '@/lib/utils/format';
 import { MitraShell } from '../../components/MitraShell';
-import { MitraSearch } from '../../components/MitraSearch';
-import { WORKSHOP_JOBS } from '../../data/workshopMock';
-import type { WorkshopJob } from '../../types';
+import { MitraFilterChips } from '../../components/MitraFilterChips';
+import { ScanTicketSheet } from '../../components/ScanTicketSheet';
+import {
+  getRepairJobs,
+  repairJobStatusLabel,
+  type RepairJob,
+  type RepairJobStatus,
+} from '../../repairJobApi';
 
-const STATUS_META: Record<WorkshopJob['status'], { label: string; tone: string }> = {
-  inspection: { label: 'Inspeksi', tone: 'bg-warning/15 text-warning' },
-  waiting_parts: { label: 'Tunggu Sparepart', tone: 'bg-neutral-100 text-neutral-600' },
-  repairing: { label: 'Dikerjakan', tone: 'bg-deep-blue-50 text-deep-blue-600' },
-  ready: { label: 'Siap Ambil', tone: 'bg-green-cust/15 text-green-cust' },
+const FILTERS = [
+  { value: 'all', label: 'Semua' },
+  { value: 'QUEUED', label: 'Menunggu' },
+  { value: 'IN_PROGRESS', label: 'Dikerjakan' },
+  { value: 'COMPLETED', label: 'Selesai' },
+];
+
+const STATUS_TONE: Record<RepairJobStatus, string> = {
+  QUEUED: 'bg-warning/12 text-warning',
+  IN_PROGRESS: 'bg-deep-blue-50 text-deep-blue-600',
+  COMPLETED: 'bg-green-cust/12 text-green-cust',
+  CANCELED: 'bg-neutral-200 text-neutral-600',
 };
 
-/** Daftar pekerjaan aktif di portal bengkel. */
+/** Antrean pekerjaan perbaikan milik bengkel ini. */
 export function WorkshopQueuePage() {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [jobs, setJobs] = useState<RepairJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showScan, setShowScan] = useState(false);
 
-  const jobs = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return WORKSHOP_JOBS;
-    return WORKSHOP_JOBS.filter(
-      (job) =>
-        job.customerName.toLowerCase().includes(q) ||
-        job.vehicle.toLowerCase().includes(q) ||
-        job.plateNumber.toLowerCase().includes(q),
-    );
-  }, [query]);
+  const load = useCallback(() => {
+    setLoading(true);
+    getRepairJobs()
+      .then(setJobs)
+      .catch((error) => toast.error(extractErrorMessage(error, 'Gagal memuat antrean.')))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const list = useMemo(
+    () => (filter === 'all' ? jobs : jobs.filter((job) => job.status === filter)),
+    [jobs, filter],
+  );
+  const waiting = useMemo(() => jobs.filter((job) => job.status === 'QUEUED').length, [jobs]);
 
   return (
     <MitraShell>
       <AppHeader title="Antrian Bengkel" />
 
       <div className="space-y-4 px-5 pt-4">
-        <MitraSearch value={query} onChange={setQuery} placeholder="Cari kendaraan atau plat…" />
-        {jobs.map((job) => (
-          <JobCard
-            key={job.id}
-            job={job}
-            onOpen={() => navigate(buildPath.mitraWorkshopJobDetail(job.id))}
-          />
-        ))}
-      </div>
-    </MitraShell>
-  );
-}
-
-function JobCard({ job, onOpen }: { job: WorkshopJob; onOpen: () => void }) {
-  const meta = STATUS_META[job.status];
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="block w-full rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
-    >
-      <div className="flex items-start gap-3">
-        <span className="bg-deep-blue-50 text-deep-blue-600 grid size-12 shrink-0 place-items-center rounded-xl">
-          <Car className="size-6" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
+        <div className="bg-deep-blue-500 rounded-2xl p-4 text-white">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
+              <Wrench className="size-5" />
+            </span>
             <div className="min-w-0">
-              <p className="text-14 truncate font-semibold text-neutral-900">{job.vehicle}</p>
-              <p className="text-12 text-neutral-500">{job.plateNumber} · {job.customerName}</p>
+              <p className="text-14 font-semibold">{waiting} mobil menunggu dikerjakan</p>
+              <p className="text-12 text-white/70">
+                Semua pekerjaan di sini klaimnya sudah disetujui asuransi
+              </p>
             </div>
-            <span className={cn('shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold', meta.tone)}>
-              {meta.label}
-            </span>
-          </div>
-          <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
-            <span className="text-12 flex items-center gap-1.5 text-neutral-600">
-              <CalendarClock className="size-4" />
-              ETA {job.eta}
-            </span>
-            <ChevronRight className="text-deep-blue-500 size-5" />
           </div>
         </div>
+
+        <Button leftIcon={<QrCode className="size-5" />} onClick={() => setShowScan(true)}>
+          Pindai Tiket Pelanggan
+        </Button>
+
+        <MitraFilterChips options={FILTERS} value={filter} onChange={setFilter} />
       </div>
-    </button>
+
+      <div className="mt-4 space-y-3 px-5">
+        {loading ? (
+          <LoadingState label="Memuat antrean…" />
+        ) : list.length === 0 ? (
+          <div className="py-12 text-center">
+            <Car className="mx-auto size-9 text-neutral-300" />
+            <p className="text-12 mt-3 text-neutral-500">
+              {filter === 'all'
+                ? 'Belum ada pekerjaan masuk.'
+                : 'Tidak ada pekerjaan pada filter ini.'}
+            </p>
+          </div>
+        ) : (
+          list.map((job) => (
+            <button
+              key={job.id}
+              type="button"
+              onClick={() => navigate(buildPath.mitraWorkshopJobDetail(job.jobCode))}
+              className="block w-full rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="bg-deep-blue-50 text-deep-blue-600 grid size-11 shrink-0 place-items-center rounded-full">
+                  <Car className="size-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-14 font-semibold text-neutral-900">
+                    {job.vehiclePlate || 'Tanpa plat'}
+                  </p>
+                  <p className="text-11 text-neutral-500">
+                    {job.userFullname || 'Pelanggan'} · {job.claimNumber}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    'shrink-0 rounded-full px-2.5 py-1 text-[14px] font-medium',
+                    STATUS_TONE[job.status],
+                  )}
+                >
+                  {repairJobStatusLabel(job.status)}
+                </span>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
+                <span className="text-12 text-neutral-600">Estimasi biaya</span>
+                <span className="text-14 font-semibold text-neutral-900">
+                  {formatCurrency(job.estimatedCost)}
+                </span>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+
+      <ScanTicketSheet
+        open={showScan}
+        onClose={() => setShowScan(false)}
+        onScanned={(job) => {
+          setShowScan(false);
+          load();
+          navigate(buildPath.mitraWorkshopJobDetail(job.jobCode));
+        }}
+      />
+    </MitraShell>
   );
 }

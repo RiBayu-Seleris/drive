@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Check, Clock, FileText, ShieldCheck, XCircle } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import {
+  AlertTriangle,
+  Check,
+  Clock,
+  FileText,
+  ShieldCheck,
+  TicketCheck,
+  Truck,
+  XCircle,
+} from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
@@ -112,13 +120,12 @@ export function ClaimStatusPage() {
       setCanceling(false);
     }
   };
-  const settlementPayload = JSON.stringify({
-    claim_number: claim.settlementPass.claimNumber || claim.claimNumber,
-    repair_covered: claim.settlementPass.repairCovered,
-    towing_covered: claim.settlementPass.towingCovered,
-    coverage_type: claim.settlementPass.coverageType,
-    customer_payable: claim.settlementPass.customerPayable,
-  });
+  // Menunggu keputusan tidak boleh berarti menunggu di lokasi kejadian: mobil
+  // diderek dulu ke bengkel rekanan, survei asuransi menyusul di bengkel.
+  // Alur rekomendasi bengkel sudah meneruskan claimNumber sampai ke pesan derek.
+  const handleOrderTowing = () => {
+    navigate(ROUTES.workshopList, { state: { claimNumber: claim.claimNumber } });
+  };
 
   return (
     <PageContainer>
@@ -175,7 +182,7 @@ export function ClaimStatusPage() {
           <Row label="Jenis klaim" value={claim.claimType} />
           <Row label="Tanggal kejadian" value={formatDate(claim.incidentDate)} />
           {claim.description && (
-            <p className="mt-2 border-t border-neutral-300 pt-2 text-neutral-700">
+            <p className="text-14 mt-2 border-t border-neutral-300 pt-2 text-neutral-700">
               {claim.description}
             </p>
           )}
@@ -200,13 +207,30 @@ export function ClaimStatusPage() {
           </Card>
         )}
 
+        {!isApproved && !isRejected && !isCanceled && (
+          <Card className="border-deep-blue-200 bg-deep-blue-50/60 mt-4">
+            <div className="flex items-start gap-3">
+              <span className="bg-deep-blue-500 grid size-9 shrink-0 place-items-center rounded-full text-white">
+                <Truck className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-14 font-semibold text-neutral-900">Mobil tidak bisa jalan?</p>
+                <p className="text-12 mt-1 text-neutral-700">
+                  Anda tidak perlu menunggu keputusan di lokasi kejadian. Mobil bisa diderek
+                  sekarang ke bengkel rekanan, dan peninjauan asuransi dilakukan di sana.
+                </p>
+                <p className="text-12 mt-2 text-neutral-600">
+                  Biaya derek ditanggung asuransi bila polis Anda mencakup layanan derek.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {isApproved && (
           <Card className="mt-4 text-center">
-            <p className="text-12 font-semibold text-neutral-900">Kode Klaim</p>
-            <div className="mt-3 flex justify-center">
-              <QRCodeSVG value={settlementPayload} size={112} marginSize={1} />
-            </div>
-            <p className="text-14 mt-3 font-bold tracking-wide text-neutral-900">
+            <p className="text-12 font-semibold text-neutral-900">Klaim Disetujui</p>
+            <p className="text-14 mt-1 font-bold tracking-wide text-neutral-900">
               {claim.claimNumber}
             </p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -227,9 +251,16 @@ export function ClaimStatusPage() {
         )}
 
         {isApproved && (
-          <div className="mt-auto pt-6">
+          <div className="mt-auto flex flex-col gap-3 pt-6">
             <Button
               size="lg"
+              leftIcon={<TicketCheck className="size-5" />}
+              onClick={() => navigate(ROUTES.claimTicket, { state: claim })}
+            >
+              Lihat Tiket Klaim
+            </Button>
+            <Button
+              variant="outline"
               leftIcon={<ShieldCheck className="size-5" />}
               onClick={() =>
                 navigate(ROUTES.estimatedCost, {
@@ -237,6 +268,7 @@ export function ClaimStatusPage() {
                     claimNumber: claim.claimNumber,
                     fromApprovedClaim: true,
                     inferenceTicket: claim.inferenceTicket,
+                    customerPayable: claim.settlementPass.customerPayable,
                   },
                 })
               }
@@ -246,7 +278,10 @@ export function ClaimStatusPage() {
           </div>
         )}
         {!isApproved && !isRejected && !isCanceled && (
-          <div className="mt-auto pt-6">
+          <div className="mt-auto flex flex-col gap-3 pt-6">
+            <Button size="lg" leftIcon={<Truck className="size-5" />} onClick={handleOrderTowing}>
+              Pesan Derek ke Bengkel
+            </Button>
             <Button variant="outline" isLoading={canceling} onClick={handleSelfPay}>
               Lanjut Bayar Sendiri
             </Button>
@@ -260,8 +295,8 @@ export function ClaimStatusPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-0.5">
-      <span className="text-neutral-700">{label}</span>
-      <span className="font-medium text-neutral-900">{value || '-'}</span>
+      <span className="text-12 text-neutral-700">{label}</span>
+      <span className="text-12 font-medium text-neutral-900">{value || '-'}</span>
     </div>
   );
 }

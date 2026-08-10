@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { FileText, PlayCircle, ShieldCheck } from 'lucide-react';
+import { FileText, Pencil, ShieldCheck, Volume2 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
@@ -113,7 +113,7 @@ export function ClaimReviewPage() {
         </div>
 
         <section>
-          <h2 className="text-16 mb-3 font-semibold text-neutral-900">Ringkasan Klaim</h2>
+          <SectionHeading title="Ringkasan Klaim" onEdit={() => navigate(ROUTES.claimDetail)} />
           <Card className="text-12 space-y-2 text-neutral-800">
             <Row label="Tanggal Kejadian" value={draft.incidentDate} />
             <Row label="Estimasi Ditanggung" value={rupiah(covered)} />
@@ -126,15 +126,22 @@ export function ClaimReviewPage() {
         </section>
 
         <section>
-          <h2 className="text-16 mb-3 font-semibold text-neutral-900">Kronologi</h2>
+          <SectionHeading title="Kronologi" onEdit={() => navigate(ROUTES.claimDetail)} />
           <Card className="text-13 whitespace-pre-wrap text-neutral-800">{draft.transcript}</Card>
-          <div className="mt-3 flex items-center gap-2 text-sm text-neutral-700">
-            <PlayCircle className="text-deep-blue-500 size-5" /> Rekaman suara terlampir
-          </div>
+          {/* Rekaman bisa didengar ulang di sini sebelum klaim dikirim. */}
+          {draft.audioUrl && (
+            <div className="mt-3">
+              <p className="text-12 mb-2 flex items-center gap-2 text-neutral-700">
+                <Volume2 className="text-deep-blue-500 size-4" />
+                Rekaman suara terlampir
+              </p>
+              <audio controls src={draft.audioUrl} className="w-full" />
+            </div>
+          )}
         </section>
 
         <section>
-          <h2 className="text-16 mb-3 font-semibold text-neutral-900">Dokumen Pribadi</h2>
+          <SectionHeading title="Dokumen Pribadi" onEdit={() => navigate(ROUTES.claimDocuments)} />
           <Button
             variant="outline"
             leftIcon={<FileText className="size-5" />}
@@ -151,6 +158,26 @@ export function ClaimReviewPage() {
         </div>
       </div>
     </PageContainer>
+  );
+}
+
+/**
+ * Judul bagian dengan tombol "Ubah". Tanpa ini user tidak tahu data masih bisa
+ * diperbaiki — satu-satunya jalan mundur cuma tombol back yang tidak terlihat.
+ */
+function SectionHeading({ title, onEdit }: { title: string; onEdit: () => void }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <h2 className="text-16 font-semibold text-neutral-900">{title}</h2>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="text-12 text-deep-blue-500 flex items-center gap-1 font-medium"
+      >
+        <Pencil className="size-3.5" />
+        Ubah
+      </button>
+    </div>
   );
 }
 

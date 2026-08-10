@@ -51,7 +51,8 @@ export interface InsurancePolicy {
   totalAmount: number;
   paymentMethod: string;
   paymentStatus: string;
-  underwritingStatus: string;
+	underwritingStatus: string;
+	underwritingNotes: string;
   endedAt?: string;
 }
 
@@ -105,7 +106,8 @@ function parsePolicy(json: Record<string, unknown>): InsurancePolicy {
     totalAmount: num(json.total_amount),
     paymentMethod: str(json.payment_method),
     paymentStatus: str(json.payment_status),
-    underwritingStatus: str(json.underwriting_status),
+		underwritingStatus: str(json.underwriting_status),
+		underwritingNotes: str(json.underwriting_notes),
     endedAt: str(json.ended_at) || undefined,
   };
 }

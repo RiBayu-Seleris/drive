@@ -259,7 +259,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative w-full bg-gray-50">
+    <div className="relative w-full bg-gray-50 pb-20">
       <div className="bg-deep-blue-500 absolute top-0 z-0 flex h-[248px] w-full justify-center">
         <img src="/assets/home/bg-header.png" alt="" className="mt-14 w-full object-fill" />
       </div>
@@ -521,10 +521,10 @@ export function HomePage() {
               <div key={item.title} className="rounded-xl border border-[#EAECEF] bg-white">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between px-4 py-3"
+                  className="flex w-full items-center justify-between px-3 py-3"
                   onClick={() => setActiveAdvantage(activeAdvantage === index ? null : index)}
                 >
-                  <p className="text-left text-[14px] text-[#6B7280]">{item.title}</p>
+                  <p className="text-left text-[12px] text-[#6B7280]">{item.title}</p>
                   <ChevronDown
                     className={cn(
                       'size-5 text-[#D0D2D6] transition-transform duration-300',
@@ -699,13 +699,13 @@ function WhyItem({ color, text }: { color: string; text: string }) {
     <div className="rounded-xl bg-white p-0 text-center">
       <div
         className={cn(
-          'mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-linear-to-bl',
+          'mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-linear-to-bl',
           color,
         )}
       >
         <img src={LogoOnly} alt="" srcSet="" />
       </div>
-      <p className="text-[12px] text-gray-600">{text}</p>
+      <p className="text-[10px] text-gray-600">{text}</p>
     </div>
   );
 }

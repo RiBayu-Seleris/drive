@@ -27,6 +27,11 @@ const envSchema = z.object({
     .string()
     .url('VITE_SELERIS_UPLOAD_URL harus URL valid')
     .default('https://api-gateway.seleris.id/v1/seleris-credit-cover/web/upload-file'),
+  /** Server routing untuk garis rute yang mengikuti jalan. Default = server demo OSRM. */
+  VITE_OSRM_BASE_URL: z.preprocess(
+    envString,
+    z.string().url('VITE_OSRM_BASE_URL harus URL valid').default('https://router.project-osrm.org'),
+  ),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
@@ -54,5 +59,7 @@ export const env = {
   useMockInsuranceCheck: data.VITE_USE_MOCK_INSURANCE_CHECK ?? data.VITE_USE_MOCK_SERVICES,
   /** Endpoint upload file publik Seleris (tanpa login) untuk foto saat analisis pra-login. */
   selerisUploadUrl: data.VITE_SELERIS_UPLOAD_URL,
+  /** Server OSRM untuk rute mengikuti jalan (lihat lib/geo/osrm.ts). */
+  osrmBaseUrl: data.VITE_OSRM_BASE_URL.replace(/\/+$/, ''),
   isDev: import.meta.env.DEV,
 } as const;

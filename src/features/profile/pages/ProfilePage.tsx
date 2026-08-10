@@ -236,7 +236,7 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="relative w-full bg-gray-50">
+    <div className="relative w-full bg-gray-50 pb-10">
       <div className="bg-deep-blue-500 absolute top-0 z-0 flex h-[248px] w-full justify-center">
         <img src="/assets/home/bg-header.png" alt="" className="mt-12 object-contain" />
       </div>
@@ -268,7 +268,7 @@ export function ProfilePage() {
           </button>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 px-6">
+        <div className="mt-6 grid grid-cols-2 gap-3 px-4">
           <InfoPill icon={Mail} value={activeUser?.email || '-'} />
           <InfoPill icon={Phone} value={activeUser?.phone || '-'} />
         </div>
@@ -290,6 +290,11 @@ export function ProfilePage() {
               label="Klaim Saya"
               onClick={() => navigate(ROUTES.claims)}
             />
+			<MenuRow
+				icon={FileText}
+				label="Polis Saya"
+				onClick={() => navigate(ROUTES.insurancePolicies)}
+			/>
           </MenuSection>
 
           <MenuSection>

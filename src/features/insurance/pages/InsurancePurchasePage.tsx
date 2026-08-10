@@ -15,7 +15,7 @@ import { normalizePlate, isValidPlate } from '@/features/vehicle-scan/utils/plat
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useDamageStore } from '@/features/damage/store/damageStore';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
-import { ROUTES } from '@/app/routes';
+import { ROUTES, buildPath } from '@/app/routes';
 import { purchaseInsurance, type InsuranceProduct } from '../api';
 
 const PERIODS = [
@@ -131,9 +131,22 @@ export function InsurancePurchasePage() {
         termsAccepted,
         declarationAccepted,
       }),
-    onSuccess: () => {
-      toast.success('Pengajuan polis berhasil dibuat.');
-      navigate(ROUTES.claims, { replace: true });
+		onSuccess: (policy) => {
+			if (product?.surveyRequired) {
+				toast.success('Pengajuan dikirim, menunggu survei.');
+				navigate(buildPath.insurancePolicyDetail(policy.policyNumber), { replace: true });
+				return;
+			}
+			navigate(ROUTES.payment, {
+				replace: true,
+				state: {
+					payment_type: 'POLICY_PREMIUM',
+					policy_number: policy.policyNumber,
+					amount: policy.totalAmount,
+					item_name: `Premi ${policy.productName}`,
+					redirect_route: ROUTES.insurancePolicies,
+				},
+			});
     },
     onError: (error) => toast.error(extractErrorMessage(error, 'Pembelian polis gagal.')),
   });
