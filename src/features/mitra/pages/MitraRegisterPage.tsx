@@ -312,6 +312,7 @@ function StepAccount({
       <div className="mt-7 flex flex-col gap-4">
         <Input
           label="Email (email perusahaan)"
+          requiredMark
           type="email"
           placeholder="Masukan email perusahaan"
           leftIcon={<Mail className="size-5" />}
@@ -320,6 +321,7 @@ function StepAccount({
         />
         <Input
           label="Kata Sandi"
+          requiredMark
           type="password"
           placeholder="Masukan kata sandi"
           error={errors.password?.message}
@@ -327,6 +329,7 @@ function StepAccount({
         />
         <Input
           label="Konfirmasi Kata Sandi"
+          requiredMark
           type="password"
           placeholder="Masukan konfirmasi kata sandi"
           error={errors.retypePassword?.message}

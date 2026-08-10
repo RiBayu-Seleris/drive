@@ -55,6 +55,7 @@ export function RegisterPage() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <Input
           label="Nama lengkap"
+          requiredMark
           placeholder="Masukkan nama lengkap"
           autoComplete="name"
           error={errors.fullname?.message}
@@ -62,6 +63,7 @@ export function RegisterPage() {
         />
         <Input
           label="Email"
+          requiredMark
           type="email"
           autoComplete="email"
           placeholder="Masukkan email"
@@ -70,6 +72,7 @@ export function RegisterPage() {
         />
         <Input
           label="Kata Sandi"
+          requiredMark
           type="password"
           autoComplete="new-password"
           placeholder="Minimal 8 karakter"
@@ -78,6 +81,7 @@ export function RegisterPage() {
         />
         <Input
           label="Konfirmasi Kata Sandi"
+          requiredMark
           type="password"
           autoComplete="new-password"
           placeholder="Ulangi kata sandi"

@@ -7,12 +7,32 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   hint?: string;
   leftIcon?: ReactNode;
+  /**
+   * Tandai wajib isi: bintang merah di label + `aria-required`.
+   *
+   * Sengaja BUKAN atribut `required` bawaan HTML. Validasi form ini dipegang
+   * zod lewat react-hook-form; menyalakan validasi native akan memunculkan
+   * gelembung peringatan browser lebih dulu dan menghalangi pesan galat yang
+   * sudah kita rancang.
+   */
+  requiredMark?: boolean;
   /** Tambahkan tombol show/hide bila type="password". */
   containerClassName?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, error, hint, leftIcon, className, containerClassName, id, type = 'text', ...rest },
+  {
+    label,
+    error,
+    hint,
+    leftIcon,
+    className,
+    containerClassName,
+    id,
+    type = 'text',
+    requiredMark,
+    ...rest
+  },
   ref,
 ) {
   const reactId = useId();
@@ -26,6 +46,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {label && (
         <label htmlFor={inputId} className="mb-2 block text-sm font-medium text-neutral-800">
           {label}
+          {requiredMark && (
+            // aria-hidden karena status wajib sudah disampaikan lewat
+            // aria-required pada input — jangan dibacakan dua kali.
+            <span className="text-danger ml-0.5" aria-hidden="true">
+              *
+            </span>
+          )}
         </label>
       )}
       <div className="relative">
@@ -38,6 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           ref={ref}
           id={inputId}
           type={resolvedType}
+          aria-required={requiredMark || undefined}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${inputId}-error` : undefined}
           className={cn(

@@ -5,10 +5,12 @@ export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   label?: string;
   error?: string;
   hint?: string;
+  /** Tandai wajib isi — lihat catatan pada `InputProps.requiredMark`. */
+  requiredMark?: boolean;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-  { label, error, hint, className, id, rows = 4, ...rest },
+  { label, error, hint, className, id, rows = 4, requiredMark, ...rest },
   ref,
 ) {
   const reactId = useId();
@@ -19,12 +21,18 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
       {label && (
         <label htmlFor={fieldId} className="mb-2 block text-sm font-medium text-neutral-800">
           {label}
+          {requiredMark && (
+            <span className="text-danger ml-0.5" aria-hidden="true">
+              *
+            </span>
+          )}
         </label>
       )}
       <textarea
         ref={ref}
         id={fieldId}
         rows={rows}
+        aria-required={requiredMark || undefined}
         aria-invalid={Boolean(error)}
         className={cn(
           'w-full rounded-lg border bg-white px-4 py-3 text-sm text-neutral-900 shadow-sm transition',

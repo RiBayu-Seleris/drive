@@ -150,6 +150,7 @@ export function StepCompany({
       <StepTitle title="Lengkapi Data Mitra" subtitle="Lengkapi identitas perusahaan Anda" />
       <Input
         label="Nama Perusahaan (PT/CV)"
+        requiredMark
         placeholder="Masukan Nama Perusahaan (PT/CV)"
         leftIcon={<Building2 className="size-5" />}
         error={errors.companyName?.message}
@@ -157,6 +158,7 @@ export function StepCompany({
       />
       <Input
         label="Nomor Induk Berusaha (NIB)"
+        requiredMark
         placeholder="13 digit angka"
         leftIcon={<Hash className="size-5" />}
         error={errors.nib?.message}
@@ -177,6 +179,7 @@ export function StepCompany({
 
       <TextArea
         label="Alamat Usaha"
+        requiredMark
         placeholder="Pilih di peta atau ketik manual"
         rows={2}
         error={errors.officeAddress?.message}
@@ -194,6 +197,9 @@ export function StepCompany({
         error={errors.province?.message}
         {...register('province')}
       />
+      {/* Wajib menurut skema, tapi TIDAK diberi bintang: nilainya terisi
+          otomatis dari langkah akun dan field ini read-only, jadi bintang hanya
+          akan menyuruh pengguna mengisi sesuatu yang tak bisa ia isi di sini. */}
       <Input
         label="Email Perusahaan"
         type="email"
@@ -232,6 +238,7 @@ export function StepPic({
       <StepTitle title="Data Penanggung Jawab" subtitle="Masukkan data PIC yang bertanggung jawab" />
       <Input
         label="Nama Lengkap PIC"
+        requiredMark
         placeholder="Masukan nama lengkap"
         leftIcon={<User className="size-5" />}
         error={errors.picName?.message}
@@ -246,6 +253,7 @@ export function StepPic({
       />
       <Input
         label="Nomor KTP"
+        requiredMark
         placeholder="16 digit NIK"
         leftIcon={<IdCard className="size-5" />}
         error={errors.picKtpNumber?.message}
@@ -254,6 +262,7 @@ export function StepPic({
       <FileUploadField label="Foto KTP" file={ktpFile} onChange={onKtpChange} />
       <Input
         label="Nomor HP (WhatsApp aktif)"
+        requiredMark
         type="tel"
         placeholder="Contoh: 08xxxxxxxxxx"
         leftIcon={<Phone className="size-5" />}
