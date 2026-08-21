@@ -19,13 +19,29 @@ export interface InsuranceProduct {
   adminFee: number;
   stampDutyFee: number;
   waitingPeriodDays: number;
-  surveyRequired: boolean;
   policyWordingUrl: string;
   brochureUrl: string;
   description: string;
   benefits: string[];
   terms: string[];
+  /**
+   * Kerusakan maksimal (persen) yang masih boleh membeli produk ini.
+   * Ditegakkan juga di backend saat pembelian; di aplikasi dipakai untuk
+   * menolak lebih awal di layar hasil scan.
+   */
+  maxPurchaseDamagePct: number;
 }
+
+/** Batas dipakai saat produk belum diketahui (mis. sebelum user memilih). */
+export const DEFAULT_MAX_PURCHASE_DAMAGE_PCT = 5;
+
+/**
+ * Masa berlaku hasil scan untuk pembelian polis. WAJIB sama dengan
+ * `PurchaseScanMaxAge` di backend (member_feature_model.go) — kalau berbeda,
+ * user bisa melihat sisa waktu di layar tapi tetap ditolak server.
+ */
+export const PURCHASE_SCAN_VALIDITY_MINUTES = 60;
+export const PURCHASE_SCAN_VALIDITY_MS = PURCHASE_SCAN_VALIDITY_MINUTES * 60 * 1000;
 
 export interface InsurancePolicy {
   id: number;
@@ -51,9 +67,18 @@ export interface InsurancePolicy {
   totalAmount: number;
   paymentMethod: string;
   paymentStatus: string;
-	underwritingStatus: string;
-	underwritingNotes: string;
+  underwritingStatus: string;
+  underwritingNotes: string;
+  /** Kapan polis mulai menanggung. Bisa di depan bila produknya bermasa tunggu. */
+  startedAt?: string;
   endedAt?: string;
+}
+
+export type InsurancePolicyDocumentType = 'KTP' | 'STNK';
+
+export interface InsurancePolicyDocumentInput {
+  documentType: InsurancePolicyDocumentType;
+  fileUrl: string;
 }
 
 function parseProduct(json: Record<string, unknown>): InsuranceProduct {
@@ -72,10 +97,13 @@ function parseProduct(json: Record<string, unknown>): InsuranceProduct {
     adminFee: num(json.admin_fee),
     stampDutyFee: num(json.stamp_duty_fee),
     waitingPeriodDays: num(json.waiting_period_days),
-    surveyRequired: Boolean(json.survey_required),
     policyWordingUrl: str(json.policy_wording_url),
     brochureUrl: str(json.brochure_url),
     description: str(json.description),
+    maxPurchaseDamagePct:
+      typeof json.max_purchase_damage_pct === 'number'
+        ? json.max_purchase_damage_pct
+        : DEFAULT_MAX_PURCHASE_DAMAGE_PCT,
     benefits: strList(json.benefits),
     terms: strList(json.terms),
   };
@@ -106,8 +134,9 @@ function parsePolicy(json: Record<string, unknown>): InsurancePolicy {
     totalAmount: num(json.total_amount),
     paymentMethod: str(json.payment_method),
     paymentStatus: str(json.payment_status),
-		underwritingStatus: str(json.underwriting_status),
-		underwritingNotes: str(json.underwriting_notes),
+    underwritingStatus: str(json.underwriting_status),
+    underwritingNotes: str(json.underwriting_notes),
+    startedAt: str(json.started_at) || undefined,
     endedAt: str(json.ended_at) || undefined,
   };
 }
@@ -155,10 +184,24 @@ export interface PurchaseInput {
   registrationArea: string;
   estimatedVehicleValue: number;
   periodMonths: number;
-  coverageStartDate: string;
   paymentMethod: string;
   termsAccepted: boolean;
   declarationAccepted: boolean;
+  inferenceTicket: string;
+  documents: InsurancePolicyDocumentInput[];
+  /** Foto bukti nomor rangka & mesin — wajib, dipakai verifikasi underwriting. */
+  vehicleChassisNumberImageUrl: string;
+  vehicleEngineNumberImageUrl: string;
+}
+
+/**
+ * Batalkan pesanan polis yang belum dibayar.
+ *
+ * Hanya untuk pesanan yang preminya belum masuk. Polis yang sudah dibayar tidak
+ * bisa dibatalkan lewat sini — pengembalian premi urusan asuransinya.
+ */
+export async function cancelInsurancePolicyOrder(policyNumber: string): Promise<void> {
+  await userApi.post(`/v1/member/insurance/policies/${encodeURIComponent(policyNumber)}/cancel`);
 }
 
 export async function purchaseInsurance(input: PurchaseInput): Promise<InsurancePolicy> {
@@ -179,16 +222,22 @@ export async function purchaseInsurance(input: PurchaseInput): Promise<Insurance
       vehicle_model: input.vehicleModel,
       vehicle_year: input.vehicleYear,
       vehicle_chassis_number: input.vehicleChassisNumber,
+      vehicle_chassis_number_image_url: input.vehicleChassisNumberImageUrl,
       vehicle_engine_number: input.vehicleEngineNumber,
+      vehicle_engine_number_image_url: input.vehicleEngineNumberImageUrl,
       vehicle_color: input.vehicleColor,
       vehicle_usage: input.vehicleUsage,
       registration_area: input.registrationArea,
       estimated_vehicle_value: input.estimatedVehicleValue,
       period_months: input.periodMonths,
-      coverage_start_date: input.coverageStartDate,
       payment_method: input.paymentMethod,
       terms_accepted: input.termsAccepted,
       declaration_accepted: input.declarationAccepted,
+      inference_ticket: input.inferenceTicket,
+      documents: input.documents.map((document) => ({
+        document_type: document.documentType,
+        file_url: document.fileUrl,
+      })),
     },
   );
   return parsePolicy(res.data?.data ?? {});

@@ -22,13 +22,17 @@ function bool(value: unknown, fallback = false): boolean {
 function listFromEnvelope(data: unknown): Record<string, unknown>[] {
   const envelope = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
   const raw = Array.isArray(envelope.data) ? envelope.data : Array.isArray(data) ? data : [];
-  return raw.filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object');
+  return raw.filter(
+    (item): item is Record<string, unknown> => item !== null && typeof item === 'object',
+  );
 }
 
 function objectFromEnvelope(data: unknown): Record<string, unknown> {
   const envelope = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
   const raw = envelope.data;
-  return raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  return raw && typeof raw === 'object' && !Array.isArray(raw)
+    ? (raw as Record<string, unknown>)
+    : {};
 }
 
 function totalFromEnvelope(data: unknown): number {
@@ -124,6 +128,13 @@ export interface MitraTowingFleetInput {
   photoUrl?: string;
   status?: string;
   isActive?: boolean;
+  /**
+   * Posisi terakhir armada. WAJIB dikirim ulang saat update: endpoint PUT
+   * menimpa seluruh kolom, jadi membiarkannya kosong akan MENGHAPUS lokasi
+   * terakhir yang sudah tercatat.
+   */
+  lastLatitude?: number;
+  lastLongitude?: number;
 }
 
 export interface Paginated<T> {
@@ -305,7 +316,9 @@ export async function deleteMitraTowingDriver(id: number): Promise<void> {
   await mitraApi.delete('/v1/admin/towing-drivers', { params: { id } });
 }
 
-export async function createMitraTowingFleet(input: MitraTowingFleetInput): Promise<MitraTowingFleet> {
+export async function createMitraTowingFleet(
+  input: MitraTowingFleetInput,
+): Promise<MitraTowingFleet> {
   const res = await mitraApi.post<{ data?: unknown }>('/v1/admin/towing-fleets', {
     plate_number: input.plateNumber,
     fleet_type: input.fleetType ?? 'FLATBED',
@@ -315,6 +328,33 @@ export async function createMitraTowingFleet(input: MitraTowingFleetInput): Prom
     is_active: input.isActive ?? true,
   });
   return parseMitraTowingFleet(objectFromEnvelope(res.data));
+}
+
+/**
+ * Ubah data armada milik mitra yang sedang login.
+ *
+ * Backend menimpa SELURUH kolom (bukan patch parsial), jadi pemanggil wajib
+ * mengirim nilai lengkap — termasuk `lastLatitude`/`lastLongitude` milik armada
+ * saat ini — supaya data yang tidak diubah tidak ikut terhapus.
+ */
+export async function updateMitraTowingFleet(
+  id: number,
+  input: MitraTowingFleetInput,
+): Promise<void> {
+  await mitraApi.put(
+    '/v1/admin/towing-fleets',
+    {
+      plate_number: input.plateNumber,
+      fleet_type: input.fleetType ?? 'FLATBED',
+      capacity_label: input.capacityLabel ?? '',
+      photo_url: input.photoUrl ?? '',
+      status: input.status ?? 'AVAILABLE',
+      is_active: input.isActive ?? true,
+      last_latitude: input.lastLatitude ?? 0,
+      last_longitude: input.lastLongitude ?? 0,
+    },
+    { params: { id } },
+  );
 }
 
 export async function acceptMitraTowingOrder(args: {
@@ -330,9 +370,12 @@ export async function acceptMitraTowingOrder(args: {
 }
 
 export async function rejectMitraTowingOrder(orderId: number): Promise<string> {
-  const res = await mitraApi.post<{ data?: { status?: string } }>('/v1/admin/towing-orders/reject', {
-    order_id: orderId,
-  });
+  const res = await mitraApi.post<{ data?: { status?: string } }>(
+    '/v1/admin/towing-orders/reject',
+    {
+      order_id: orderId,
+    },
+  );
   return res.data?.data?.status ?? 'REJECTED';
 }
 
@@ -470,6 +513,14 @@ export function driverStatusLabel(status: string): string {
 export function fleetStatusLabel(status: string): string {
   return driverStatusLabel(status);
 }
+
+/** Status armada yang diterima backend (`validateTowingFleetPayload`). */
+export const TOWING_FLEET_STATUS_OPTIONS = [
+  { value: 'AVAILABLE', label: 'Tersedia' },
+  { value: 'BUSY', label: 'Bertugas' },
+  { value: 'OFFLINE', label: 'Offline' },
+  { value: 'INACTIVE', label: 'Nonaktif' },
+] as const;
 
 export function fleetTypeLabel(type: string): string {
   const item = TOWING_FLEET_TYPE_OPTIONS.find((option) => option.value === type);

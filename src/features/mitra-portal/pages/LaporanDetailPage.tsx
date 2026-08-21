@@ -5,6 +5,7 @@ import { ROUTES } from '@/app/routes';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { TextArea } from '@/components/ui/TextArea';
 import { LoadingState } from '@/components/ui/Spinner';
 import { toast } from '@/components/feedback/toast';
@@ -148,16 +149,19 @@ export function LaporanDetailPage() {
 
         {/* Kondisi kendaraan */}
         <div className="mt-4">
-          <label className="mb-2 block text-sm font-medium text-neutral-800">Kondisi Kendaraan</label>
-          <select
+          <label className="mb-2 block text-sm font-medium text-neutral-800">
+            Kondisi Kendaraan
+          </label>
+          <Select
             className={SELECT_CLASS}
             value={vehicleCondition}
-            onChange={(event) => setVehicleCondition(event.target.value)}
-          >
-            <option value="baik">Sesuai (Baik)</option>
-            <option value="ringan">Ada Kerusakan Ringan</option>
-            <option value="khusus">Perlu Perhatian Khusus</option>
-          </select>
+            onChange={setVehicleCondition}
+            options={[
+              { value: 'baik', label: 'Sesuai (Baik)' },
+              { value: 'ringan', label: 'Ada Kerusakan Ringan' },
+              { value: 'khusus', label: 'Perlu Perhatian Khusus' },
+            ]}
+          />
         </div>
 
         {/* Catatan tambahan */}
@@ -179,7 +183,7 @@ export function LaporanDetailPage() {
         >
           Kirim Laporan
         </Button>
-        <p className="text-[11px] mt-3 text-center text-neutral-400">
+        <p className="mt-3 text-center text-[11px] text-neutral-400">
           *Laporan akan diverifikasi oleh tim admin segera.
         </p>
       </form>

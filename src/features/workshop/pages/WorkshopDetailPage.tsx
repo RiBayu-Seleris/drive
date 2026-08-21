@@ -121,8 +121,13 @@ export function WorkshopDetailPage() {
     },
     // Nominalnya sudah ditampilkan di layar estimasi & status klaim; jangan
     // diulang di sini supaya tidak ada dua angka yang harus dipercaya user.
-    onSuccess: () => {
-      toast.success('Bengkel perbaikan terdaftar. Tunjukkan kode klaim Anda saat tiba.');
+    onSuccess: ({ covered }) => {
+      toast.success(
+        covered
+          ? 'Bengkel perbaikan terdaftar. Tunjukkan kode klaim Anda saat tiba.'
+          : 'Bengkel terdaftar. Bengkel ini di luar rekanan, jadi biaya perbaikan menjadi tanggungan Anda.',
+        covered ? undefined : { duration: 6000 },
+      );
       navigate(ROUTES.claims);
     },
     onError: (error) =>

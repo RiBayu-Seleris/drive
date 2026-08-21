@@ -30,6 +30,27 @@ const SopirLoginPage = lazy(() =>
 const ActivatePage = lazy(() =>
   import('@/features/auth/pages/ActivatePage').then((m) => ({ default: m.ActivatePage })),
 );
+const VerifyEmailPage = lazy(() =>
+  import('@/features/auth/pages/VerifyEmailPage').then((m) => ({ default: m.VerifyEmailPage })),
+);
+const RegisterSuccessPage = lazy(() =>
+  import('@/features/auth/pages/RegisterSuccessPage').then((m) => ({
+    default: m.RegisterSuccessPage,
+  })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({
+    default: m.ForgotPasswordPage,
+  })),
+);
+const VerifyResetCodePage = lazy(() =>
+  import('@/features/auth/pages/VerifyResetCodePage').then((m) => ({
+    default: m.VerifyResetCodePage,
+  })),
+);
+const ResetPasswordPage = lazy(() =>
+  import('@/features/auth/pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+);
 const RegisterPage = lazy(() =>
   import('@/features/auth/pages/RegisterPage').then((m) => ({ default: m.RegisterPage })),
 );
@@ -152,6 +173,11 @@ const KemitraanPage = lazy(() =>
     default: m.KemitraanPage,
   })),
 );
+const WorkshopKemitraanPage = lazy(() =>
+  import('@/features/mitra-portal/pages/workshop/KemitraanPage').then((m) => ({
+    default: m.WorkshopKemitraanPage,
+  })),
+);
 const SopirListPage = lazy(() =>
   import('@/features/mitra-portal/pages/towing/SopirListPage').then((m) => ({
     default: m.SopirListPage,
@@ -180,6 +206,11 @@ const ArmadaDetailPage = lazy(() =>
 const ArmadaTambahPage = lazy(() =>
   import('@/features/mitra-portal/pages/towing/ArmadaTambahPage').then((m) => ({
     default: m.ArmadaTambahPage,
+  })),
+);
+const ArmadaEditPage = lazy(() =>
+  import('@/features/mitra-portal/pages/towing/ArmadaEditPage').then((m) => ({
+    default: m.ArmadaEditPage,
   })),
 );
 const OrderListPage = lazy(() =>
@@ -279,14 +310,14 @@ const InsurancePurchasePage = lazy(() =>
   })),
 );
 const InsurancePoliciesPage = lazy(() =>
-	import('@/features/insurance/pages/InsurancePoliciesPage').then((m) => ({
-		default: m.InsurancePoliciesPage,
-	})),
+  import('@/features/insurance/pages/InsurancePoliciesPage').then((m) => ({
+    default: m.InsurancePoliciesPage,
+  })),
 );
 const InsurancePolicyDetailPage = lazy(() =>
-	import('@/features/insurance/pages/InsurancePolicyDetailPage').then((m) => ({
-		default: m.InsurancePolicyDetailPage,
-	})),
+  import('@/features/insurance/pages/InsurancePolicyDetailPage').then((m) => ({
+    default: m.InsurancePolicyDetailPage,
+  })),
 );
 const ClaimsPage = lazy(() =>
   import('@/features/claim/pages/ClaimsPage').then((m) => ({ default: m.ClaimsPage })),
@@ -359,6 +390,11 @@ export const router = createBrowserRouter([
       { path: ROUTES.loginSopir, element: <SopirLoginPage /> },
       { path: ROUTES.activate, element: <ActivatePage /> },
       { path: ROUTES.register, element: <RegisterPage /> },
+      { path: ROUTES.verifyEmail, element: <VerifyEmailPage /> },
+      { path: ROUTES.registerSuccess, element: <RegisterSuccessPage /> },
+      { path: ROUTES.forgotPassword, element: <ForgotPasswordPage /> },
+      { path: ROUTES.verifyResetCode, element: <VerifyResetCodePage /> },
+      { path: ROUTES.resetPassword, element: <ResetPasswordPage /> },
       { path: ROUTES.mitraRegister, element: <MitraRegisterPage /> },
       { path: ROUTES.mitraResubmit, element: <MitraResubmitPage /> },
 
@@ -418,8 +454,8 @@ export const router = createBrowserRouter([
       { path: ROUTES.insuranceSearch, element: protect(<InsuranceSearchPage />) },
       { path: ROUTES.insuranceDetail, element: protect(<InsuranceDetailPage />) },
       { path: ROUTES.insurancePurchase, element: protect(<InsurancePurchasePage />) },
-		{ path: ROUTES.insurancePolicies, element: protect(<InsurancePoliciesPage />) },
-		{ path: ROUTES.insurancePolicyDetail, element: protect(<InsurancePolicyDetailPage />) },
+      { path: ROUTES.insurancePolicies, element: protect(<InsurancePoliciesPage />) },
+      { path: ROUTES.insurancePolicyDetail, element: protect(<InsurancePolicyDetailPage />) },
       { path: ROUTES.claims, element: protect(<ClaimsPage />) },
       { path: ROUTES.claimInsuranceData, element: protect(<ClaimInsuranceDataPage />) },
       { path: ROUTES.claimSelectPolicy, element: protect(<ClaimSelectPolicyPage />) },
@@ -450,7 +486,9 @@ export const router = createBrowserRouter([
           { path: ROUTES.mitraArmada, element: <ArmadaListPage /> },
           { path: ROUTES.mitraArmadaTambah, element: <ArmadaTambahPage /> },
           { path: ROUTES.mitraArmadaDetail, element: <ArmadaDetailPage /> },
+          { path: ROUTES.mitraArmadaEdit, element: <ArmadaEditPage /> },
           { path: ROUTES.mitraKemitraan, element: <KemitraanPage /> },
+          { path: ROUTES.mitraBengkelKemitraan, element: <WorkshopKemitraanPage /> },
           { path: ROUTES.mitraOrder, element: <OrderListPage /> },
           { path: ROUTES.mitraOrderTerima, element: <OrderTerimaPage /> },
           { path: ROUTES.mitraOrderTracking, element: <OrderTrackingPage /> },

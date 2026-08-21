@@ -42,4 +42,13 @@ export interface DamageSubmission {
   /** Foto plat — wajib untuk inference backend (dipetakan ke field plate_image). */
   plateImage?: Blob | null;
   sides: Array<{ id: string; damaged: boolean | null; image?: Blob | null }>;
+  /**
+   * Untuk apa pemindaian ini dilakukan.
+   *
+   * Dikirim ke server karena mode pengujian "kerusakan ringan" HANYA berlaku
+   * untuk penilaian kelayakan beli polis. Analisis kerusakan biasa dan klaim
+   * tetap memakai hasil apa adanya — memaksa keduanya jadi ringan akan membuat
+   * pengujian klaim menghasilkan angka yang tidak mungkin diperiksa.
+   */
+  purpose?: 'standard' | 'insurance_purchase';
 }

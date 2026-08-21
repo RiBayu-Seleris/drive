@@ -1,13 +1,22 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Info, ShieldCheck, Zap } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/feedback/StateViews';
+import { cn } from '@/lib/utils/cn';
 import { formatCurrency } from '@/lib/utils/format';
 import { ROUTES } from '@/app/routes';
 import type { InsuranceProduct } from '../api';
+import { useLiveInsuranceProduct } from '../useInsuranceProducts';
+import {
+  activationLabel,
+  activationNote,
+  annualPremiumOf,
+  benefitIcon,
+  coverageLabel,
+  providerInitials,
+} from '../productUi';
 
 type InsuranceRouteState =
   | InsuranceProduct
@@ -33,7 +42,7 @@ function routeRequiresDamageFreeScan(state: InsuranceRouteState): boolean {
 export function InsuranceDetailPage() {
   const navigate = useNavigate();
   const state = useLocation().state as InsuranceRouteState;
-  const product = routeProduct(state);
+  const product = useLiveInsuranceProduct(routeProduct(state));
   const requiresDamageFreeScan = routeRequiresDamageFreeScan(state);
 
   if (!product) {
@@ -52,76 +61,138 @@ export function InsuranceDetailPage() {
     );
   }
 
+  const facts = [
+    { label: 'AKTIVASI', value: activationLabel(product) },
+    { label: 'DURASI', value: '1 Tahun' },
+    { label: 'PERTANGGUNGAN', value: coverageLabel(product) },
+    { label: 'PROSES KLAIM', value: 'Digital' },
+  ];
+
   return (
-    <PageContainer>
-      <AppHeader title="Detail Asuransi" />
-      <div className="flex flex-1 flex-col px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="bg-deep-blue-50 text-deep-blue-500 flex size-12 items-center justify-center rounded-lg">
-            <ShieldCheck className="size-6" />
-          </div>
-          <div>
-            <h1 className="text-16 font-semibold text-neutral-900">{product.name}</h1>
-            <p className="text-12 text-neutral-700">
-              {product.provider} · {product.category}
-            </p>
-          </div>
+    <PageContainer className="bg-[#F8F9FE]">
+      <AppHeader showLogo />
+
+      <header className="bg-gradient-to-br from-[#F0F7FF] to-[#D3E4FF] px-4 pt-5 pb-7">
+        <div className="flex items-start justify-between gap-3">
+          <span className="text-12 inline-flex items-center gap-1.5 rounded-full bg-[#003E6F] px-3.5 py-2 font-semibold text-white">
+            <ShieldCheck className="size-4" />
+            {coverageLabel(product)}
+          </span>
+          <span className="text-deep-blue-600 rounded-lg bg-white px-4 py-2.5 text-sm font-bold shadow-sm">
+            {providerInitials(product.provider)}
+          </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Card className="text-center">
-            <p className="text-10 text-neutral-600">Premi / bulan</p>
-            <p className="text-16 text-deep-blue-600 mt-1 font-bold">
-              {formatCurrency(product.monthlyPremium)}
-            </p>
-          </Card>
-          <Card className="text-center">
-            <p className="text-10 text-neutral-600">Limit Klaim</p>
-            <p className="text-16 mt-1 font-bold text-neutral-900">
-              {formatCurrency(product.claimLimit)}
-            </p>
-          </Card>
+        <h1 className="mt-4 text-[24px] leading-tight font-bold text-[#003E6F]">{product.name}</h1>
+        <p className="text-14 mt-2 flex items-center gap-2 text-[#414750]">
+          <BadgeCheck className="size-5 shrink-0 text-[#003E6F]" />
+          {product.provider}
+        </p>
+      </header>
+
+      <div className="flex flex-1 flex-col px-4 pb-8">
+        <div className="mt-4 grid grid-cols-2 rounded-xl bg-white shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
+          {facts.map((fact, index) => (
+            <div
+              key={fact.label}
+              className={cn(
+                'px-4 py-3.5',
+                index % 2 === 0 && 'border-r border-neutral-400',
+                index >= 2 && 'border-t border-neutral-400',
+              )}
+            >
+              <p className="text-10 font-medium tracking-wide text-[#414750]">{fact.label}</p>
+              <p className="text-16 mt-1 font-semibold text-[#003E6F]">{fact.value}</p>
+            </div>
+          ))}
         </div>
 
         {product.description && (
-          <p className="text-12 mt-4 leading-relaxed text-neutral-700">{product.description}</p>
+          <p className="text-13 mt-5 leading-relaxed text-[#414750]">{product.description}</p>
         )}
 
         {product.benefits.length > 0 && (
           <>
-            <h2 className="text-14 mt-5 mb-2 font-semibold text-neutral-900">Manfaat</h2>
-            <ul className="flex flex-col gap-2">
-              {product.benefits.map((b) => (
-                <li key={b} className="text-12 flex items-start gap-2 text-neutral-800">
-                  <Check className="text-success mt-0.5 size-4 shrink-0" /> {b}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-6 flex items-baseline justify-between gap-3">
+              <h2 className="text-18 font-semibold text-[#191C1F]">Cakupan Perlindungan</h2>
+              {product.policyWordingUrl && (
+                <a
+                  href={product.policyWordingUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-13 shrink-0 font-medium text-[#003E6F] underline-offset-2 hover:underline"
+                >
+                  Lihat Polis
+                </a>
+              )}
+            </div>
+
+            <div className="mt-3.5 flex flex-col gap-3">
+              {product.benefits.map((benefit) => {
+                const Icon = benefitIcon(benefit);
+                return (
+                  <div
+                    key={benefit}
+                    className="flex items-center gap-3.5 rounded-xl bg-white p-3.5 shadow-[0_2px_12px_rgb(32_41_68_/_0.05)]"
+                  >
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-neutral-400 bg-white">
+                      <Icon className="size-6 text-[#F76B2D]" />
+                    </span>
+                    <p className="text-14 leading-snug text-[#191C1F]">{benefit}</p>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
 
         {product.terms.length > 0 && (
-          <>
-            <h2 className="text-14 mt-5 mb-2 font-semibold text-neutral-900">Syarat & Ketentuan</h2>
-            <ul className="text-12 list-inside list-disc space-y-1 text-neutral-700">
-              {product.terms.map((t) => (
-                <li key={t}>{t}</li>
+          <div className="mt-6 rounded-xl border border-dashed border-neutral-500 bg-[#F3F3F8]/70 p-4">
+            <h2 className="text-16 flex items-center gap-2.5 font-semibold text-[#191C1F]">
+              <Info className="size-5 shrink-0 text-[#003E6F]" />
+              Syarat &amp; Ketentuan
+            </h2>
+            <ul className="mt-3.5 flex flex-col gap-3">
+              {product.terms.map((term) => (
+                <li key={term} className="text-13 flex gap-3 leading-relaxed text-[#414750]">
+                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#003E6F]" />
+                  <span className="min-w-0 flex-1">{term}</span>
+                </li>
               ))}
             </ul>
-          </>
+          </div>
         )}
+      </div>
 
-        <div className="mt-auto pt-6">
-          <Button
-            size="lg"
-            onClick={() =>
-              navigate(ROUTES.insurancePurchase, {
-                state: { product, requiresDamageFreeScan },
-              })
-            }
-          >
-            Beli Polis Ini
-          </Button>
+      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-white px-4">
+        <div className="my-5 flex flex-col items-center justify-between gap-1.5">
+          <div className="flex h-auto w-full flex-row items-center justify-between gap-3">
+            <div className="flex h-auto w-full flex-col items-start justify-center">
+              <p className="text-12 text-[#414750]">Premi Tahunan</p>
+              <p className="text-20 font-bold text-[#003E6F]">
+                {formatCurrency(annualPremiumOf(product))}
+              </p>
+            </div>
+            <div className="flex h-auto w-full items-center justify-end">
+              <Button
+                fullWidth={false}
+                className="h-10 rounded-full px-6"
+                onClick={() =>
+                  navigate(ROUTES.insurancePurchase, {
+                    state: { product, requiresDamageFreeScan },
+                  })
+                }
+              >
+                Pilih Paket Ini
+              </Button>
+            </div>
+          </div>
+          <div className="flex h-auto w-full items-end justify-end">
+            <p className="text-11 flex items-center gap-1 text-right text-[#00658D]">
+              <Zap className="size-3.5 shrink-0" />
+              {activationNote(product)}
+            </p>
+          </div>
         </div>
       </div>
     </PageContainer>

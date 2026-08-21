@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -13,7 +14,11 @@ import { extractErrorMessage } from '@/lib/api/client';
 import { storage } from '@/lib/storage/storage';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useScanServices } from '@/features/vehicle-scan/services/scanServicesContext';
-import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
+import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/scanStore';
+import {
+  DEFAULT_MAX_PURCHASE_DAMAGE_PCT,
+  getInsuranceProducts,
+} from '@/features/insurance/api';
 import { useDamageStore } from '../store/damageStore';
 import { claimInferenceTicket, fetchDamageDetail } from '../api/damageApi';
 import { RadialProgress } from '../components/RadialProgress';
@@ -72,6 +77,10 @@ export function DamageAnalysisPage() {
   const plateNumber = useScanStore((s) => s.plate.number);
   const scanPurpose = useScanStore((s) => s.scanPurpose);
   const insuranceStatus = useScanStore((s) => s.insuranceStatus);
+  // Produk yang tadi sedang dibeli sebelum user dilempar ke pemindaian.
+  // Dipakai untuk mengembalikannya ke FORMULIR PRODUK ITU, bukan ke daftar
+  // produk — memilih ulang produk yang sama itu langkah mundur yang tidak perlu.
+  const pendingProductCode = useScanStore((s) => s.pendingProductCode);
   const setInsurance = useScanStore((s) => s.setInsurance);
   const [selectedSide, setSelectedSide] = useState<DamageSide>('front');
   const [storedTicket, setStoredTicket] = useState(() =>
@@ -159,6 +168,26 @@ export function DamageAnalysisPage() {
     navigate(ROUTES.home, { replace: true });
   }, [isAuthenticated, result, navigate, storedTicket]);
 
+  // Penolakan "belum bisa diasuransikan" berlaku untuk KEDUA jalur pembelian
+  // (menu Beli Asuransi & pintasan Asuransi di Bantuan Darurat) — dua-duanya
+  // berujung membeli polis, jadi user berhak tahu kenapa tidak bisa lanjut.
+  const insurancePurchaseMode = isInsuranceScan(scanPurpose);
+
+  // Batas kerusakan yang masih boleh diasuransikan diambil dari produk, bukan
+  // ditanam di aplikasi, supaya bisa diubah tanpa rilis ulang. Dipakai batas
+  // paling longgar di antara produk aktif: produk yang lebih ketat menolak
+  // sendiri saat pembelian, lengkap dengan angkanya.
+  const { data: insuranceProducts } = useQuery({
+    queryKey: ['insurance-products'],
+    queryFn: getInsuranceProducts,
+    enabled: insurancePurchaseMode,
+    staleTime: 5 * 60 * 1000,
+  });
+  const maxPurchaseDamagePct = useMemo(() => {
+    if (!insuranceProducts?.length) return DEFAULT_MAX_PURCHASE_DAMAGE_PCT;
+    return Math.max(...insuranceProducts.map((p) => p.maxPurchaseDamagePct));
+  }, [insuranceProducts]);
+
   if (!result) {
     // Sedang dialihkan ke Beranda atau memulihkan hasil by-ticket setelah login.
     return (
@@ -179,13 +208,43 @@ export function DamageAnalysisPage() {
   const { avgSeverityPerSide, detail, percentage } = result.repair;
   const sideDetails: DamageItem[] = detail[selectedSide] ?? [];
   const payLocked = isAuthenticated && !reportUnlocked;
+  // damageFree tetap berarti "tidak ada kerusakan sama sekali" — dipakai untuk
+  // keputusan tampilan (sembunyikan rincian, tata letak kartu sisi).
   const damageFree = percentage <= DAMAGE_FREE_THRESHOLD;
-  const emergencyInsuranceMode = scanPurpose === 'emergency_insurance';
-  const showZeroDamageOffer = damageFree && insuranceStatus === 'not_insured';
+
+  /** Masih boleh membeli asuransi: kerusakan di bawah atau sama dengan batas. */
+  const insurable = percentage <= maxPurchaseDamagePct;
+  const pendingProduct = insuranceProducts?.find((p) => p.code === pendingProductCode) ?? null;
+
+  /** Kembali ke formulir pembelian produk yang tadi dipilih. */
+  const continuePurchase = () => {
+    if (!pendingProduct) {
+      navigate(ROUTES.insuranceSearch);
+      return;
+    }
+    useScanStore.getState().setPendingProductCode(null);
+    navigate(ROUTES.insurancePurchase, { state: { product: pendingProduct } });
+  };
+  const showZeroDamageOffer = insurable && insuranceStatus === 'not_insured';
+  // Rincian kerusakan hanya disembunyikan bila memang tidak ada yang dilihat.
+  // Kendaraan 3% (lolos batas 5%) tetap ditampilkan rinciannya.
   const hideDamageDetailForOffer =
-    showZeroDamageOffer || (damageFree && ['idle', 'checking'].includes(insuranceStatus));
+    damageFree && ['not_insured', 'idle', 'checking'].includes(insuranceStatus);
 
   const goLogin = () => navigate(buildPath.loginWithRedirect(ROUTES.damageAnalysis));
+
+  /**
+   * Ulangi pemindaian tanpa keluar dari niat membeli asuransi: foto dibuang,
+   * hasil analisis dibuang, tujuan scan dipertahankan.
+   */
+  const handleRescan = () => {
+    const scan = useScanStore.getState();
+    const purpose = scan.scanPurpose;
+    scan.reset();
+    scan.setScanPurpose(purpose);
+    useDamageStore.getState().reset();
+    navigate(ROUTES.checkCondition);
+  };
   const currentTicket = result?.ticket ?? storedTicket ?? '';
   const goPay = (
     redirectRoute: string = ROUTES.damageAnalysis,
@@ -230,12 +289,25 @@ export function DamageAnalysisPage() {
             </div>
           </div>
 
-          {emergencyInsuranceMode && !damageFree && (
+          {insurancePurchaseMode && !insurable && (
             <div className="border-danger/30 bg-danger/10 mx-4 mb-4 rounded-lg border p-3 text-left">
               <p className="text-12 text-danger font-semibold">
-                Pembelian asuransi belum bisa dilanjutkan karena hasil scan {percentage.toFixed(0)}%
-                damage. Kendaraan harus 0% damage.
+                Kendaraan belum bisa diasuransikan
               </p>
+              <p className="text-12 mt-1 text-neutral-800">
+                Hasil pemindaian {percentage.toFixed(0)}% kerusakan, sedangkan batas maksimal{' '}
+                {maxPurchaseDamagePct.toFixed(0)}%. Perbaiki dulu kerusakannya, lalu ajukan kembali.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                <Button size="md" onClick={() => navigate(ROUTES.insuranceSearch)}>
+                  Kembali ke Daftar Asuransi
+                </Button>
+                {/* Pemindaian bisa meleset karena cahaya atau sudut foto, jadi
+                    user diberi kesempatan mengulang tanpa memutar dari beranda. */}
+                <Button size="md" variant="outline" onClick={handleRescan}>
+                  Pindai Ulang
+                </Button>
+              </div>
             </div>
           )}
 
@@ -246,14 +318,47 @@ export function DamageAnalysisPage() {
             onSelect={setSelectedSide}
           />
 
-          {showZeroDamageOffer && !isHistoryView && (
+          {/*
+            Jalan kembali ke pembelian.
+
+            Dulu tombol ini hanya muncul lewat ZeroDamageInsuranceOffer, yang
+            mensyaratkan insuranceStatus === 'not_insured'. Kalau pengecekan plat
+            belum/ gagal berjalan, statusnya tetap 'idle' dan tombolnya tidak
+            pernah muncul — user terjebak di halaman hasil tanpa jalan keluar
+            padahal kendaraannya lolos syarat.
+
+            Sekarang: selama kendaraannya layak dan memang sedang dalam alur
+            beli polis, tombol lanjut SELALU ada.
+          */}
+          {insurancePurchaseMode && insurable && !isHistoryView && (
+            <div className="mx-5 mt-6">
+              <Button size="lg" onClick={continuePurchase}>
+                {pendingProduct
+                  ? `Lanjutkan Pembelian — ${pendingProduct.name}`
+                  : 'Lanjutkan Pembelian Asuransi'}
+              </Button>
+              <p className="text-12 mt-2 text-center text-neutral-700">
+                Kerusakan {percentage}% memenuhi syarat (maksimal {maxPurchaseDamagePct}%).
+              </p>
+            </div>
+          )}
+
+          {showZeroDamageOffer && !isHistoryView && !insurancePurchaseMode && (
             <ZeroDamageInsuranceOffer onBuyInsurance={() => navigate(ROUTES.insuranceSearch)} />
           )}
 
           {/* Bagian detail — pay-lock untuk yang sudah login tapi belum bayar */}
           {!hideDamageDetailForOffer && (
             <div className="relative mt-4">
-              {payLocked && <ReportUnlockPrompt onClick={() => goPay()} />}
+              {payLocked && (
+                <ReportUnlockPrompt
+                  onClick={() => goPay()}
+                  // Saat pembelian asuransi ditolak, tawaran ini bukan lagi
+                  // "buka analisismu" melainkan jalan keluar: cari tahu biaya
+                  // perbaikan supaya nanti kendaraannya memenuhi syarat.
+                  repairFraming={insurancePurchaseMode && !insurable}
+                />
+              )}
 
               <div className={payLocked ? 'pointer-events-none blur-[3px] select-none' : ''}>
                 {/* Frame sisi terpilih */}
@@ -321,8 +426,19 @@ export function DamageAnalysisPage() {
             </div>
           )}
 
-          {/* Estimasi biaya */}
-          {!isHistoryView && !payLocked && !hideDamageDetailForOffer && (
+          {/*
+            Estimasi biaya perbaikan — DISEMBUNYIKAN saat alurnya beli polis.
+
+            Tombol ini satu-satunya pintu menuju "Cari Rekomendasi Bengkel".
+            Menawarkannya di sini bertentangan dengan yang baru saja dinyatakan
+            aplikasi: kendaraannya cukup mulus untuk diasuransikan. User datang
+            untuk membeli polis, bukan memperbaiki mobil — dan mendorongnya ke
+            bengkel di tengah jalan membuat pembelian polisnya terlantar.
+
+            Yang mau melihat biaya perbaikan tetap bisa: pindai lagi dari menu
+            cek kondisi biasa, di luar alur pembelian.
+          */}
+          {!isHistoryView && !payLocked && !hideDamageDetailForOffer && !insurancePurchaseMode && (
             <div className="mt-6 px-4">
               <Button
                 size="lg"
@@ -423,10 +539,32 @@ function SideSeverityCards({
 function ReportUnlockPrompt({
   onClick,
   className = '',
+  repairFraming = false,
 }: {
   onClick: () => void;
   className?: string;
+  /**
+   * Saat pembelian asuransi ditolak, tawaran ini bukan lagi "buka analisismu"
+   * melainkan jalan keluar: tahu biaya perbaikan supaya kendaraannya nanti
+   * memenuhi syarat. Tampilannya dikecilkan agar tidak menutupi penolakan.
+   */
+  repairFraming?: boolean;
 }) {
+  if (repairFraming) {
+    return (
+      <div className={`px-5 pb-4 ${className}`}>
+        <p className="text-12 text-neutral-700">Ingin tahu perkiraan biaya perbaikannya?</p>
+        <button
+          type="button"
+          onClick={onClick}
+          className="text-deep-blue-500 mt-1 text-[12px] font-bold underline"
+        >
+          Lihat Detail &amp; Estimasi Biaya — {AI_REPORT_PRICE}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={`px-5 pb-4 ${className}`}>
       <div className="flex flex-row gap-4 p-2">

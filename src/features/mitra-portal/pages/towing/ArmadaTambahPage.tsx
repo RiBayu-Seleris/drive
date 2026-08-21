@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Camera, Save, X } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { uploadFilePublic } from '@/lib/upload/publicUpload';
@@ -124,17 +125,21 @@ export function ArmadaTambahPage() {
           </CardField>
 
           <CardField label="JENIS KENDARAAN">
-            <select name="fleet_type" className={CONTROL_CLASS} defaultValue="FLATBED">
-              {TOWING_FLEET_TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              name="fleet_type"
+              className={CONTROL_CLASS}
+              defaultValue="FLATBED"
+              options={[...TOWING_FLEET_TYPE_OPTIONS]}
+            />
           </CardField>
 
           <CardField label="NOMOR PLAT">
-            <input name="plate_number" className={CONTROL_CLASS} placeholder="B 1234 ABC" required />
+            <input
+              name="plate_number"
+              className={CONTROL_CLASS}
+              placeholder="B 1234 ABC"
+              required
+            />
           </CardField>
 
           <CardField label="NOMOR RANGKA (VIN)">
@@ -212,7 +217,7 @@ export function ArmadaTambahPage() {
           </CardField>
         </div>
 
-        {error && <p className="text-12 mt-3 text-danger">{error}</p>}
+        {error && <p className="text-12 text-danger mt-3">{error}</p>}
 
         <Button
           type="submit"

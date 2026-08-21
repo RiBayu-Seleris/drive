@@ -5,6 +5,7 @@ import { Info } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { keepDigits, keepPhone } from '@/lib/utils/inputFilters';
@@ -25,9 +26,6 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     </div>
   );
 }
-
-const SELECT_CLASS =
-  'block h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-neutral-900 shadow-sm focus:border-deep-blue-500 focus:ring-2 focus:ring-deep-blue-200 focus:outline-none';
 
 /** Ambil nilai field form sebagai string. */
 function field(fd: FormData, key: string): string {
@@ -134,7 +132,12 @@ export function SopirTambahPage() {
       <AppHeader title="Data Sopir" />
 
       <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
-        <Input name="fullname" label="Nama Lengkap Sopir" placeholder="Masukkan nama lengkap" required />
+        <Input
+          name="fullname"
+          label="Nama Lengkap Sopir"
+          placeholder="Masukkan nama lengkap"
+          required
+        />
         <Input
           label="Nomor KTP"
           placeholder="16 digit NIK"
@@ -156,13 +159,13 @@ export function SopirTambahPage() {
           <Input type="date" />
         </Field>
         <Field label="Jenis Kelamin">
-          <select className={SELECT_CLASS} defaultValue="">
-            <option value="" disabled>
-              Pilih jenis kelamin
-            </option>
-            <option>Laki-laki</option>
-            <option>Perempuan</option>
-          </select>
+          <Select
+            placeholder="Pilih jenis kelamin"
+            options={[
+              { value: 'Laki-laki', label: 'Laki-laki' },
+              { value: 'Perempuan', label: 'Perempuan' },
+            ]}
+          />
         </Field>
         <Input
           name="license_number"
@@ -177,27 +180,31 @@ export function SopirTambahPage() {
         </Field>
         <Input label="Pengalaman Mengemudi (Tahun)" type="number" min={0} placeholder="mis. 5" />
         <Field label="Spesialisasi Armada (opsional)">
-          <select name="specialization" className={SELECT_CLASS} defaultValue="">
-            <option value="">Semua jenis armada (fleksibel)</option>
-            {TOWING_FLEET_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <Select
+            name="specialization"
+            defaultValue=""
+            options={[
+              { value: '', label: 'Semua jenis armada (fleksibel)' },
+              ...TOWING_FLEET_TYPE_OPTIONS,
+            ]}
+          />
         </Field>
         <Field label="Status Sopir">
-          <select name="status" className={SELECT_CLASS} defaultValue="aktif">
-            <option value="aktif">Aktif</option>
-            <option value="on_duty">On Duty</option>
-            <option value="offline">Offline</option>
-          </select>
+          <Select
+            name="status"
+            defaultValue="aktif"
+            options={[
+              { value: 'aktif', label: 'Aktif' },
+              { value: 'on_duty', label: 'On Duty' },
+              { value: 'offline', label: 'Offline' },
+            ]}
+          />
         </Field>
         <Field label="Tanggal Bergabung">
           <Input type="date" />
         </Field>
 
-        <div className="space-y-4 rounded-xl border border-deep-blue-100 bg-white p-4">
+        <div className="border-deep-blue-100 space-y-4 rounded-xl border bg-white p-4">
           <div>
             <p className="text-14 font-semibold text-neutral-900">Akun Login Sopir</p>
             <p className="text-12 mt-1 text-neutral-600">

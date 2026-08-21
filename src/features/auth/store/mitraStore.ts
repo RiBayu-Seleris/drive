@@ -16,6 +16,20 @@ const ROLE_TO_TYPE: Record<string, MitraPartnerType> = {
   partner_workshop_admin: 'workshop',
 };
 
+/**
+ * Mitra yang pendaftarannya DITOLAK tidak diloloskan ke portal. Sejak ditolak,
+ * ikatan akun ke entitas (bengkel/armada) dilepas backend, sehingga setiap
+ * halaman portal hanya menghasilkan 403 — dashboard yang isinya pesan gagal
+ * semua lebih membingungkan daripada ditahan di layar masuk. Jalur yang benar
+ * adalah memperbaiki data lalu mengajukan ulang.
+ */
+export const PARTNER_REJECTED_MESSAGE =
+  'Pendaftaran mitra Anda ditolak. Perbaiki data mitra lalu ajukan ulang untuk ditinjau kembali.';
+
+export function isPartnerRejected(accountStatus: string): boolean {
+  return accountStatus.trim().toUpperCase() === 'REJECTED';
+}
+
 export function mitraTypeFromRole(role: string): MitraPartnerType | null {
   return ROLE_TO_TYPE[role] ?? null;
 }
@@ -90,6 +104,10 @@ export const useMitraStore = create<MitraState>((set) => ({
     const type = mitraTypeFromRole(outcome.role);
     if (!type) {
       set({ isLoading: false, error: 'Akun ini bukan mitra bengkel atau towing.' });
+      return false;
+    }
+    if (isPartnerRejected(outcome.accountStatus)) {
+      set({ isLoading: false, error: PARTNER_REJECTED_MESSAGE });
       return false;
     }
     const info: MitraInfo = { name: outcome.name, role: outcome.role, type, email };

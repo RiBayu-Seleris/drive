@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,6 +28,8 @@ import { normalizePlate, isValidPlate } from '@/features/vehicle-scan/utils/plat
 import { createVehicle, updateVehicle } from '../api';
 import { VEHICLE_TYPES, hasPolis, type SavedVehicle, type VehicleFormInput } from '../types';
 
+const currentYear = new Date().getFullYear();
+
 type PlateScanStatus = 'idle' | 'reading' | 'success' | 'failed';
 type InsuranceStatus = 'idle' | 'checking' | 'insured' | 'uninsured' | 'error';
 
@@ -41,6 +43,9 @@ export function VehicleFormPage() {
   const [plate, setPlate] = useState(initial?.vehiclePlate ?? '');
   const [name, setName] = useState(initial?.vehicleName ?? '');
   const [type, setType] = useState(initial?.vehicleType ?? VEHICLE_TYPES[0]);
+  const [color, setColor] = useState(initial?.vehicleColor ?? '');
+  // 0 dari backend berarti tahun belum pernah diisi → tampilkan kosong.
+  const [year, setYear] = useState(initial?.vehicleYear ? String(initial.vehicleYear) : '');
   const [proofPhoto, setProofPhoto] = useState<CapturedImage | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [plateError, setPlateError] = useState<string | null>(null);
@@ -253,7 +258,10 @@ export function VehicleFormPage() {
       let uploadedProof = initial?.plateImage ?? '';
       if (proofPhoto) {
         try {
-          uploadedProof = await services.upload.upload(proofPhoto.blob, `vehicle_plate_${vehiclePlate}`);
+          uploadedProof = await services.upload.upload(
+            proofPhoto.blob,
+            `vehicle_plate_${vehiclePlate}`,
+          );
         } catch (error) {
           toast.warning(
             extractErrorMessage(
@@ -268,6 +276,8 @@ export function VehicleFormPage() {
         vehiclePlate,
         vehicleName: name.trim(),
         vehicleType: type,
+        vehicleColor: color.trim(),
+        vehicleYear: year,
         vehicleRole: initial?.vehicleRole ?? 'private',
         polisNumber: resolvedCoverage?.insured ? resolvedCoverage.policyNumber : '-',
         polisEnd: resolvedCoverage?.insured ? resolvedCoverage.validUntil : '-',
@@ -292,8 +302,21 @@ export function VehicleFormPage() {
     }
   };
 
+  // Tahun opsional: hanya divalidasi kalau diisi.
+  const yearError = useMemo(() => {
+    if (!year.trim()) return '';
+    const value = Number(year);
+    if (!Number.isInteger(value) || value < 1980 || value > currentYear + 1) {
+      return `Tahun harus antara 1980-${currentYear + 1}.`;
+    }
+    return '';
+  }, [year]);
+
   const canSubmit =
-    name.trim().length > 0 && (isEdit || (plate.trim().length > 0 && Boolean(proofPhoto)));
+    name.trim().length > 0 &&
+    color.trim().length > 0 &&
+    !yearError &&
+    (isEdit || (plate.trim().length > 0 && Boolean(proofPhoto)));
   const isSaving =
     isUploading ||
     mutation.isPending ||
@@ -367,8 +390,9 @@ export function VehicleFormPage() {
         )}
 
         <Input
-          label="Nama Kendaraan"
-          placeholder="Mis. Toyota Avanza Hitam"
+          label="Nama / Merk Kendaraan"
+          requiredMark
+          placeholder="Mis. Toyota Avanza"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -391,6 +415,24 @@ export function VehicleFormPage() {
             ))}
           </div>
         </div>
+
+        <Input
+          label="Warna Kendaraan"
+          requiredMark
+          placeholder="Mis. Hitam"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+        <Input
+          label="Tahun Kendaraan"
+          hint="Opsional"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder={`Mis. ${currentYear}`}
+          value={year}
+          onChange={(e) => setYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          error={yearError || undefined}
+        />
 
         {isEdit ? (
           <VehicleProofPhotoField
@@ -445,8 +487,7 @@ function InsuranceDetectionPanel({
 }) {
   const checking = plateScanStatus === 'reading' || insuranceStatus === 'checking';
   const normalizedPlate = normalizePlate(plate);
-  const canCheck =
-    isValidPlate(normalizedPlate) && !checking && coveragePlate !== normalizedPlate;
+  const canCheck = isValidPlate(normalizedPlate) && !checking && coveragePlate !== normalizedPlate;
 
   let icon = <ShieldX className="size-5 text-neutral-500" />;
   let title = 'Status Asuransi Plat';

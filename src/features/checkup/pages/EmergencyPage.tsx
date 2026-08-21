@@ -2,8 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Logo } from '@/components/brand/Logo';
 import { ROUTES } from '@/app/routes';
-import { useDamageStore } from '@/features/damage/store/damageStore';
-import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 
 const OPTIONS = [
   {
@@ -34,16 +32,6 @@ const OPTIONS = [
 
 export function EmergencyPage() {
   const navigate = useNavigate();
-  const resetScan = useScanStore((s) => s.reset);
-  const setScanPurpose = useScanStore((s) => s.setScanPurpose);
-  const resetDamage = useDamageStore((s) => s.reset);
-
-  const startInsuranceScan = () => {
-    resetScan();
-    setScanPurpose('emergency_insurance');
-    resetDamage();
-    navigate(ROUTES.checkCondition);
-  };
 
   return (
     <PageContainer>
@@ -93,25 +81,6 @@ export function EmergencyPage() {
                 </button>
               );
             })}
-            <button type="button" onClick={startInsuranceScan}>
-              <div className="rounded-2xl border border-[#8695C0] bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex flex-col items-start gap-1">
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl">
-                    <img
-                      src="/assets/home/ajukan_klaim.svg"
-                      alt=""
-                      className="size-8 object-contain"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-deep-blue-600 mb-1 text-xs font-semibold">Asuransi</h3>
-                    <p className="text-[10px] text-gray-600">
-                      Scan kendaraan, lanjut jika 0% damage
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </button>
           </div>
         </div>
       </div>

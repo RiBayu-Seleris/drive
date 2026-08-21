@@ -6,6 +6,7 @@ import {
   NGROK_SKIP_BROWSER_WARNING_VALUE,
 } from '@/lib/api/headers';
 import { storage } from '@/lib/storage/storage';
+import { translateApiMessage } from '@/lib/api/errorMessages';
 
 interface TokenLike {
   access_token?: string;
@@ -32,9 +33,16 @@ interface ApiClient {
   setSessionExpiredHandler: (handler: (message: string) => void) => void;
 }
 
-/** Pesan siap-tampil saat sesi berakhir; kenali kasus "login di tempat lain". */
+/**
+ * Pesan siap-tampil saat sesi berakhir.
+ *
+ * Gateway mengirim kalimat spesifik untuk sebab yang diketahui — login di
+ * perangkat lain, pendaftaran ditolak admin, kata sandi baru diubah — dan
+ * semuanya memuat "sesi ini diakhiri" atau "perangkat lain". Sisanya (mis.
+ * token kedaluwarsa) tidak punya pesan yang berguna bagi user.
+ */
 function sessionEndedMessage(raw?: string): string {
-  if (raw && /perangkat lain/i.test(raw)) return raw;
+  if (raw && /(perangkat lain|sesi ini diakhiri)/i.test(raw)) return raw;
   return 'Sesi berakhir. Silakan login kembali.';
 }
 
@@ -181,10 +189,17 @@ export function extractErrorMessage(
 ): string {
   if (error instanceof AxiosError) {
     const data = error.response?.data as { stat_msg?: string; message?: string } | undefined;
-    if (data?.stat_msg) return data.stat_msg;
-    if (data?.message) return data.message;
+    // Pesan gateway diterjemahkan lebih dulu: yang teknis (mis. "internal
+    // server error", "user already exists") diganti kalimat yang bisa dipahami
+    // user, yang sudah siap-tampil diteruskan apa adanya.
+    const translated = translateApiMessage(data?.stat_msg ?? data?.message);
+    if (translated) return translated;
     if (error.code === 'ECONNABORTED') return 'Koneksi timeout. Periksa jaringan Anda.';
     if (error.message === 'Network Error') return 'Tidak dapat terhubung ke server.';
+    // Error jaringan lain (mis. CORS, DNS) tidak punya pesan yang berguna bagi
+    // user; jangan tampilkan pesan mentah dari Axios.
+    if (!error.response) return 'Tidak dapat terhubung ke server.';
+    return fallback;
   }
   if (error instanceof Error && error.message) return error.message;
   return fallback;

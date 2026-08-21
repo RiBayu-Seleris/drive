@@ -7,7 +7,7 @@ import { ROUTES } from '@/app/routes';
 import { getAccuratePosition, type GeoPosition } from '@/lib/geo/geolocation';
 import { reverseGeocode } from '@/lib/geo/nominatim';
 import { CameraCapture } from '@/features/vehicle-scan/components/CameraCapture';
-import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
+import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import type { CapturedImage, VehicleSideId } from '@/features/vehicle-scan/types';
 
 const SIDE_IMAGE: Record<VehicleSideId, string> = {
@@ -54,7 +54,8 @@ export function VehicleSidesPage() {
   const [position, setPosition] = useState<GeoPosition | null>(null);
   const [locationLabel, setLocationLabel] = useState('Mendeteksi lokasi...');
   const current = sides[currentIndex];
-  const insuranceMode = scanPurpose === 'emergency_insurance';
+  // Alur foto 4 sisi berlaku untuk kedua jalur asuransi (beli & darurat).
+  const insuranceMode = isInsuranceScan(scanPurpose);
   const vehicleTitle = useMemo(() => {
     const base = vehicleInfo.brandModel.trim() || 'Kendaraan belum teridentifikasi';
     return plate.number ? `${base} (${plate.number})` : base;

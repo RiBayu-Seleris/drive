@@ -20,10 +20,20 @@ export async function getDriverTasks(): Promise<DriverTask[]> {
     .map(parseDriverTask);
 }
 
-export async function updateDriverTaskStatus(code: string, status: string): Promise<string> {
+/**
+ * Majukan status perjalanan sopir.
+ *
+ * Kedua foto bukti wajib saat status DROPPED_OFF — dua sudut serong yang dilihat
+ * user dan dicocokkan admin bengkel. Backend menolak bila salah satu kosong.
+ */
+export async function updateDriverTaskStatus(
+  code: string,
+  status: string,
+  proof?: { front: string; rear: string },
+): Promise<string> {
   const res = await driverApi.post<{ data?: { status?: string } }>(
     `/v1/admin/driver/towing-orders/${encodeURIComponent(code)}/status`,
-    { status },
+    { status, proof_photo: proof?.front ?? '', proof_photo_rear: proof?.rear ?? '' },
   );
   return res.data?.data?.status ?? status;
 }

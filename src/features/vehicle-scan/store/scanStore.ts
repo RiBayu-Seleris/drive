@@ -6,7 +6,20 @@ import { normalizePlate } from '../utils/plate';
 import type { InsuranceCoverage } from '../services/types';
 
 export type InsuranceStatus = 'idle' | 'checking' | 'insured' | 'not_insured' | 'error';
-export type ScanPurpose = 'standard' | 'emergency_insurance';
+/**
+ * Asal-usul pemindaian. Menentukan alur foto, judul layar, dan perlakuan hasil.
+ *
+ * Bantuan Darurat dulu juga memulai pemindaian kelayakan asuransi, tapi
+ * pintasannya sudah diganti jadi "Ajukan Klaim" — membeli polis untuk kendaraan
+ * yang baru saja rusak memang tidak masuk akal. Tersisa dua asal: cek kondisi
+ * biasa, dan penilaian kelayakan sebelum membeli polis.
+ */
+export type ScanPurpose = 'standard' | 'insurance_purchase';
+
+/** Pemindaian untuk menilai kelayakan asuransi (foto 4 sisi wajib). */
+export function isInsuranceScan(purpose: ScanPurpose): boolean {
+  return purpose === 'insurance_purchase';
+}
 
 interface PlateState {
   image: CapturedImage | null;
@@ -24,6 +37,8 @@ export interface VehicleScanInfo {
   brandModel: string;
   color: string;
   year: string;
+  /** Jenis kendaraan (Mobil/Motor/SUV/…), disamakan dengan kendaraan tersimpan. */
+  type: string;
 }
 
 /** Kendaraan tersimpan yang dipilih user di awal alur cek (untuk prefill data & verifikasi plat). */
@@ -39,11 +54,21 @@ interface ScanState {
   insuranceStatus: InsuranceStatus;
   insuranceCoverage: InsuranceCoverage | null;
   scanPurpose: ScanPurpose;
+  /**
+   * Kode produk yang sedang dibeli saat user dilempar ke alur pemindaian.
+   *
+   * Halaman pembelian menerima produknya lewat state router, dan state itu
+   * musnah begitu berpindah halaman. Tanpa disimpan di sini, user yang selesai
+   * memindai tidak punya jalan kembali ke produk yang tadi dipilihnya — ia
+   * harus mencari dan memilih ulang dari daftar.
+   */
+  pendingProductCode: string | null;
   sides: VehicleSideState[];
   currentSideIndex: number;
 
   reset: () => void;
   setScanPurpose: (purpose: ScanPurpose) => void;
+  setPendingProductCode: (code: string | null) => void;
   setVehicleInfo: (info: VehicleScanInfo) => void;
   setSelectedVehicle: (vehicle: SelectedVehicle | null) => void;
   setPlateImage: (image: CapturedImage | null) => void;
@@ -98,7 +123,7 @@ function clearStoredPlate() {
 }
 
 function emptyVehicleInfo(): VehicleScanInfo {
-  return { brandModel: '', color: '', year: '' };
+  return { brandModel: '', color: '', year: '', type: '' };
 }
 
 function storedVehicleInfo(): VehicleScanInfo {
@@ -108,6 +133,7 @@ function storedVehicleInfo(): VehicleScanInfo {
     brandModel: typeof value.brandModel === 'string' ? value.brandModel : '',
     color: typeof value.color === 'string' ? value.color : '',
     year: typeof value.year === 'string' ? value.year : '',
+    type: typeof value.type === 'string' ? value.type : '',
   };
 }
 
@@ -121,6 +147,7 @@ export const useScanStore = create<ScanState>((set) => ({
   insuranceStatus: initialInsuranceCoverage ? 'insured' : 'idle',
   insuranceCoverage: initialInsuranceCoverage,
   scanPurpose: 'standard',
+  pendingProductCode: null,
   sides: freshSides(),
   currentSideIndex: 0,
 
@@ -134,15 +161,20 @@ export const useScanStore = create<ScanState>((set) => ({
       selectedVehicle: state.selectedVehicle,
       insuranceStatus: 'idle',
       insuranceCoverage: null,
-      // Tujuan scan (standard / emergency_insurance) ditetapkan saat masuk alur dan
+      // Tujuan scan (standard / insurance_purchase) ditetapkan saat masuk alur dan
       // harus bertahan melewati reset() antar-halaman agar mode asuransi tak hilang.
       scanPurpose: state.scanPurpose,
+      // Alasan yang sama: halaman scan memanggil reset() saat mount, dan produk
+      // yang sedang dibeli harus tetap diingat sampai pemindaiannya selesai.
+      pendingProductCode: state.pendingProductCode,
       sides: freshSides(),
       currentSideIndex: 0,
     }));
   },
 
   setScanPurpose: (purpose) => set({ scanPurpose: purpose }),
+
+  setPendingProductCode: (code) => set({ pendingProductCode: code }),
 
   setSelectedVehicle: (vehicle) => set({ selectedVehicle: vehicle }),
 
@@ -151,6 +183,7 @@ export const useScanStore = create<ScanState>((set) => ({
       brandModel: info.brandModel.trim(),
       color: info.color.trim(),
       year: info.year.trim(),
+      type: info.type.trim(),
     };
     storage.setJSON(STORAGE_KEYS.lastScanVehicleInfo, normalized);
     set({ vehicleInfo: normalized });

@@ -258,6 +258,7 @@ export async function analyzeDamage(submission: DamageSubmission): Promise<Damag
   const payload: Record<string, string> = {
     vehicle_plate: submission.plateNumber?.trim().toUpperCase() ?? '',
     plate_image: await uploadFilePublic(submission.plateImage, 'plate.jpg'),
+    scan_purpose: submission.purpose ?? 'standard',
   };
   for (const side of photographed) {
     const field = SIDE_TO_FIELD[side.id];

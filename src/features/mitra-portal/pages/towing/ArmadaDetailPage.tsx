@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Calendar,
   CheckCircle2,
@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { LoadingState } from '@/components/ui/Spinner';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
+import { cn } from '@/lib/utils/cn';
+import { buildPath } from '@/app/routes';
 import { MitraShell } from '../../components/MitraShell';
 import {
   fleetStatusLabel,
@@ -22,6 +25,8 @@ import {
   getMitraTowingFleets,
   getMitraTowingOrders,
   towingStatusLabel,
+  updateMitraTowingFleet,
+  TOWING_FLEET_STATUS_OPTIONS,
   type MitraTowingFleet,
   type MitraTowingOrder,
 } from '../../api';
@@ -84,7 +89,9 @@ function buildArmadaView(fleet: MitraTowingFleet, orders: MitraTowingOrder[]): A
     statusLabel: fleetStatusLabel(fleet.status),
     lastSeen: fleet.lastSeenAt ? timeLabel(fleet.lastSeenAt) : 'Belum ada update lokasi',
     driverName: latestOrder?.driverFullname || 'Belum ditugaskan',
-    driverSince: latestOrder ? `Order terakhir ${timeLabel(latestOrder.requestedAt)}` : 'Belum ada order',
+    driverSince: latestOrder
+      ? `Order terakhir ${timeLabel(latestOrder.requestedAt)}`
+      : 'Belum ada order',
     trips: orders.slice(0, 5).map((order) => ({
       id: String(order.id),
       route: routeLabel(order),
@@ -99,11 +106,14 @@ function buildArmadaView(fleet: MitraTowingFleet, orders: MitraTowingOrder[]): A
 
 /** Detail armada: kondisi, riwayat, pengemudi utama, lokasi. */
 export function ArmadaDetailPage() {
+  const navigate = useNavigate();
   const { id = '' } = useParams();
   const fleetID = Number(id);
   const [fleets, setFleets] = useState<MitraTowingFleet[]>([]);
   const [orders, setOrders] = useState<MitraTowingOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [savingStatus, setSavingStatus] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -153,6 +163,39 @@ export function ArmadaDetailPage() {
 
   const available = fleet.isActive && fleet.status === 'AVAILABLE';
 
+  /**
+   * Ubah status unit. Endpoint PUT menimpa seluruh kolom, jadi seluruh nilai
+   * armada dikirim ulang — termasuk koordinat terakhir — agar tidak terhapus.
+   */
+  const changeStatus = async (status: string) => {
+    if (status === fleet.status) {
+      setStatusSheetOpen(false);
+      return;
+    }
+    setSavingStatus(status);
+    try {
+      await updateMitraTowingFleet(fleet.id, {
+        plateNumber: fleet.plateNumber,
+        fleetType: fleet.fleetType,
+        capacityLabel: fleet.capacityLabel,
+        photoUrl: fleet.photoUrl,
+        status,
+        isActive: fleet.isActive,
+        lastLatitude: fleet.lastLatitude,
+        lastLongitude: fleet.lastLongitude,
+      });
+      setFleets((current) =>
+        current.map((item) => (item.id === fleet.id ? { ...item, status } : item)),
+      );
+      setStatusSheetOpen(false);
+      toast.success(`Status unit diubah ke ${fleetStatusLabel(status)}.`);
+    } catch (error) {
+      toast.error(extractErrorMessage(error, 'Gagal memperbarui status armada.'));
+    } finally {
+      setSavingStatus('');
+    }
+  };
+
   return (
     <MitraShell>
       <AppHeader showLogo />
@@ -178,10 +221,13 @@ export function ArmadaDetailPage() {
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={() => toast.info('Ubah data kendaraan segera hadir.')}>
+          <Button
+            variant="outline"
+            onClick={() => navigate(buildPath.mitraArmadaEdit(String(fleetID)))}
+          >
             Edit Kendaraan
           </Button>
-          <Button onClick={() => toast.info('Perbarui status segera hadir.')}>Update Status</Button>
+          <Button onClick={() => setStatusSheetOpen(true)}>Update Status</Button>
         </div>
 
         {/* Spesifikasi */}
@@ -297,11 +343,63 @@ export function ArmadaDetailPage() {
           </p>
         </div>
       </div>
+
+      <Modal
+        open={statusSheetOpen}
+        onClose={() => setStatusSheetOpen(false)}
+        title="Status Unit"
+        variant="sheet"
+      >
+        <p className="text-12 mb-3 text-neutral-500">
+          Status menentukan apakah armada ini bisa dipilih saat penugasan order.
+        </p>
+        <div className="space-y-2">
+          {TOWING_FLEET_STATUS_OPTIONS.map((option) => {
+            const active = fleet.status === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                disabled={Boolean(savingStatus)}
+                onClick={() => void changeStatus(option.value)}
+                className={cn(
+                  'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition disabled:opacity-60',
+                  active
+                    ? 'border-deep-blue-500 bg-deep-blue-50'
+                    : 'border-neutral-200 hover:bg-neutral-50',
+                )}
+              >
+                <span
+                  className={cn(
+                    'text-14 font-semibold',
+                    active ? 'text-deep-blue-600' : 'text-neutral-800',
+                  )}
+                >
+                  {option.label}
+                </span>
+                {savingStatus === option.value ? (
+                  <span className="text-12 text-neutral-500">Menyimpan…</span>
+                ) : (
+                  active && <CheckCircle2 className="text-deep-blue-500 size-5" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Modal>
     </MitraShell>
   );
 }
 
-function SpecTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+function SpecTile({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-2xl bg-white p-3 shadow-sm">
       <Icon className="text-deep-blue-500 size-4" />

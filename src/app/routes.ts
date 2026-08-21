@@ -14,6 +14,14 @@ export const ROUTES = {
   loginSopir: '/login/sopir',
   activate: '/activate',
   register: '/register',
+  /** Input kode OTP email; email tujuan dibawa lewat state navigasi. */
+  verifyEmail: '/verify-email',
+  registerSuccess: '/register-success',
+  forgotPassword: '/forgot-password',
+  /** Langkah 1: masukkan kode; email dibawa lewat state navigasi. */
+  verifyResetCode: '/forgot-password/verify',
+  /** Langkah 2: kata sandi baru; email + token dibawa lewat state navigasi. */
+  resetPassword: '/forgot-password/new-password',
   mitraRegister: '/register/mitra',
   mitraResubmit: '/register/mitra/resubmit',
 
@@ -57,9 +65,9 @@ export const ROUTES = {
   // Asuransi & klaim
   insuranceSearch: '/insurance/search',
   insuranceDetail: '/insurance/detail',
-	insurancePurchase: '/insurance/purchase',
-	insurancePolicies: '/insurance/policies',
-	insurancePolicyDetail: '/insurance/policies/:policyNumber',
+  insurancePurchase: '/insurance/purchase',
+  insurancePolicies: '/insurance/policies',
+  insurancePolicyDetail: '/insurance/policies/:policyNumber',
   claims: '/claims',
   claimInsuranceData: '/claim/insurance-data',
   claimSelectPolicy: '/claim/select-policy',
@@ -91,7 +99,9 @@ export const ROUTES = {
   mitraArmada: '/mitra/armada',
   mitraArmadaTambah: '/mitra/armada/tambah',
   mitraArmadaDetail: '/mitra/armada/:id',
+  mitraArmadaEdit: '/mitra/armada/:id/edit',
   mitraKemitraan: '/mitra/kemitraan',
+  mitraBengkelKemitraan: '/mitra/bengkel/kemitraan',
   mitraOrder: '/mitra/order',
   mitraOrderTerima: '/mitra/order/diterima',
   mitraOrderTracking: '/mitra/order/tracking',
@@ -125,8 +135,9 @@ export const buildPath = {
     partner ? `/register/mitra?partner=${encodeURIComponent(partner)}` : '/register/mitra',
   mitraSopirDetail: (id: string) => `/mitra/sopir/${encodeURIComponent(id)}`,
   mitraArmadaDetail: (id: string) => `/mitra/armada/${encodeURIComponent(id)}`,
+  mitraArmadaEdit: (id: string) => `/mitra/armada/${encodeURIComponent(id)}/edit`,
   mitraLaporanDetail: (id: string) => `/mitra/laporan/${encodeURIComponent(id)}`,
-	mitraWorkshopJobDetail: (id: string) => `/mitra/workshop/jobs/${encodeURIComponent(id)}`,
-	insurancePolicyDetail: (policyNumber: string) =>
-		`/insurance/policies/${encodeURIComponent(policyNumber)}`,
+  mitraWorkshopJobDetail: (id: string) => `/mitra/workshop/jobs/${encodeURIComponent(id)}`,
+  insurancePolicyDetail: (policyNumber: string) =>
+    `/insurance/policies/${encodeURIComponent(policyNumber)}`,
 };

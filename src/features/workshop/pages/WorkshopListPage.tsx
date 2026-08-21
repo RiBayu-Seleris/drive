@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Star, Wrench } from 'lucide-react';
+import { AlertTriangle, Search, ShieldCheck, Star, Wrench } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { LoadingState } from '@/components/ui/Spinner';
@@ -9,6 +9,7 @@ import { ErrorState, EmptyState } from '@/components/feedback/StateViews';
 import { DEFAULT_LOCATION } from '@/config/constants';
 import { buildPath } from '@/app/routes';
 import { cn } from '@/lib/utils/cn';
+import { confirm } from '@/components/feedback/confirm';
 import { getRecommendations, type RecommendationPlace } from '../api';
 
 export function WorkshopListPage() {
@@ -41,6 +42,39 @@ export function WorkshopListPage() {
     );
   }, [data, searchQuery]);
 
+  /**
+   * Saat datang dari klaim, daftar dipecah dua bertajuk — bukan sekadar diberi
+   * chip kecil. Salah pilih di sini selisihnya jutaan rupiah, jadi batas antara
+   * "ditanggung" dan "bayar sendiri" harus terlihat sebelum user menggulir,
+   * bukan setelah dia membaca detail kartu.
+   */
+  const [partnerPlaces, otherPlaces] = useMemo(() => {
+    if (!claimNumber) return [filteredData, [] as RecommendationPlace[]];
+    return [
+      filteredData.filter((place) => place.isInsurerPartner),
+      filteredData.filter((place) => !place.isInsurerPartner),
+    ];
+  }, [filteredData, claimNumber]);
+
+  /** Memilih bengkel di luar rekanan wajib melewati konfirmasi biaya. */
+  const handleSelect = async (place: RecommendationPlace) => {
+    if (claimNumber && !place.isInsurerPartner) {
+      const lanjut = await confirm({
+        title: 'Biaya jadi tanggungan Anda',
+        message:
+          `${place.name} bukan rekanan asuransi Anda. Klaim tidak berlaku di bengkel ini, ` +
+          'sehingga seluruh biaya perbaikan Anda bayar sendiri. Lanjutkan ke bengkel ini?',
+        confirmText: 'Ya, saya bayar sendiri',
+        cancelText: 'Pilih bengkel rekanan',
+        tone: 'danger',
+      });
+      if (!lanjut) return;
+    }
+    navigate(buildPath.workshopDetail(String(place.id)), {
+      state: { place, claimNumber },
+    });
+  };
+
   return (
     <PageContainer>
       <AppHeader showLogo />
@@ -50,11 +84,9 @@ export function WorkshopListPage() {
             Rekomendasi Bengkel untuk Kendaraan Anda
           </h1>
           <p className="text-[14px] leading-relaxed text-gray-600">
-            {/* {claimNumber
-              ? 'Bengkel rekanan asuransi ditampilkan lebih dahulu, kemudian diurutkan berdasarkan jarak dan rating.'
-              : 'Pilih bengkel terdekat dan terpercaya untuk memperbaiki kerusakan mobil Anda'} */}
-            Berikut adalah rekomendasi bengkel terdekat dan terpercaya untuk memperbaiki kerusakan
-            mobil Anda.
+            {claimNumber
+              ? 'Biaya perbaikan hanya ditanggung di bengkel rekanan asuransi Anda. Bengkel lain tetap bisa dipilih, tapi biayanya Anda bayar sendiri.'
+              : 'Berikut adalah rekomendasi bengkel terdekat dan terpercaya untuk memperbaiki kerusakan mobil Anda.'}
           </p>
         </div>
 
@@ -91,16 +123,35 @@ export function WorkshopListPage() {
           />
         ) : (
           <div className="mx-auto flex h-auto w-full max-w-2xl flex-col gap-y-5">
-            {filteredData.map((place) => (
-              <WorkshopCard
-                key={place.id}
-                place={place}
-                onClick={() =>
-                  navigate(buildPath.workshopDetail(String(place.id)), {
-                    state: { place, claimNumber },
-                  })
-                }
-              />
+            {claimNumber && partnerPlaces.length > 0 && (
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
+                <ShieldCheck className="size-4 shrink-0 text-emerald-700" />
+                <p className="text-[12px] font-semibold text-emerald-800">
+                  Rekanan asuransi Anda — biaya ditanggung klaim
+                </p>
+              </div>
+            )}
+            {partnerPlaces.map((place) => (
+              <WorkshopCard key={place.id} place={place} onClick={() => void handleSelect(place)} />
+            ))}
+
+            {claimNumber && otherPlaces.length > 0 && (
+              <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="size-4 shrink-0 text-amber-700" />
+                  <p className="text-[12px] font-bold text-amber-900">
+                    Di luar rekanan — Anda bayar sendiri
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] leading-4 text-amber-800">
+                  Klaim asuransi tidak berlaku di bengkel-bengkel berikut.
+                </p>
+              </div>
+            )}
+            {otherPlaces.map((place) => (
+              <div key={place.id} className="rounded-xl border-l-4 border-amber-400 pl-1">
+                <WorkshopCard place={place} onClick={() => void handleSelect(place)} />
+              </div>
             ))}
           </div>
         )}

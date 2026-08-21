@@ -9,10 +9,31 @@ import { confirm } from '@/components/feedback/confirm';
 import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES } from '@/app/routes';
 import { CameraCapture } from '@/features/vehicle-scan/components/CameraCapture';
-import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
+import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import type { CapturedImage } from '@/features/vehicle-scan/types';
 import { analyzeDamage } from '@/features/damage/api/damageApi';
 import { useDamageStore } from '@/features/damage/store/damageStore';
+
+/**
+ * Sidik jari isi pemindaian: plat + foto plat + foto tiap sisi.
+ *
+ * Memakai `url` (object URL) tiap foto, bukan isinya. Object URL dibuat sekali
+ * per pengambilan gambar, jadi memotret ulang satu sisi saja sudah mengubah
+ * sidik jarinya — persis yang diinginkan: analisis ulang hanya bila memang ada
+ * yang berubah. Membandingkan isi blob akan jauh lebih mahal tanpa hasil yang
+ * lebih benar.
+ */
+function scanSignature(
+  plateNumber: string | null,
+  plateImage: CapturedImage | null,
+  sides: Array<{ id: string; damaged: boolean | null; photo?: CapturedImage | null }>,
+): string {
+  const parts = [plateNumber ?? '', plateImage?.url ?? ''];
+  for (const side of sides) {
+    parts.push(`${side.id}:${side.damaged ?? ''}:${side.photo?.url ?? ''}`);
+  }
+  return parts.join('|');
+}
 
 export function PreviewVehiclePage() {
   const navigate = useNavigate();
@@ -24,11 +45,14 @@ export function PreviewVehiclePage() {
   const clearSidePhoto = useScanStore((s) => s.clearSidePhoto);
   const setResult = useDamageStore((s) => s.setResult);
   const setAnalyzing = useDamageStore((s) => s.setAnalyzing);
+  const lastResult = useDamageStore((s) => s.result);
+  const lastSignature = useDamageStore((s) => s.analyzedSignature);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [selectedSide, setSelectedSide] = useState<number | null>(null);
   const [pendingCapture, setPendingCapture] = useState<CapturedImage | null>(null);
-  const insuranceMode = scanPurpose === 'emergency_insurance';
+  // Alur foto 4 sisi berlaku untuk kedua jalur asuransi (beli & darurat).
+  const insuranceMode = isInsuranceScan(scanPurpose);
 
   // Refresh halaman menghapus scan state (plat + foto) karena store hanya di
   // memori. Samakan dengan webapp lama: beri tahu lalu wajib foto plat dari awal.
@@ -58,6 +82,18 @@ export function PreviewVehiclePage() {
       return;
     }
 
+    // Foto yang persis sama tidak dianalisis ulang.
+    //
+    // Tombol ini dulu selalu mengirim ulang, jadi user yang bolak-balik
+    // melihat hasilnya (hasil → kembali → hasil) melahirkan pemindaian baru
+    // tiap kali — satu kendaraan menumpuk belasan catatan identik, dan tiap
+    // pengulangan membebani layanan AI tanpa menghasilkan apa pun yang baru.
+    const signature = scanSignature(plate.number, plate.image, sides);
+    if (lastResult && lastSignature && lastSignature === signature) {
+      navigate(ROUTES.damageAnalysis);
+      return;
+    }
+
     setIsSubmitting(true);
     setAnalyzing(true);
     try {
@@ -65,8 +101,9 @@ export function PreviewVehiclePage() {
         plateNumber: plate.number,
         plateImage: plate.image?.blob ?? null,
         sides: sides.map((s) => ({ id: s.id, damaged: s.damaged, image: s.photo?.blob ?? null })),
+        purpose: scanPurpose,
       });
-      setResult(result);
+      setResult(result, signature);
       if (insuranceMode && result.repair.percentage <= 0) {
         navigate(ROUTES.insuranceSearch, { state: { requiresDamageFreeScan: true } });
       } else {

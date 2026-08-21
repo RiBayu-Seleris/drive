@@ -8,6 +8,7 @@ import { toast } from '@/components/feedback/toast';
 import { ROUTES } from '@/app/routes';
 import { registerSchema, type RegisterValues } from '../schemas';
 import { useAuthStore } from '../store/authStore';
+import type { VerifyEmailState } from './VerifyEmailPage';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -30,13 +31,29 @@ export function RegisterPage() {
     : ROUTES.loginUser;
 
   const onSubmit = handleSubmit(async (values) => {
-    const ok = await registerUser(values);
-    if (ok) {
-      toast.success('Registrasi berhasil. Silakan masuk.');
-      navigate(loginHref, { replace: true });
-    } else {
+    const result = await registerUser(values);
+    if (!result.ok) {
       toast.error(useAuthStore.getState().error ?? 'Registrasi gagal. Coba lagi.');
+      return;
     }
+
+    if (result.needsVerification) {
+      // Kode verifikasi dikirim saat register; layar berikutnya yang memintanya.
+      // Verifikasi berhasil = langsung masuk, jadi tidak perlu login manual lagi.
+      const state: VerifyEmailState = {
+        email: values.email,
+        redirect: redirectTo,
+        otpSent: result.otpSent,
+      };
+      if (!result.otpSent) {
+        toast.error('Kode verifikasi gagal dikirim. Gunakan tombol kirim ulang.');
+      }
+      navigate(ROUTES.verifyEmail, { replace: true, state });
+      return;
+    }
+
+    toast.success('Registrasi berhasil. Silakan masuk.');
+    navigate(loginHref, { replace: true });
   });
 
   return (

@@ -32,6 +32,13 @@ const envSchema = z.object({
     envString,
     z.string().url('VITE_OSRM_BASE_URL harus URL valid').default('https://router.project-osrm.org'),
   ),
+  /**
+   * URL Backoffice. Mitra ASURANSI mendaftar lewat aplikasi ini tapi masuknya
+   * lewat BO (portal mitra di sini hanya untuk towing & bengkel), jadi setelah
+   * setel ulang kata sandi mereka perlu diarahkan ke sana. Kosong = tanpa
+   * tautan, cukup ditampilkan sebagai keterangan.
+   */
+  VITE_BACKOFFICE_URL: z.preprocess(envString, z.string().url().optional()),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
@@ -61,5 +68,7 @@ export const env = {
   selerisUploadUrl: data.VITE_SELERIS_UPLOAD_URL,
   /** Server OSRM untuk rute mengikuti jalan (lihat lib/geo/osrm.ts). */
   osrmBaseUrl: data.VITE_OSRM_BASE_URL.replace(/\/+$/, ''),
+  /** URL Backoffice, tempat mitra asuransi masuk. Kosong bila belum dikonfigurasi. */
+  backofficeUrl: data.VITE_BACKOFFICE_URL?.replace(/\/+$/, ''),
   isDev: import.meta.env.DEV,
 } as const;

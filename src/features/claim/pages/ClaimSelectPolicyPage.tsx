@@ -56,9 +56,28 @@ function formatShortDate(value: string | undefined): string {
   }).format(date);
 }
 
-type PolicyViewState = 'active' | 'soon' | 'expired' | 'inactive';
+type PolicyViewState = 'active' | 'soon' | 'scheduled' | 'expired' | 'inactive';
+
+/**
+ * Polis sudah dibayar tapi masa tunggu produknya belum lewat.
+ *
+ * Status diperiksa DAN tanggalnya juga: status bisa tertinggal SCHEDULED sampai
+ * worker di gateway menaikkannya, dan sebaliknya status ACTIVE tanpa cek tanggal
+ * pernah membuat polis terbaca siap diklaim sejak menit pembayaran.
+ *
+ * Polis PENDING sengaja tidak masuk sini walau tanggal mulainya di depan —
+ * preminya memang belum dibayar, jadi tempatnya di 'inactive'.
+ */
+function isWaitingToStart(policy: InsurancePolicy): boolean {
+  const status = policy.status.toUpperCase();
+  if (status === 'SCHEDULED') return true;
+  if (status !== 'ACTIVE') return false;
+  const startsAt = parsePolicyDate(policy.startedAt);
+  return startsAt !== null && startsAt.getTime() > Date.now();
+}
 
 function policyViewState(policy: InsurancePolicy): PolicyViewState {
+  if (isWaitingToStart(policy)) return 'scheduled';
   if (policy.status.toUpperCase() !== 'ACTIVE') return 'inactive';
   const remainingDays = daysUntil(parsePolicyDate(policy.endedAt));
   if (remainingDays !== null && remainingDays < 0) return 'expired';
@@ -72,10 +91,12 @@ function policyRank(policy: InsurancePolicy): number {
       return 0;
     case 'active':
       return 1;
-    case 'expired':
+    case 'scheduled':
       return 2;
-    case 'inactive':
+    case 'expired':
       return 3;
+    case 'inactive':
+      return 4;
   }
 }
 
@@ -268,6 +289,7 @@ function PolicyCard({
 }) {
   const state = policyViewState(policy);
   const claimable = state === 'active' || state === 'soon';
+  const scheduled = state === 'scheduled';
   const provider = providerName(policy);
   const badge = policyBadge(state);
 
@@ -297,9 +319,11 @@ function PolicyCard({
 
       <dl className="mt-6 grid grid-cols-2 gap-x-5 gap-y-6 border-b border-neutral-300 pb-5">
         <div>
-          <dt className="text-[13px] text-neutral-500">Tanggal Berakhir</dt>
+          <dt className="text-[13px] text-neutral-500">
+            {scheduled ? 'Mulai Berlaku' : 'Tanggal Berakhir'}
+          </dt>
           <dd className="mt-1 text-[15px] font-semibold text-neutral-900">
-            {formatShortDate(policy.endedAt)}
+            {formatShortDate(scheduled ? policy.startedAt : policy.endedAt)}
           </dd>
         </div>
         <div>
@@ -322,13 +346,33 @@ function PolicyCard({
             {formatCurrency(policy.coverageAmount)}
           </p>
         </div>
-        <Button
-          fullWidth={false}
-          className="h-12 min-w-[112px] rounded-full px-7 text-[15px] shadow-[0_10px_22px_rgb(75_97_161_/_0.28)]"
-          onClick={claimable ? onClaim : onBuyAgain}
-        >
-          {claimable ? 'Klaim' : 'Beli Lagi'}
-        </Button>
+        {scheduled ? (
+          /*
+           * Tombolnya dimatikan, bukan diganti "Beli Lagi": preminya sudah
+           * dibayar, jadi menawarkan pembelian ulang membuat pemegang polis
+           * mengira pembeliannya gagal. Yang belum hanya tanggalnya.
+           */
+          <div className="shrink-0 text-right">
+            <Button
+              fullWidth={false}
+              disabled
+              className="h-12 min-w-[112px] rounded-full px-7 text-[15px]"
+            >
+              Klaim
+            </Button>
+            <p className="mt-2 text-[12px] text-neutral-600">
+              Bisa diklaim mulai {formatShortDate(policy.startedAt)}
+            </p>
+          </div>
+        ) : (
+          <Button
+            fullWidth={false}
+            className="h-12 min-w-[112px] rounded-full px-7 text-[15px] shadow-[0_10px_22px_rgb(75_97_161_/_0.28)]"
+            onClick={claimable ? onClaim : onBuyAgain}
+          >
+            {claimable ? 'Klaim' : 'Beli Lagi'}
+          </Button>
+        )}
       </div>
     </article>
   );
@@ -341,6 +385,8 @@ function policyBadge(state: PolicyViewState): { label: string; className: string
       return { label: 'SEGERA BERAKHIR', className: cn(base, 'bg-[#fff5df] text-[#f6a300]') };
     case 'active':
       return { label: 'AKTIF', className: cn(base, 'bg-[#e9fbf2] text-[#35bf78]') };
+    case 'scheduled':
+      return { label: 'BELUM MULAI', className: cn(base, 'bg-[#eaf1fb] text-[#4b61a1]') };
     case 'expired':
       return { label: 'PROTEKSI BERAKHIR', className: cn(base, 'bg-neutral-400 text-neutral-800') };
     case 'inactive':

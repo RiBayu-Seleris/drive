@@ -63,6 +63,7 @@ function parseBankAccount(value: unknown): BankAccount {
   return {
     id: str(json.id),
     bank: str(json.bank),
+    bankCode: str(json.bank_code),
     number: str(json.number),
     holder: str(json.holder),
   };
@@ -169,11 +170,13 @@ export async function getMitraBankAccounts(): Promise<BankAccount[]> {
 
 export async function createMitraBankAccount(args: {
   bank: string;
+  bankCode: string;
   number: string;
   holder: string;
 }): Promise<BankAccount> {
   const res = await mitraApi.post('/v1/admin/mitra-bank-accounts', {
     bank: args.bank,
+    bank_code: args.bankCode,
     number: args.number,
     holder: args.holder,
   });
@@ -189,4 +192,31 @@ export async function requestMitraWithdrawal(args: {
     amount: args.amount,
     client_request_id: `withdraw-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
   });
+}
+
+/** Satu bank tujuan transfer, dari daftar resmi penyedia pembayaran. */
+export interface DisbursementBank {
+  name: string;
+  code: string;
+}
+
+/**
+ * Daftar bank tujuan transfer.
+ *
+ * Diambil dari server (yang mengambilnya dari penyedia pembayaran), bukan
+ * daftar tetap di aplikasi: bank yang tidak dikenal penyedia berarti uang gagal
+ * terkirim justru setelah mitra selesai bekerja.
+ */
+export async function getDisbursementBanks(): Promise<DisbursementBank[]> {
+  const res = await mitraApi.get<{ data?: { banks?: unknown } }>(
+    '/v1/admin/mitra-bank-accounts/banks',
+  );
+  const list = res.data?.data?.banks;
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      const json = asRecord(item);
+      return { name: str(json.name), code: str(json.code) };
+    })
+    .filter((bank) => bank.code !== '' && bank.name !== '');
 }

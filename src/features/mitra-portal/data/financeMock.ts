@@ -104,8 +104,14 @@ export const MITRA_SALDO_TX: SaldoTx[] = [
 ];
 
 export const MITRA_BANK_ACCOUNTS: BankAccount[] = [
-  { id: 'bca-main', bank: 'BCA', number: '1234567890', holder: 'PT Towing Sejahtera' },
-  { id: 'mandiri-ops', bank: 'Mandiri', number: '1400012345678', holder: 'PT Towing Sejahtera' },
+  { id: 'bca-main', bank: 'BCA', bankCode: 'BCA', number: '1234567890', holder: 'PT Towing Sejahtera' },
+  {
+    id: 'mandiri-ops',
+    bank: 'Mandiri',
+    bankCode: 'MANDIRI',
+    number: '1400012345678',
+    holder: 'PT Towing Sejahtera',
+  },
 ];
 
 /** Ringkasan kinerja laporan (kartu hero halaman Laporan). */

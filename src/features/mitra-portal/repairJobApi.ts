@@ -26,6 +26,8 @@ export interface RepairJob {
   status: RepairJobStatus;
   notes: string;
   scannedAt: string;
+  /** Waktu bengkel mengonfirmasi kendaraan diterima; kosong = belum. */
+  vehicleReceivedAt: string;
   completedAt: string;
   createdAt: string;
 }
@@ -67,6 +69,7 @@ export function parseRepairJob(json: Record<string, unknown>): RepairJob {
     status: statusOf(json.status),
     notes: str(json.notes),
     scannedAt: str(json.scanned_at),
+    vehicleReceivedAt: str(json.vehicle_received_at),
     completedAt: str(json.completed_at),
     createdAt: str(json.created_at),
   };
@@ -100,6 +103,18 @@ export async function getRepairJob(code: string): Promise<RepairJob> {
 export async function scanRepairJob(code: string): Promise<RepairJob> {
   const res = await mitraApi.post<{ data?: unknown }>('/v1/admin/repair-jobs/scan', { code });
   return parseRepairJob(asRecord(asRecord(res.data).data));
+}
+
+/**
+ * Konfirmasi kendaraan sudah diterima di bengkel — lapis kedua serah-terima,
+ * setelah sopir mengunggah foto saat menurunkan. Idempotent di backend.
+ */
+export async function receiveRepairJobVehicle(code: string, note = ''): Promise<RepairJob> {
+  const res = await mitraApi.post<{ data?: unknown }>('/v1/admin/repair-jobs/receive', {
+    code,
+    note,
+  });
+  return parseRepairJob(asRecord(res.data?.data));
 }
 
 export async function completeRepairJob(code: string): Promise<RepairJob> {

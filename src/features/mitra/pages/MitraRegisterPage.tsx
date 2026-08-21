@@ -17,8 +17,20 @@ import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES, buildPath } from '@/app/routes';
-import { registerPartner, uploadPartnerOnboardingImage } from '@/features/auth/api/authApi';
-import { PARTNER_TYPES, ALLOWED_PARTNER_TYPES, partnerTypeLabel, licenseLabelFor } from '../constants';
+import { env } from '@/config/env';
+import {
+  isEmailAvailable,
+  registerPartner,
+  uploadPartnerOnboardingImage,
+} from '@/features/auth/api/authApi';
+import { confirm } from '@/components/feedback/confirm';
+import {
+  PARTNER_TYPES,
+  ALLOWED_PARTNER_TYPES,
+  isPartnerTypeComingSoon,
+  partnerTypeLabel,
+  licenseLabelFor,
+} from '../constants';
 import {
   partnerRegisterSchema,
   type PartnerProfileValues,
@@ -68,15 +80,40 @@ export function MitraRegisterPage() {
   const [searchParams] = useSearchParams();
   const partner = searchParams.get('partner') ?? '';
 
-  if (!ALLOWED_PARTNER_TYPES.has(partner)) {
-    return <MitraTypeChooser />;
+  // Jenis yang belum dibuka ikut dipulangkan ke pemilih, supaya membuka
+  // URL-nya langsung tidak bisa melewati pemberitahuan di layar pemilihan.
+  if (!ALLOWED_PARTNER_TYPES.has(partner) || isPartnerTypeComingSoon(partner)) {
+    return <MitraTypeChooser initialNoticeFor={isPartnerTypeComingSoon(partner) ? partner : ''} />;
   }
   return <MitraRegisterForm partnerType={partner} />;
 }
 
-function MitraTypeChooser() {
+/** Popup pemberitahuan bahwa pendaftaran jenis mitra ini belum dibuka. */
+async function showComingSoonNotice(partnerValue: string) {
+  await confirm({
+    title: 'Dalam Pengembangan',
+    message: `Pendaftaran ${partnerTypeLabel(partnerValue)} belum dibuka. Alur kemitraannya masih kami siapkan. Silakan pilih jenis mitra lain untuk saat ini.`,
+    confirmText: 'Mengerti',
+    hideCancel: true,
+  });
+}
+
+function MitraTypeChooser({ initialNoticeFor = '' }: { initialNoticeFor?: string }) {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState(PARTNER_TYPES[0]!.value);
+  const [selected, setSelected] = useState(initialNoticeFor || PARTNER_TYPES[0]!.value);
+
+  // Sampai di sini lewat URL langsung ke jenis yang belum dibuka.
+  useEffect(() => {
+    if (initialNoticeFor) void showComingSoonNotice(initialNoticeFor);
+  }, [initialNoticeFor]);
+
+  const handleContinue = () => {
+    if (isPartnerTypeComingSoon(selected)) {
+      void showComingSoonNotice(selected);
+      return;
+    }
+    navigate(buildPath.mitraRegister(selected));
+  };
 
   return (
     <PageContainer className="bg-white">
@@ -128,7 +165,7 @@ function MitraTypeChooser() {
         </div>
 
         <div className="mt-auto pt-8">
-          <Button size="lg" onClick={() => navigate(buildPath.mitraRegister(selected))}>
+          <Button size="lg" onClick={handleContinue}>
             Lanjutkan
           </Button>
         </div>
@@ -141,6 +178,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(() => readRegisterStep(location.state));
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [ktpFile, setKtpFile] = useState<File | null>(null);
   const typeLabel = mitraTypeName(partnerType);
@@ -150,6 +188,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
     handleSubmit,
     trigger,
     setValue,
+    setError,
     getValues,
     watch,
     formState: { errors },
@@ -178,7 +217,23 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
       await registerPartner({ partnerType, ...values, logoUrl, picKtpPhotoUrl });
     },
     onSuccess: () => {
-      toast.success('Pendaftaran mitra terkirim. Tunggu approval dan cek email aktivasi.');
+      // Tidak ada email aktivasi: begitu admin menyetujui, akun langsung aktif
+      // dan mitra bisa langsung masuk.
+      //
+      // Mitra ASURANSI masuknya lewat Backoffice, bukan portal mitra di sini —
+      // mengarahkannya ke halaman masuk mitra akan berujung penolakan.
+      if (partnerType === 'insurance') {
+        toast.success(
+          'Pendaftaran terkirim. Setelah disetujui admin, masuk lewat Backoffice AutoClaim.',
+        );
+        if (env.backofficeUrl) {
+          window.location.href = `${env.backofficeUrl}/login`;
+          return;
+        }
+        navigate(ROUTES.login, { replace: true });
+        return;
+      }
+      toast.success('Pendaftaran terkirim. Anda bisa masuk setelah disetujui admin.');
       navigate(ROUTES.loginMitra, { replace: true });
     },
     onError: (error) => toast.error(extractErrorMessage(error, 'Pendaftaran mitra gagal.')),
@@ -200,12 +255,34 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
   };
 
   const handleNext = async () => {
-    if (mutation.isPending) return;
+    if (mutation.isPending || checkingEmail) return;
     if (step === 0) {
       setValue('companyEmail', getValues('email').trim(), { shouldValidate: true });
     }
     const valid = await trigger(STEP_FIELDS[step] ?? [], { shouldFocus: true });
     if (!valid) return;
+
+    // Bentrok email dicegat di langkah pertama, sebelum ada logo & foto KTP yang
+    // terlanjur terunggah. Sebelumnya baru ketahuan saat submit terakhir:
+    // berkasnya jadi yatim di storage dan seluruh pengisian formulir terbuang.
+    if (step === 0) {
+      setCheckingEmail(true);
+      try {
+        const available = await isEmailAvailable(getValues('email').trim());
+        if (!available) {
+          setError('email', {
+            message: 'Email ini sudah terdaftar. Gunakan email lain atau masuk.',
+          });
+          return;
+        }
+      } catch {
+        // Gagal memeriksa (mis. jaringan) tidak boleh mengunci pendaftaran —
+        // backend tetap menolak duplikat saat submit.
+      } finally {
+        setCheckingEmail(false);
+      }
+    }
+
     if (step < LAST_STEP) {
       const nextStep = step + 1;
       setStep(nextStep);
@@ -240,7 +317,14 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 pb-4">
-          {step === 0 && <StepAccount typeLabel={typeLabel} register={register} errors={errors} />}
+          {step === 0 && (
+            <StepAccount
+              typeLabel={typeLabel}
+              isInsurance={partnerType === 'insurance'}
+              register={register}
+              errors={errors}
+            />
+          )}
           {step === 1 && (
             <StepCompany
               register={profileRegister}
@@ -271,7 +355,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
           <Button
             type="button"
             size="lg"
-            isLoading={mutation.isPending}
+            isLoading={mutation.isPending || checkingEmail}
             onClick={() => void handleNext()}
           >
             Selanjutnya
@@ -284,10 +368,13 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
 
 function StepAccount({
   typeLabel,
+  isInsurance,
   register,
   errors,
 }: {
   typeLabel: string;
+  /** Asuransi masuk lewat Backoffice, bukan portal mitra di aplikasi ini. */
+  isInsurance: boolean;
   register: UseFormRegister<PartnerRegisterValues>;
   errors: FieldErrors<PartnerRegisterValues>;
 }) {
@@ -339,9 +426,22 @@ function StepAccount({
 
       <p className="mt-5 text-center text-sm text-neutral-700">
         Sudah punya akun?{' '}
-        <Link to={ROUTES.loginMitra} className="text-deep-blue-500 font-bold">
-          Masuk
-        </Link>
+        {isInsurance && env.backofficeUrl ? (
+          <a
+            href={`${env.backofficeUrl}/login`}
+            className="text-deep-blue-500 font-bold"
+            rel="noreferrer"
+          >
+            Masuk lewat Backoffice
+          </a>
+        ) : (
+          <Link
+            to={isInsurance ? ROUTES.login : ROUTES.loginMitra}
+            className="text-deep-blue-500 font-bold"
+          >
+            Masuk
+          </Link>
+        )}
       </p>
     </div>
   );

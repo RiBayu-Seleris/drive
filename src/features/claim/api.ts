@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { env } from '@/config/env';
 import { userApi } from '@/lib/api/client';
+import { uploadDocument } from '@/lib/upload/publicUpload';
+import { recognizeChassisNumber, recognizeEngineNumber } from '@/lib/ocr/vehicleIdentity';
 
 const str = (v: unknown, f = ''): string => (typeof v === 'string' ? v : f);
 const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v) || 0);
@@ -153,36 +154,23 @@ export async function createClaim(input: CreateClaimInput): Promise<Claim> {
   return parseClaim(res.data?.data ?? {});
 }
 
+// OCR-nya dipakai bersama alur pembelian polis, jadi implementasinya tinggal di
+// `lib/ocr/vehicleIdentity`. Dua pembungkus di bawah hanya menjaga bentuk
+// hasil yang sudah dipakai halaman klaim.
 export async function recognizeClaimEngineNumber(
   file: Blob,
   filename: string,
 ): Promise<{ engineNumber: string; confidence: number; rawText: string }> {
-  const form = new FormData();
-  form.append('uploadfile', file, filename);
-  const res = await userApi.post<{
-    data?: { engine_number?: string; confidence?: number; raw_text?: string };
-  }>('/v1/inference/engine-number/ocr', form);
-  return {
-    engineNumber: str(res.data?.data?.engine_number),
-    confidence: num(res.data?.data?.confidence),
-    rawText: str(res.data?.data?.raw_text),
-  };
+  const result = await recognizeEngineNumber(file, filename);
+  return { engineNumber: result.value, confidence: result.confidence, rawText: result.rawText };
 }
 
 export async function recognizeClaimChassisNumber(
   file: Blob,
   filename: string,
 ): Promise<{ chassisNumber: string; confidence: number; rawText: string }> {
-  const form = new FormData();
-  form.append('uploadfile', file, filename);
-  const res = await userApi.post<{
-    data?: { chassis_number?: string; confidence?: number; raw_text?: string };
-  }>('/v1/inference/chassis-number/ocr', form);
-  return {
-    chassisNumber: str(res.data?.data?.chassis_number),
-    confidence: num(res.data?.data?.confidence),
-    rawText: str(res.data?.data?.raw_text),
-  };
+  const result = await recognizeChassisNumber(file, filename);
+  return { chassisNumber: result.value, confidence: result.confidence, rawText: result.rawText };
 }
 
 export async function uploadClaimEvidence(
@@ -190,27 +178,7 @@ export async function uploadClaimEvidence(
   category: string,
   filename: string,
 ): Promise<string> {
-  const publicForm = new FormData();
-  publicForm.append('file', file, filename);
-
-  try {
-    const res = await axios.post<{ data?: { path?: string } }>(env.selerisUploadUrl, publicForm);
-    const path = str(res.data?.data?.path);
-    if (path) return path;
-  } catch {
-    // Fallback ke gateway AutoClaim untuk environment yang memblokir direct upload.
-  }
-
-  const gatewayForm = new FormData();
-  gatewayForm.append('uploadfile', file, filename);
-  gatewayForm.append('category', category);
-  const res = await userApi.post<{ data?: { file_path?: string } }>(
-    '/v1/s3/image/upload',
-    gatewayForm,
-  );
-  const path = str(res.data?.data?.file_path);
-  if (!path) throw new Error('Upload dokumen gagal: respons tidak berisi file path.');
-  return path;
+  return uploadDocument(file, category, filename);
 }
 
 export async function transcribeClaimAudio(
@@ -324,7 +292,7 @@ export async function createRepairJob(
   claimNumber: string,
   repairStationId: number,
   notes = '',
-): Promise<{ jobCode: string; userPayable: number }> {
+): Promise<{ jobCode: string; userPayable: number; covered: boolean }> {
   // Nomor klaim ikut di path; bila kosong backend membalas 400 "claim_number
   // wajib diisi" yang tidak berarti apa-apa buat user. Hentikan lebih awal.
   const number = claimNumber.trim();
@@ -337,5 +305,9 @@ export async function createRepairJob(
   return {
     jobCode: typeof data.job_code === 'string' ? data.job_code : '',
     userPayable: typeof data.user_payable === 'number' ? data.user_payable : 0,
+    // insurer_id hanya terisi bila bengkelnya rekanan asuransi penanggung —
+    // backend sengaja mengosongkannya untuk bengkel di luar rekanan supaya
+    // tagihannya tidak pernah masuk ke pencairan asuransi.
+    covered: typeof data.insurer_id === 'number' && data.insurer_id > 0,
   };
 }

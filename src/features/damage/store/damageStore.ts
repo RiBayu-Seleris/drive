@@ -5,6 +5,16 @@ import type { DamageResult } from '../types';
 
 interface DamageState {
   result: DamageResult | null;
+  /**
+   * Sidik jari foto & plat yang menghasilkan `result`.
+   *
+   * Dipakai halaman review untuk mengenali "ini persis yang barusan
+   * dianalisis". Tanpa ini, kembali ke review lalu menekan tombolnya lagi
+   * mengirim ulang foto yang sama ke layanan AI dan melahirkan pemindaian
+   * baru — satu kendaraan bisa punya belasan catatan hasil yang identik hanya
+   * karena user bolak-balik melihat hasilnya.
+   */
+  analyzedSignature: string | null;
   isAnalyzing: boolean;
   /** Apakah laporan AI (detail penuh) sudah dibuka via pembayaran. */
   reportUnlocked: boolean;
@@ -13,7 +23,7 @@ interface DamageState {
   flowMode: 'insurance_claim' | 'self_pay' | '';
   viewMode: 'history' | '';
 
-  setResult: (result: DamageResult) => void;
+  setResult: (result: DamageResult, signature?: string) => void;
   setAnalyzing: (value: boolean) => void;
   unlockReport: () => void;
   markDetailViewed: () => void;
@@ -24,13 +34,14 @@ interface DamageState {
 
 export const useDamageStore = create<DamageState>((set) => ({
   result: null,
+  analyzedSignature: null,
   isAnalyzing: false,
   reportUnlocked: false,
   detailViewed: false,
   flowMode: '',
   viewMode: '',
 
-  setResult: (result) => {
+  setResult: (result, signature) => {
     if (result.ticket) {
       storage.setString(STORAGE_KEYS.guestInferenceTicket, result.ticket);
     } else {
@@ -43,6 +54,7 @@ export const useDamageStore = create<DamageState>((set) => ({
         result.ticket === state.result?.ticket;
       return {
         result,
+        analyzedSignature: signature ?? null,
         isAnalyzing: false,
         detailViewed: false,
         reportUnlocked: Boolean(result.reportUnlocked || (sameTicket && state.reportUnlocked)),
@@ -58,6 +70,7 @@ export const useDamageStore = create<DamageState>((set) => ({
     storage.remove(STORAGE_KEYS.guestInferenceTicket);
     set({
       result: null,
+      analyzedSignature: null,
       isAnalyzing: false,
       reportUnlocked: false,
       detailViewed: false,

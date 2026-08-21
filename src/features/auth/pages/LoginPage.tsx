@@ -170,6 +170,17 @@ function LoginPage({ mode }: { mode: LoginMode }) {
           error={errors.password?.message}
           {...register('password')}
         />
+
+        {/* Setel ulang kata sandi tersedia untuk user & mitra. Kata sandi sopir
+            tetap disetel oleh admin mitra karena emailnya belum tentu miliknya. */}
+        {mode !== 'sopir' && (
+          <div className="-mt-1 text-right">
+            <Link to={ROUTES.forgotPassword} className="text-deep-blue-500 text-12 font-semibold">
+              Lupa kata sandi?
+            </Link>
+          </div>
+        )}
+
         <Button type="submit" size="lg" isLoading={isSubmitting} className="mt-4">
           {copy.submitText}
         </Button>

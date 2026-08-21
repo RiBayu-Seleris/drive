@@ -760,15 +760,6 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
     });
   };
 
-  const goEmergencyInsurance = () => {
-    closeSheet(() => {
-      useScanStore.getState().reset();
-      useScanStore.getState().setScanPurpose('emergency_insurance');
-      useDamageStore.getState().reset();
-      navigate(ROUTES.checkCondition);
-    });
-  };
-
   const callPhone = () => {
     closeSheet(() => {
       window.location.href = 'tel:112';
@@ -907,6 +898,15 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
           </SheetGroup>
 
           <SheetGroup title="Bantuan Darurat">
+            {/* Telepon 112 dulu hanya ada di halaman Bantuan Darurat, yang cuma
+                terbuka untuk tamu — user yang sudah login justru kehilangan
+                akses ke nomor darurat saat isinya dipindah ke sheet ini. */}
+            <SheetItem
+              image="/assets/checkup_vehicle/call.png"
+              label="Hubungi Darurat"
+              align="center"
+              onClick={() => closeSheet(() => window.location.assign('tel:112'))}
+            />
             <SheetItem
               image="/assets/checkup_vehicle/hospital.png"
               label={
@@ -923,12 +923,6 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
               image="/assets/checkup_vehicle/derek.png"
               label="Towing"
               onClick={() => go(ROUTES.emergencyTowing)}
-            />
-            <SheetItem
-              image="/assets/home/ajukan_klaim.svg"
-              label="Asuransi"
-              align="center"
-              onClick={goEmergencyInsurance}
             />
           </SheetGroup>
 

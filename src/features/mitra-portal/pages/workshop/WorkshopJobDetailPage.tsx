@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle2, Phone, QrCode, ShieldCheck, User, Wallet } from 'lucide-react';
+import {
+  CheckCircle2,
+  PackageCheck,
+  Phone,
+  QrCode,
+  ShieldCheck,
+  User,
+  Wallet,
+} from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ROUTES } from '@/app/routes';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -14,6 +22,7 @@ import { MitraShell } from '../../components/MitraShell';
 import { ScanTicketSheet } from '../../components/ScanTicketSheet';
 import {
   completeRepairJob,
+  receiveRepairJobVehicle,
   getRepairJob,
   repairJobStatusLabel,
   type RepairJob,
@@ -44,6 +53,22 @@ export function WorkshopJobDetailPage() {
   // pelanggan benar-benar dipindai/diketik. Sekali klik membuat petugas bisa
   // menandai tiket terpakai tanpa pelanggannya hadir.
   const [scanOpen, setScanOpen] = useState(false);
+
+  // Konfirmasi kendaraan diterima — lapis kedua serah-terima setelah foto
+  // sopir. Tidak mengubah status pekerjaan dan tidak menghalangi apa pun;
+  // gunanya memberi user kepastian dari pihak ketiga.
+  const handleReceive = async () => {
+    if (!job) return;
+    setBusy(true);
+    try {
+      setJob(await receiveRepairJobVehicle(job.jobCode));
+      toast.success('Kendaraan dikonfirmasi diterima.');
+    } catch (error) {
+      toast.error(extractErrorMessage(error, 'Gagal mengonfirmasi penerimaan.'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleComplete = async () => {
     if (!job) return;
@@ -156,6 +181,23 @@ export function WorkshopJobDetailPage() {
       </div>
 
       <div className="mt-6 flex flex-col gap-3 px-5">
+        {!job.vehicleReceivedAt && job.status !== 'CANCELED' && (
+          <Button
+            size="lg"
+            variant="outline"
+            isLoading={busy}
+            leftIcon={<PackageCheck className="size-5" />}
+            onClick={handleReceive}
+          >
+            Konfirmasi Kendaraan Diterima
+          </Button>
+        )}
+        {job.vehicleReceivedAt && (
+          <div className="text-green-cust bg-green-cust/10 flex items-center gap-2 rounded-2xl px-4 py-3">
+            <PackageCheck className="size-5 shrink-0" />
+            <p className="text-12 font-medium">Kendaraan sudah dikonfirmasi diterima.</p>
+          </div>
+        )}
         {job.status === 'QUEUED' && (
           <Button
             size="lg"

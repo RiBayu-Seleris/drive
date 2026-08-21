@@ -130,6 +130,8 @@ export interface SaldoTx {
 export interface BankAccount {
   id: string;
   bank: string;
+  /** Kode bank penyedia pembayaran. Kosong = rekening lama, belum bisa dikirimi otomatis. */
+  bankCode: string;
   number: string;
   holder: string;
 }

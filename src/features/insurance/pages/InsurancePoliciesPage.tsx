@@ -11,13 +11,15 @@ import { getInsurancePolicies, type InsurancePolicy } from '../api';
 
 /*
  * Status polis dibaca berurutan dari yang paling menentukan: status polis dulu
- * (ACTIVE/REJECTED/EXPIRED bersifat final), baru underwriting, baru pembayaran.
+ * (SCHEDULED/ACTIVE/REJECTED/EXPIRED bersifat final), baru underwriting, baru
+ * pembayaran.
  * Tanpa cabang REJECTED yang eksplisit, polis ditolak jatuh ke cabang terakhir
  * dan tampil sebagai "Menunggu pembayaran" — padahal ia tidak bisa dibayar.
  */
 type PolicyTone = 'neutral' | 'blue' | 'green' | 'yellow' | 'red';
 
 function policyTone(policy: InsurancePolicy): PolicyTone {
+  if (policy.status === 'SCHEDULED') return 'blue';
   if (policy.status === 'ACTIVE') return 'green';
   if (policy.status === 'REJECTED') return 'red';
   if (policy.status === 'EXPIRED' || policy.status === 'CANCELLED') return 'neutral';
@@ -27,6 +29,8 @@ function policyTone(policy: InsurancePolicy): PolicyTone {
 }
 
 function policyLabel(policy: InsurancePolicy): string {
+  // Polis sah dan preminya sudah dibayar; yang belum hanya tanggal mulainya.
+  if (policy.status === 'SCHEDULED') return 'Menunggu tanggal aktif';
   if (policy.status === 'ACTIVE') return 'Aktif';
   if (policy.status === 'REJECTED') return 'Ditolak';
   if (policy.status === 'EXPIRED') return 'Berakhir';

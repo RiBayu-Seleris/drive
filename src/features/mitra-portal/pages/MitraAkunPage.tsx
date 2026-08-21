@@ -42,11 +42,16 @@ export function MitraAkunPage() {
             <p className="text-12 text-neutral-600 capitalize">{role.replace(/_/g, ' ')}</p>
           </div>
         </div>
-        {/* Kemitraan asuransi hanya relevan untuk mitra towing independen. */}
-        {partnerType === 'towing' && (
+        {/* Berlaku untuk mitra towing maupun bengkel — keduanya memakai alur
+            kemitraan yang sama, hanya tujuan halamannya berbeda. */}
+        {(partnerType === 'towing' || partnerType === 'workshop') && (
           <button
             type="button"
-            onClick={() => navigate(ROUTES.mitraKemitraan)}
+            onClick={() =>
+              navigate(
+                partnerType === 'workshop' ? ROUTES.mitraBengkelKemitraan : ROUTES.mitraKemitraan,
+              )
+            }
             className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
           >
             <span className="bg-deep-blue-50 text-deep-blue-600 grid size-10 shrink-0 place-items-center rounded-full">

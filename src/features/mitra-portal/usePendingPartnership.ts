@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useMitraStore } from '@/features/auth/store/mitraStore';
 import { getPendingPartnershipCount } from './partnershipApi';
+import { getPendingWorkshopPartnershipCount } from './workshopPartnershipApi';
 
 /**
  * Jumlah undangan kemitraan asuransi yang menunggu jawaban mitra towing.
  *
  * Dipakai untuk penanda di nav & menu Akun supaya undangan tidak menggantung
  * berhari-hari hanya karena mitra tidak kebetulan membuka halaman Kemitraan.
- * Hanya berjalan untuk mitra towing yang sudah login; kegagalan diabaikan karena
- * ini informasi tambahan, bukan data yang menentukan alur.
+ * Berlaku untuk mitra towing maupun bengkel — endpoint hitungannya berbeda,
+ * dipilih dari partnerType. Kegagalan diabaikan karena ini informasi tambahan.
  */
 export function usePendingPartnershipCount(): number {
   const partnerType = useMitraStore((s) => s.partnerType);
@@ -16,13 +17,16 @@ export function usePendingPartnershipCount(): number {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!isLoggedIn || partnerType !== 'towing') {
+    const isPartner = partnerType === 'towing' || partnerType === 'workshop';
+    if (!isLoggedIn || !isPartner) {
       setCount(0);
       return;
     }
+    const fetchCount =
+      partnerType === 'workshop' ? getPendingWorkshopPartnershipCount : getPendingPartnershipCount;
     let active = true;
     const load = () => {
-      getPendingPartnershipCount()
+      fetchCount()
         .then((value) => {
           if (active) setCount(value);
         })

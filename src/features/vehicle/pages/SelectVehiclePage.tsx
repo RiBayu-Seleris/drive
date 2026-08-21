@@ -11,6 +11,7 @@ import { ROUTES } from '@/app/routes';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
+import { hasCheckupPermissionsGranted } from '@/features/checkup/permissions';
 import { getVehicles } from '../api';
 import type { SavedVehicle } from '../types';
 
@@ -19,6 +20,7 @@ export function SelectVehiclePage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const reset = useScanStore((s) => s.reset);
   const setSelectedVehicle = useScanStore((s) => s.setSelectedVehicle);
+  const setVehicleInfo = useScanStore((s) => s.setVehicleInfo);
 
   // Mulai bersih & lupakan pilihan kendaraan dari sesi cek sebelumnya.
   useEffect(() => {
@@ -32,11 +34,25 @@ export function SelectVehiclePage() {
     enabled: isAuthenticated,
   });
 
+  /**
+   * Kendaraan terdaftar → LANGSUNG ke langkah foto plat, lewati form Data
+   * Kendaraan. Seluruh isinya (nama, jenis, warna, tahun) sudah tersimpan saat
+   * kendaraan didaftarkan, jadi meminta user mengetik ulang hanya membuatnya
+   * mengisi dua kali.
+   */
   const selectVehicle = (v: SavedVehicle) => {
     setSelectedVehicle({ plate: v.vehiclePlate, name: v.vehicleName });
-    navigate(ROUTES.vehicleData);
+    setVehicleInfo({
+      brandModel: v.vehicleName,
+      color: v.vehicleColor,
+      // 0 = tahun belum pernah diisi; jangan tampilkan sebagai "0".
+      year: v.vehicleYear ? String(v.vehicleYear) : '',
+      type: v.vehicleType,
+    });
+    navigate(hasCheckupPermissionsGranted() ? ROUTES.licensePlate : ROUTES.checkupPermission);
   };
 
+  /** Kendaraan baru → tetap lewat form karena datanya belum ada di mana pun. */
   const useNewVehicle = () => {
     setSelectedVehicle(null);
     navigate(ROUTES.vehicleData);

@@ -64,6 +64,7 @@ import {
   updateDriverTaskStatus,
   type DriverProfile,
 } from '../api/driverApi';
+import { DropoffProof } from '../components/DropoffProof';
 import { FleetInspection } from '../components/FleetInspection';
 import {
   driverDestinationLabel,
@@ -85,6 +86,7 @@ type DriverScreen =
   | { kind: 'detail'; task: DriverTask }
   | { kind: 'accepted'; task: DriverTask }
   | { kind: 'inspection'; task: DriverTask }
+  | { kind: 'dropoffProof'; task: DriverTask }
   | { kind: 'tracking'; task: DriverTask }
   | { kind: 'biodata' }
   | { kind: 'editProfile' }
@@ -256,7 +258,7 @@ function historyTitle(task: DriverTask): string {
 
 const TAB_VALUES: readonly DriverTab[] = ['home', 'orders', 'history', 'account'];
 const PLAIN_SCREENS = ['biodata', 'editProfile', 'changePassword'] as const;
-const TASK_SCREENS = ['detail', 'accepted', 'inspection', 'tracking'] as const;
+const TASK_SCREENS = ['detail', 'accepted', 'inspection', 'dropoffProof', 'tracking'] as const;
 type PlainScreenKind = (typeof PLAIN_SCREENS)[number];
 type TaskScreenKind = (typeof TASK_SCREENS)[number];
 
@@ -350,8 +352,16 @@ export function DriverTasksPage() {
   const currentTask = activeTasks[0] ?? null;
 
   const advance = useMutation({
-    mutationFn: ({ task, status }: { task: DriverTask; status: string; after: AdvanceAfter }) =>
-      updateDriverTaskStatus(task.orderCode, status),
+    mutationFn: ({
+      task,
+      status,
+      proof,
+    }: {
+      task: DriverTask;
+      status: string;
+      after: AdvanceAfter;
+      proof?: { front: string; rear: string };
+    }) => updateDriverTaskStatus(task.orderCode, status, proof),
     onSuccess: (status, variables) => {
       // Cache diperbarui langsung agar layar turunan URL menampilkan status baru
       // tanpa menunggu refetch.
@@ -400,6 +410,7 @@ export function DriverTasksPage() {
     screen.kind === 'detail' ||
     screen.kind === 'accepted' ||
     screen.kind === 'inspection' ||
+    screen.kind === 'dropoffProof' ||
     screen.kind === 'tracking'
       ? (taskByCode.get(screen.task.orderCode) ?? screen.task)
       : null;
@@ -440,7 +451,22 @@ export function DriverTasksPage() {
   const handleAdvanceTracking = (task: DriverTask) => {
     const next = driverNextStatus(task.status);
     if (!next) return;
+    // Menandai tiba wajib disertai foto serah-terima — backend menolak tanpa
+    // itu, jadi sopir diarahkan ke layar kamera lebih dulu.
+    if (next === 'DROPPED_OFF') {
+      goScreen('dropoffProof', task);
+      return;
+    }
     advance.mutate({ task, status: next, after: 'tracking' });
+  };
+
+  const handleDropoffProofDone = async (task: DriverTask, front: string, rear: string) => {
+    await advance.mutateAsync({
+      task,
+      status: 'DROPPED_OFF',
+      after: 'tracking',
+      proof: { front, rear },
+    });
   };
 
   const handleTabChange = (nextTab: DriverTab) => {
@@ -496,6 +522,16 @@ export function DriverTasksPage() {
         task={selectedTask}
         onBack={goBack}
         onStart={() => goScreen('inspection', selectedTask, true)}
+      />
+    );
+  }
+
+  if (screen.kind === 'dropoffProof' && selectedTask) {
+    return (
+      <DropoffProof
+        task={selectedTask}
+        onBack={goBack}
+        onDone={(front, rear) => handleDropoffProofDone(selectedTask, front, rear)}
       />
     );
   }

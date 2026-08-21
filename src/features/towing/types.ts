@@ -33,6 +33,12 @@ export interface TowingOrder {
   requestedAt?: string;
   assignedAt?: string;
   completedAt?: string;
+  /** Bukti serah-terima dari sopir: dua sudut serong (depan-kiri & belakang-kanan). */
+  dropoffProofPhoto?: string;
+  dropoffProofPhotoRear?: string;
+  droppedOffAt?: string;
+  /** Konfirmasi bengkel bahwa kendaraan diterima; kosong = masih menunggu. */
+  vehicleReceivedAt?: string;
 }
 
 export function parseTowingOrder(json: Record<string, unknown>): TowingOrder {
@@ -63,6 +69,10 @@ export function parseTowingOrder(json: Record<string, unknown>): TowingOrder {
     requestedAt: str(json.requested_at) || undefined,
     assignedAt: str(json.assigned_at) || undefined,
     completedAt: str(json.completed_at) || undefined,
+    dropoffProofPhoto: str(json.dropoff_proof_photo) || undefined,
+    dropoffProofPhotoRear: str(json.dropoff_proof_photo_rear) || undefined,
+    droppedOffAt: str(json.dropped_off_at) || undefined,
+    vehicleReceivedAt: str(json.vehicle_received_at) || undefined,
   };
 }
 

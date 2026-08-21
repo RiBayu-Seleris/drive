@@ -10,7 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES } from '@/app/routes';
-import { probeAdminLogin, uploadPartnerOnboardingImage } from '@/features/auth/api/authApi';
+import {
+  loginTargetForRole,
+  probeAdminLogin,
+  uploadPartnerOnboardingImage,
+} from '@/features/auth/api/authApi';
+import { env } from '@/config/env';
 import type { AdminLoginOutcome } from '@/features/auth/types';
 import { partnerProfileSchema, type PartnerProfileValues } from '../schemas';
 import { partnerTypeLabel, licenseLabelFor } from '../constants';
@@ -31,8 +36,27 @@ const RESUBMIT_STEP_FIELDS: FieldPath<PartnerProfileValues>[][] = [
 ];
 const RESUBMIT_LAST_STEP = 2;
 
+/**
+ * Mitra asuransi memperbaiki datanya di sini, tapi MASUKNYA lewat Backoffice —
+ * portal mitra webapp-v2 hanya untuk towing & bengkel. Mengarahkannya ke
+ * /login/mitra setelah selesai berujung "akun ini bukan mitra bengkel atau
+ * towing", yaitu penolakan tepat setelah dia berhasil mengirim perbaikan.
+ */
+function goToLoginAfterResubmit(
+  role: string,
+  navigate: (path: string, opts?: { replace: boolean }) => void,
+) {
+  if (loginTargetForRole(role) === 'backoffice' && env.backofficeUrl) {
+    window.location.href = `${env.backofficeUrl}/login`;
+    return;
+  }
+  navigate(ROUTES.loginMitra, { replace: true });
+}
+
 interface ResubmitSession {
   token: string;
+  /** admin_role mitra — penentu halaman masuk mana yang dituju setelah selesai. */
+  role: string;
   partnerType: string;
   rejectionReason: string;
   prefill: PartnerProfilePrefill;
@@ -46,9 +70,10 @@ interface ResubmitSession {
 export function MitraResubmitPage() {
   const [searchParams] = useSearchParams();
   const [session, setSession] = useState<ResubmitSession | null>(null);
-  const [info, setInfo] = useState<{ icon: 'check' | 'clock' | 'lock' | 'warn'; message: string } | null>(
-    null,
-  );
+  const [info, setInfo] = useState<{
+    icon: 'check' | 'clock' | 'lock' | 'warn';
+    message: string;
+  } | null>(null);
 
   if (session) {
     return <ResubmitForm session={session} />;
@@ -85,7 +110,10 @@ function ResubmitSignIn({
     }
     const status = outcome.accountStatus.toUpperCase();
     if (status === 'ACTIVE') {
-      onInfo({ icon: 'check', message: 'Akun mitra Anda sudah aktif. Tidak ada data yang perlu diperbaiki.' });
+      onInfo({
+        icon: 'check',
+        message: 'Akun mitra Anda sudah aktif. Tidak ada data yang perlu diperbaiki.',
+      });
       return;
     }
     if (status !== 'REJECTED') {
@@ -103,6 +131,7 @@ function ResubmitSignIn({
       const prefill = await getPartnerProfilePrefill(outcome.token);
       onResolved({
         token: outcome.token,
+        role: outcome.role,
         partnerType: partnerTypeFromRole(outcome.role),
         rejectionReason: outcome.rejectionReason,
         prefill,
@@ -179,7 +208,14 @@ function ResubmitInfo({
   message: string;
 }) {
   const navigate = useNavigate();
-  const Icon = icon === 'check' ? CheckCircle2 : icon === 'clock' ? Clock : icon === 'lock' ? Lock : AlertTriangle;
+  const Icon =
+    icon === 'check'
+      ? CheckCircle2
+      : icon === 'clock'
+        ? Clock
+        : icon === 'lock'
+          ? Lock
+          : AlertTriangle;
   const tone =
     icon === 'check'
       ? 'text-success'
@@ -193,7 +229,9 @@ function ResubmitInfo({
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <Icon className={`size-12 ${tone}`} />
         <p className="text-sm leading-relaxed text-neutral-800">{message}</p>
-        <Button fullWidth={false} onClick={() => navigate(ROUTES.loginMitra)}>
+        {/* Netral: layar ini juga muncul untuk akun asuransi, yang tidak bisa
+            masuk lewat /login/mitra. Pemilih login membawanya ke tempat benar. */}
+        <Button fullWidth={false} onClick={() => navigate(ROUTES.login)}>
           Kembali ke Beranda
         </Button>
       </div>
@@ -203,7 +241,7 @@ function ResubmitInfo({
 
 function ResubmitForm({ session }: { session: ResubmitSession }) {
   const navigate = useNavigate();
-  const { token, partnerType, rejectionReason, prefill } = session;
+  const { token, role, partnerType, rejectionReason, prefill } = session;
   const [step, setStep] = useState(0);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [ktpFile, setKtpFile] = useState<File | null>(null);
@@ -236,12 +274,16 @@ function ResubmitForm({ session }: { session: ResubmitSession }) {
     setIsSubmitting(true);
     try {
       const [logoUrl, picKtpPhotoUrl] = await Promise.all([
-        logoFile ? uploadPartnerOnboardingImage(logoFile, 'partner_logo') : Promise.resolve(prefill.logoUrl),
-        ktpFile ? uploadPartnerOnboardingImage(ktpFile, 'partner_ktp') : Promise.resolve(prefill.picKtpPhotoUrl),
+        logoFile
+          ? uploadPartnerOnboardingImage(logoFile, 'partner_logo')
+          : Promise.resolve(prefill.logoUrl),
+        ktpFile
+          ? uploadPartnerOnboardingImage(ktpFile, 'partner_ktp')
+          : Promise.resolve(prefill.picKtpPhotoUrl),
       ]);
       await resubmitPartnerProfile(token, { ...getValues(), logoUrl, picKtpPhotoUrl });
       toast.success('Data berhasil dikirim ulang. Mohon tunggu peninjauan ulang admin.');
-      navigate(ROUTES.loginMitra, { replace: true });
+      goToLoginAfterResubmit(role, navigate);
     } catch (error) {
       toast.error(extractErrorMessage(error, 'Gagal mengirim ulang data.'));
     } finally {
@@ -297,15 +339,29 @@ function ResubmitForm({ session }: { session: ResubmitSession }) {
             />
           )}
           {step === 1 && (
-            <StepPic register={register} errors={errors} ktpFile={ktpFile} onKtpChange={setKtpFile} />
+            <StepPic
+              register={register}
+              errors={errors}
+              ktpFile={ktpFile}
+              onKtpChange={setKtpFile}
+            />
           )}
           {step === 2 && (
-            <StepLegal register={register} errors={errors} licenseLabel={licenseLabelFor(partnerType)} />
+            <StepLegal
+              register={register}
+              errors={errors}
+              licenseLabel={licenseLabelFor(partnerType)}
+            />
           )}
         </div>
 
         <div className="border-t border-neutral-300 bg-white px-5 pt-3 pb-4">
-          <Button type="button" size="lg" isLoading={isSubmitting} onClick={() => void handleNext()}>
+          <Button
+            type="button"
+            size="lg"
+            isLoading={isSubmitting}
+            onClick={() => void handleNext()}
+          >
             {step === RESUBMIT_LAST_STEP
               ? `Kirim Ulang Data Mitra ${mitraTypeName(partnerType)}`
               : 'Selanjutnya'}

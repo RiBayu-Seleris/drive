@@ -3,8 +3,16 @@ import { STORAGE_KEYS } from '@/config/constants';
 import { storage } from '@/lib/storage/storage';
 import { setUserSessionExpiredHandler, extractErrorMessage } from '@/lib/api/client';
 import { toast } from '@/components/feedback/toast';
-import { loginUser, registerUser } from '../api/authApi';
+import { emailNotVerifiedFrom, loginUser, registerUser } from '../api/authApi';
 import type { RegisterUserPayload, User } from '../types';
+
+/** Hasil registrasi: `needsVerification` menentukan lanjut ke layar kode OTP. */
+export interface RegisterOutcome {
+  ok: boolean;
+  needsVerification: boolean;
+  /** false + needsVerification true = email kode gagal terkirim, tawarkan kirim ulang. */
+  otpSent: boolean;
+}
 
 interface AuthState {
   token: string | null;
@@ -12,10 +20,12 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  /** Diisi saat login ditolak karena email belum diverifikasi (403 dari gateway). */
+  pendingVerificationEmail: string | null;
 
   hydrate: () => void;
   loginUser: (email: string, password: string) => Promise<boolean>;
-  register: (payload: RegisterUserPayload) => Promise<boolean>;
+  register: (payload: RegisterUserPayload) => Promise<RegisterOutcome>;
   setSession: (args: { token: string; refreshToken?: string; user: User }) => void;
   setUser: (user: User) => void;
   logout: () => void;
@@ -41,6 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
   isAuthenticated: false,
+  pendingVerificationEmail: null,
 
   hydrate: () => {
     const token = storage.getString(STORAGE_KEYS.userToken);
@@ -51,7 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loginUser: async (email, password) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, pendingVerificationEmail: null });
     try {
       const result = await loginUser(email, password);
       persistSession(result.token, result.refreshToken, result.user);
@@ -63,26 +74,44 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       return true;
     } catch (error) {
-      set({ isLoading: false, error: extractErrorMessage(error, 'Email atau kata sandi salah.') });
+      // Email belum diverifikasi bukan kesalahan kredensial: simpan emailnya
+      // supaya halaman login bisa mengalihkan ke layar kode verifikasi.
+      const unverifiedEmail = emailNotVerifiedFrom(error);
+      set({
+        isLoading: false,
+        error: extractErrorMessage(error, 'Email atau kata sandi salah.'),
+        pendingVerificationEmail: unverifiedEmail === null ? null : unverifiedEmail || email,
+      });
       return false;
     }
   },
 
   register: async (payload) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, pendingVerificationEmail: null });
     try {
-      await registerUser(payload);
+      const result = await registerUser(payload);
       set({ isLoading: false });
-      return true;
+      return {
+        ok: true,
+        needsVerification: !result.emailVerified,
+        otpSent: result.otpSent,
+      };
     } catch (error) {
       set({ isLoading: false, error: extractErrorMessage(error, 'Registrasi gagal. Coba lagi.') });
-      return false;
+      return { ok: false, needsVerification: false, otpSent: false };
     }
   },
 
   setSession: ({ token, refreshToken, user }) => {
     persistSession(token, refreshToken, user);
-    set({ token, user, isAuthenticated: true, isLoading: false, error: null });
+    set({
+      token,
+      user,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+      pendingVerificationEmail: null,
+    });
   },
 
   setUser: (user) => {
@@ -92,7 +121,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     clearSession();
-    set({ token: null, user: null, isAuthenticated: false, error: null });
+    set({
+      token: null,
+      user: null,
+      isAuthenticated: false,
+      error: null,
+      pendingVerificationEmail: null,
+    });
   },
 
   clearError: () => set({ error: null }),

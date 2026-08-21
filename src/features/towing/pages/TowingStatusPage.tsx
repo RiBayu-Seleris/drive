@@ -12,6 +12,9 @@ import {
   Loader2,
   CreditCard,
   Ticket,
+  PackageCheck,
+  CheckCircle2,
+  Clock3,
 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -23,7 +26,7 @@ import { ErrorState } from '@/components/feedback/StateViews';
 import { confirm } from '@/components/feedback/confirm';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, formatDateTime } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import { MapView, type MapMarker, type MapPoint } from '@/components/map/MapView';
 import { ROUTES, buildPath } from '@/app/routes';
@@ -245,6 +248,8 @@ export function TowingStatusPage() {
           </Card>
         )}
 
+        {data.dropoffProofPhoto && <HandoverCard order={data} />}
+
         {towingFlag && (
           <SettlementTicketCard flag={towingFlag} fallbackCode={data.orderCode} />
         )}
@@ -400,5 +405,72 @@ function InfoBox({ label, value }: { label: string; value: string }) {
       <p className="text-10 text-neutral-600">{label}</p>
       <p className="text-14 font-semibold text-neutral-900">{value}</p>
     </div>
+  );
+}
+
+/**
+ * Bukti serah-terima kendaraan di tujuan.
+ *
+ * Dua lapis: foto sopir muncul begitu kendaraan diturunkan, lalu konfirmasi
+ * bengkel menyusul. User sengaja tidak dibuat menunggu konfirmasi bengkel —
+ * dia sudah tahu mobilnya sampai sejak foto ini ada.
+ */
+function HandoverCard({ order }: { order: TowingOrder }) {
+  const received = Boolean(order.vehicleReceivedAt);
+
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-green-100 text-green-700">
+          <PackageCheck className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-14 font-semibold text-neutral-900">Kendaraan sudah sampai</p>
+          <p className="text-12 mt-1 text-neutral-600">
+            Diturunkan di {order.workshopName || order.dropoffAddress || 'lokasi tujuan'}
+            {order.droppedOffAt ? ` • ${formatDateTime(order.droppedOffAt)}` : ''}
+          </p>
+        </div>
+      </div>
+
+      {/* Dua sudut serong; keduanya ditampilkan agar pemilik bisa memeriksa
+          seluruh sisi bodi, bukan hanya satu tampak. */}
+      <div className="grid grid-cols-2 gap-2">
+        <img
+          src={order.dropoffProofPhoto}
+          alt="Bukti serah terima, sudut depan-kiri"
+          className="aspect-[4/3] w-full rounded-xl object-cover"
+          loading="lazy"
+        />
+        {order.dropoffProofPhotoRear && (
+          <img
+            src={order.dropoffProofPhotoRear}
+            alt="Bukti serah terima, sudut belakang-kanan"
+            className="aspect-[4/3] w-full rounded-xl object-cover"
+            loading="lazy"
+          />
+        )}
+      </div>
+
+      <div
+        className={cn(
+          'text-12 flex items-start gap-2 rounded-lg px-3 py-2.5',
+          received ? 'bg-green-50 text-green-800' : 'bg-warning/10 text-neutral-700',
+        )}
+      >
+        {received ? (
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-700" />
+        ) : (
+          <Clock3 className="text-warning mt-0.5 size-4 shrink-0" />
+        )}
+        <span>
+          {received
+            ? `Bengkel sudah mengonfirmasi penerimaan kendaraan${
+                order.vehicleReceivedAt ? ` • ${formatDateTime(order.vehicleReceivedAt)}` : ''
+              }.`
+            : 'Menunggu konfirmasi penerimaan dari bengkel.'}
+        </span>
+      </div>
+    </Card>
   );
 }

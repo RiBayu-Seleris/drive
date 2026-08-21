@@ -12,7 +12,9 @@ import { cn } from '@/lib/utils/cn';
 import { MitraShell } from '../components/MitraShell';
 import {
   createMitraBankAccount,
+  getDisbursementBanks,
   getMitraBankAccounts,
+  type DisbursementBank,
   getMitraSaldo,
   requestMitraWithdrawal,
 } from '../financeApi';
@@ -39,9 +41,10 @@ export function TarikSaldoPage() {
   const [submitting, setSubmitting] = useState(false);
   const [addingBank, setAddingBank] = useState(false);
   const [savingBank, setSavingBank] = useState(false);
-  const [bankName, setBankName] = useState('');
+  const [bankCode, setBankCode] = useState('');
   const [bankNumber, setBankNumber] = useState('');
   const [bankHolder, setBankHolder] = useState('');
+  const [bankOptions, setBankOptions] = useState<DisbursementBank[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -87,21 +90,40 @@ export function TarikSaldoPage() {
     }
   };
 
+  // Daftar bank dimuat saat formnya dibuka, bukan saat halaman dibuka:
+  // sebagian besar kunjungan ke halaman ini tidak menambah rekening.
+  useEffect(() => {
+    if (!addingBank || bankOptions.length > 0) return;
+    let active = true;
+    getDisbursementBanks()
+      .then((list) => {
+        if (active) setBankOptions(list);
+      })
+      .catch((error) =>
+        toast.error(extractErrorMessage(error, 'Daftar bank gagal dimuat.')),
+      );
+    return () => {
+      active = false;
+    };
+  }, [addingBank, bankOptions.length]);
+
   const saveBank = async () => {
-    if (!bankName.trim() || !bankNumber.trim() || !bankHolder.trim()) {
-      toast.error('Lengkapi nama bank, nomor rekening, dan pemilik rekening.');
+    const chosen = bankOptions.find((bank) => bank.code === bankCode);
+    if (!chosen || !bankNumber.trim() || !bankHolder.trim()) {
+      toast.error('Pilih bank, lalu lengkapi nomor rekening dan pemilik rekening.');
       return;
     }
     setSavingBank(true);
     try {
       const created = await createMitraBankAccount({
-        bank: bankName.trim(),
+        bank: chosen.name,
+        bankCode: chosen.code,
         number: bankNumber.replace(/\D/g, ''),
         holder: bankHolder.trim(),
       });
       setBanks((current) => [created, ...current]);
       setBankId(created.id);
-      setBankName('');
+      setBankCode('');
       setBankNumber('');
       setBankHolder('');
       setAddingBank(false);
@@ -150,12 +172,33 @@ export function TarikSaldoPage() {
         </div>
         {addingBank && (
           <div className="mt-3 space-y-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <Input
-              label="Nama Bank"
-              placeholder="BCA"
-              value={bankName}
-              onChange={(event) => setBankName(event.target.value.toUpperCase())}
-            />
+            <div>
+              <label className="text-14 mb-1.5 block font-medium text-neutral-900">
+                Bank
+              </label>
+              <select
+                value={bankCode}
+                onChange={(event) => setBankCode(event.target.value)}
+                className="text-14 w-full rounded-lg border border-neutral-400 bg-white px-3 py-2.5 text-neutral-900"
+              >
+                <option value="">
+                  {bankOptions.length === 0 ? 'Memuat daftar bank…' : 'Pilih bank'}
+                </option>
+                {bankOptions.map((bank) => (
+                  <option key={bank.code} value={bank.code}>
+                    {bank.name}
+                  </option>
+                ))}
+              </select>
+              {/*
+                Dipilih dari daftar, bukan diketik: transfer otomatis memakai
+                kode resmi bank. Nama yang diketik sendiri bisa gagal terkirim,
+                atau lebih buruk, cocok dengan bank yang berbeda.
+              */}
+              <p className="text-12 mt-1 text-neutral-700">
+                Pilih dari daftar agar dana bisa ditransfer otomatis.
+              </p>
+            </div>
             <Input
               label="Nomor Rekening"
               inputMode="numeric"
@@ -192,9 +235,7 @@ export function TarikSaldoPage() {
         <div className="mt-3 space-y-3">
           {banks.length === 0 && (
             <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-4 text-center">
-              <p className="text-12 font-medium text-neutral-700">
-                Belum ada rekening tujuan.
-              </p>
+              <p className="text-12 font-medium text-neutral-700">Belum ada rekening tujuan.</p>
               <p className="mt-1 text-[11px] text-neutral-500">
                 Tambahkan rekening sebelum mengajukan penarikan saldo.
               </p>
@@ -256,7 +297,7 @@ export function TarikSaldoPage() {
               className="w-full bg-transparent text-2xl font-semibold text-neutral-900 placeholder:text-neutral-300 focus:outline-none"
             />
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-3 flex [scrollbar-width:none] gap-2 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {WITHDRAW_QUICK_AMOUNTS.map((value) => (
               <button
                 key={value}
@@ -280,7 +321,7 @@ export function TarikSaldoPage() {
       </div>
 
       {/* Bar aksi sticky */}
-      <div className="pb-safe fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-200 bg-white px-5 pt-3 pb-4 shadow-[0_-4px_14px_rgba(0,0,0,0.06)]">
+      <div className="pb-safe fixed bottom-5 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-200 bg-white px-5 pt-3 pb-4 shadow-[0_-4px_14px_rgba(0,0,0,0.06)]">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-12 text-neutral-500">Total Penarikan</span>
           <span className="text-deep-blue-600 text-16 font-bold">{rupiah(amount)}</span>
