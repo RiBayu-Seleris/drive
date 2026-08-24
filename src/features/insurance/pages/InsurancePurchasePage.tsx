@@ -247,6 +247,30 @@ export function InsurancePurchasePage() {
   const [registrationArea, setRegistrationArea] = useState('');
   const [estimatedVehicleValue, setEstimatedVehicleValue] = useState('');
   const [period, setPeriod] = useState(12);
+
+  /*
+   * Isi data kendaraan dari hasil pemindaian begitu tersedia.
+   *
+   * Nilai awal `useState` hanya dibaca SEKALI saat halaman pertama dibuka.
+   * Padahal urutan lazimnya justru terbalik: user membuka formulir pembelian
+   * dulu, baru dikirim memindai. Saat formulir dibuka pertama kali, data
+   * pemindaian memang belum ada — dan tanpa penyelarasan ini, kolomnya tetap
+   * kosong walau kemudian datanya masuk.
+   *
+   * Hanya kolom yang MASIH KOSONG yang diisi. Apa pun yang sudah diketik user
+   * tidak pernah ditimpa — hasil pemindaian adalah bantuan, bukan atasan.
+   */
+  useEffect(() => {
+    const { brand, model } = splitBrandModel(scanVehicleInfo.brandModel);
+    if (brand) setVehicleBrand((current) => current || brand);
+    if (model) setVehicleModel((current) => current || model);
+    if (scanVehicleInfo.year) setVehicleYear((current) => current || scanVehicleInfo.year);
+    if (scanVehicleInfo.color) setVehicleColor((current) => current || scanVehicleInfo.color);
+    if (scanPlate.number) {
+      const scanned = scanPlate.number;
+      setPlate((current) => current || scanned);
+    }
+  }, [scanVehicleInfo.brandModel, scanVehicleInfo.year, scanVehicleInfo.color, scanPlate.number]);
   const [paymentMethod, setPaymentMethod] = useState('BANK_TRANSFER');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [declarationAccepted, setDeclarationAccepted] = useState(false);

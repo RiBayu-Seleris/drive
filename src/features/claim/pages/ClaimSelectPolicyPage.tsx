@@ -12,6 +12,9 @@ import { cn } from '@/lib/utils/cn';
 import { ROUTES } from '@/app/routes';
 import { getInsurancePolicies, type InsurancePolicy } from '@/features/insurance/api';
 import { useDamageStore } from '@/features/damage/store/damageStore';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { STORAGE_KEYS } from '@/config/constants';
+import { storage } from '@/lib/storage/storage';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { useClaimDraftStore } from '../store/claimDraftStore';
 
@@ -144,6 +147,23 @@ export function ClaimSelectPolicyPage() {
   const displayPlate = formatPlate(vehiclePlate || matchingPolicies[0]?.vehiclePlate);
   const damagePercent = clampPercent(damageResult?.repair.percentage ?? 0);
   const hasScanResult = Boolean(damageResult);
+  /*
+   * Hasil pemindaian bisa ada di DUA tempat, dan tombolnya harus tahu keduanya.
+   *
+   * Hasil lengkapnya cuma disimpan di memori — hilang begitu halaman dimuat
+   * ulang. Yang bertahan hanyalah nomor tiketnya di penyimpanan browser, dan
+   * itu pun hanya berguna bagi user yang sudah masuk: halaman hasil bisa
+   * mengambil ulang datanya dari server memakai tiket itu.
+   *
+   * Tanpa memperhitungkannya, user yang me-refresh halaman akan melihat
+   * "Mulai AI Scan" padahal hasilnya masih bisa dipulihkan — dan menekannya
+   * justru MENGHAPUS tiket itu, sehingga hasil yang tadinya bisa diselamatkan
+   * benar-benar hilang.
+   */
+  const recoverableTicket = useAuthStore((state) => state.isAuthenticated)
+    ? storage.getString(STORAGE_KEYS.guestInferenceTicket)
+    : '';
+  const scanAvailable = hasScanResult || Boolean(recoverableTicket);
 
   return (
     <PageContainer>
@@ -159,13 +179,33 @@ export function ClaimSelectPolicyPage() {
             className="absolute right-[-76px] bottom-[-8px] h-[150px] max-w-none object-contain opacity-95"
           />
 
+          {/*
+            Dulu tombol ini selalu menuju halaman HASIL, padahal namanya
+            "AI Scan" yang terbaca sebagai "mulai pindai". Halaman hasil bersifat
+            buntu: tanpa hasil tersimpan ia melempar user ke Beranda dengan toast
+            "Hasil analisis tidak tersedia" — jadi tombol yang menjanjikan
+            memindai justru mengeluarkan user dari alur klaim.
+
+            Sekarang tujuannya mengikuti keadaan: ada hasil → lihat hasilnya,
+            belum ada → mulai pindai. Namanya pun ikut menyesuaikan supaya
+            janjinya sama dengan yang terjadi.
+          */}
           <button
             type="button"
             className="absolute top-4 right-4 inline-flex h-11 items-center gap-2 rounded-full bg-[#f6a300] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgb(246_163_0_/_0.28)]"
-            onClick={() => navigate(ROUTES.damageAnalysis)}
+            onClick={() => {
+              if (scanAvailable) {
+                navigate(ROUTES.damageAnalysis);
+                return;
+              }
+              useScanStore.getState().reset();
+              useScanStore.getState().setScanPurpose('standard');
+              useDamageStore.getState().reset();
+              navigate(ROUTES.checkCondition);
+            }}
           >
             <Camera className="size-4" />
-            AI Scan
+            {scanAvailable ? 'Lihat Hasil AI' : 'Mulai AI Scan'}
           </button>
 
           <div className="absolute right-5 bottom-5 left-5 flex items-end justify-between gap-4">

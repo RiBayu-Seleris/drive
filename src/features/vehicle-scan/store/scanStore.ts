@@ -126,23 +126,12 @@ function emptyVehicleInfo(): VehicleScanInfo {
   return { brandModel: '', color: '', year: '', type: '' };
 }
 
-function storedVehicleInfo(): VehicleScanInfo {
-  const value = storage.getJSON<Partial<VehicleScanInfo>>(STORAGE_KEYS.lastScanVehicleInfo);
-  if (!value || typeof value !== 'object') return emptyVehicleInfo();
-  return {
-    brandModel: typeof value.brandModel === 'string' ? value.brandModel : '',
-    color: typeof value.color === 'string' ? value.color : '',
-    year: typeof value.year === 'string' ? value.year : '',
-    type: typeof value.type === 'string' ? value.type : '',
-  };
-}
-
 const initialPlate = storedPlate();
 const initialInsuranceCoverage = storedInsuranceForPlate(initialPlate.number);
 
 export const useScanStore = create<ScanState>((set) => ({
   plate: initialPlate,
-  vehicleInfo: storedVehicleInfo(),
+  vehicleInfo: emptyVehicleInfo(),
   selectedVehicle: null,
   insuranceStatus: initialInsuranceCoverage ? 'insured' : 'idle',
   insuranceCoverage: initialInsuranceCoverage,
@@ -155,6 +144,17 @@ export const useScanStore = create<ScanState>((set) => ({
     clearStoredPlate();
     set((state) => ({
       plate: { image: null, number: null, source: null },
+      // Data kendaraan DIPERTAHANKAN melintasi reset().
+      //
+      // Yang dulu bikin aneh adalah penyimpanannya di browser: data mobil lama
+      // muncul lagi berhari-hari kemudian saat memindai mobil yang berbeda. Itu
+      // sudah dihapus — nilainya kini hanya hidup di memori dan hilang begitu
+      // halaman dimuat ulang.
+      //
+      // Menghapusnya di sini pernah dicoba dan justru merusak: menekan tombol
+      // pindai dari formulir pembelian memanggil reset(), sehingga data yang
+      // baru saja diisi user langsung terbuang dan formulirnya kosong lagi
+      // sesudah memindai.
       vehicleInfo: state.vehicleInfo,
       // Kendaraan terpilih dipertahankan agar verifikasi plat tetap jalan setelah
       // halaman scan memanggil reset() saat mount.
@@ -185,7 +185,6 @@ export const useScanStore = create<ScanState>((set) => ({
       year: info.year.trim(),
       type: info.type.trim(),
     };
-    storage.setJSON(STORAGE_KEYS.lastScanVehicleInfo, normalized);
     set({ vehicleInfo: normalized });
   },
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { EmptyState, ErrorState } from '@/components/feedback/StateViews';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -54,7 +55,7 @@ export function InsurancePolicyDetailPage() {
 	return (
 		<PageContainer>
 			<AppHeader title="Detail Polis" />
-			<div className="flex flex-1 flex-col gap-4 px-5 py-5">
+			<div className="flex flex-1 flex-col gap-4 px-5 pt-5 pb-28">
 				<Card className="space-y-3">
 					<div className="flex items-start justify-between gap-3">
 						<div><p className="text-16 font-bold text-neutral-900">{policy.productName}</p><p className="text-12 text-neutral-600">{policy.provider}</p></div>
@@ -111,6 +112,16 @@ export function InsurancePolicyDetailPage() {
 					</>
 				)}
 			</div>
+			{/*
+			 * Bilah menu bawah: jalan keluar yang tidak memutar balik alur.
+			 *
+			 * Halaman ini adalah UJUNG dari pembelian polis. Tombol kembali —
+			 * baik panah di layar maupun tombol bawaan ponsel — memundurkan satu
+			 * langkah, yang berarti user dilempar balik ke formulir pembelian
+			 * atau halaman pembayaran yang sudah selesai dikerjakannya.
+			 * Beranda & Profil memberi jalan keluar yang jelas.
+			 */}
+			<BottomNav />
 		</PageContainer>
 	);
 }

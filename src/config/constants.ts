@@ -16,7 +16,6 @@ export const STORAGE_KEYS = {
   insuranceCoverageCache: 'insurance_coverage_cache',
   lastScanPlateNumber: 'last_scan_plate_number',
   lastScanPlateSource: 'last_scan_plate_source',
-  lastScanVehicleInfo: 'last_scan_vehicle_info',
   mitraToken: 'mitra_token',
   mitraInfo: 'mitra_info',
 } as const;
