@@ -7,6 +7,8 @@ import { ConfirmRoot } from '@/components/feedback/ConfirmRoot';
 import { router } from './router';
 import { prefetchLikelyRoutes } from './prefetch';
 
+// Add comment for push
+
 export function App() {
   // Pra-muat rute yang paling mungkin dibuka berikutnya saat browser idle.
   useEffect(() => {
