@@ -6,34 +6,12 @@ import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/feedback/toast';
 import { confirm } from '@/components/feedback/confirm';
-import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES } from '@/app/routes';
 import { CameraCapture } from '@/features/vehicle-scan/components/CameraCapture';
 import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import type { CapturedImage } from '@/features/vehicle-scan/types';
-import { analyzeDamage } from '@/features/damage/api/damageApi';
+import { scanSignature } from '../scanSignature';
 import { useDamageStore } from '@/features/damage/store/damageStore';
-
-/**
- * Sidik jari isi pemindaian: plat + foto plat + foto tiap sisi.
- *
- * Memakai `url` (object URL) tiap foto, bukan isinya. Object URL dibuat sekali
- * per pengambilan gambar, jadi memotret ulang satu sisi saja sudah mengubah
- * sidik jarinya — persis yang diinginkan: analisis ulang hanya bila memang ada
- * yang berubah. Membandingkan isi blob akan jauh lebih mahal tanpa hasil yang
- * lebih benar.
- */
-function scanSignature(
-  plateNumber: string | null,
-  plateImage: CapturedImage | null,
-  sides: Array<{ id: string; damaged: boolean | null; photo?: CapturedImage | null }>,
-): string {
-  const parts = [plateNumber ?? '', plateImage?.url ?? ''];
-  for (const side of sides) {
-    parts.push(`${side.id}:${side.damaged ?? ''}:${side.photo?.url ?? ''}`);
-  }
-  return parts.join('|');
-}
 
 export function PreviewVehiclePage() {
   const navigate = useNavigate();
@@ -43,11 +21,8 @@ export function PreviewVehiclePage() {
   const answerSide = useScanStore((s) => s.answerSide);
   const setSidePhoto = useScanStore((s) => s.setSidePhoto);
   const clearSidePhoto = useScanStore((s) => s.clearSidePhoto);
-  const setResult = useDamageStore((s) => s.setResult);
-  const setAnalyzing = useDamageStore((s) => s.setAnalyzing);
   const lastResult = useDamageStore((s) => s.result);
   const lastSignature = useDamageStore((s) => s.analyzedSignature);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [selectedSide, setSelectedSide] = useState<number | null>(null);
   const [pendingCapture, setPendingCapture] = useState<CapturedImage | null>(null);
@@ -74,7 +49,7 @@ export function PreviewVehiclePage() {
     };
   }, [plate.image, navigate]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (insuranceMode && !sides.every((side) => side.photo)) {
       toast.error(
         'Foto semua sisi kendaraan wajib diambil untuk membeli asuransi dari Bantuan Darurat.',
@@ -94,27 +69,10 @@ export function PreviewVehiclePage() {
       return;
     }
 
-    setIsSubmitting(true);
-    setAnalyzing(true);
-    try {
-      const result = await analyzeDamage({
-        plateNumber: plate.number,
-        plateImage: plate.image?.blob ?? null,
-        sides: sides.map((s) => ({ id: s.id, damaged: s.damaged, image: s.photo?.blob ?? null })),
-        purpose: scanPurpose,
-      });
-      setResult(result, signature);
-      if (insuranceMode && result.repair.percentage <= 0) {
-        navigate(ROUTES.insuranceSearch, { state: { requiresDamageFreeScan: true } });
-      } else {
-        navigate(ROUTES.damageAnalysis);
-      }
-    } catch (error) {
-      toast.error(extractErrorMessage(error, 'Gagal menganalisis kerusakan.'));
-    } finally {
-      setIsSubmitting(false);
-      setAnalyzing(false);
-    }
+    // Pengirimannya sendiri dilakukan halaman tunggu, supaya panggilan yang
+    // bisa makan belasan detik punya layarnya sendiri — bukan tombol berputar
+    // yang membuat aplikasi terasa menggantung.
+    navigate(ROUTES.analyzing);
   };
 
   const openCamera = (index: number) => {
@@ -197,7 +155,7 @@ export function PreviewVehiclePage() {
                     <button
                       type="button"
                       onClick={() => openCamera(index)}
-                      className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#C7CEE2] bg-white px-3 text-xs font-medium text-deep-blue-500 transition active:scale-[0.98]"
+                      className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#223039] bg-neutral-100 px-3 text-xs font-medium text-deep-blue-500 transition active:scale-[0.98]"
                     >
                       <Camera className="h-4 w-4" aria-hidden="true" />
                       Foto Ulang
@@ -205,7 +163,7 @@ export function PreviewVehiclePage() {
                     <button
                       type="button"
                       onClick={() => void handleDeletePhoto(index, side.label)}
-                      className="flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-700 transition active:scale-[0.98]"
+                      className="flex h-10 items-center justify-center gap-2 rounded-lg border border-danger/30 bg-danger/15 px-3 text-xs font-medium text-danger transition active:scale-[0.98]"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
                       Hapus Foto
@@ -216,7 +174,7 @@ export function PreviewVehiclePage() {
                 <button
                   type="button"
                   onClick={() => openCamera(index)}
-                  className="mt-2 flex h-[200px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#C7CEE2] bg-[#EDEFF680] text-xs text-gray-500 transition-all duration-150 active:scale-95 active:border-[#A0AEC0] active:bg-[#D1D5DB]"
+                  className="mt-2 flex h-[200px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#223039] bg-[#EDEFF680] text-xs text-neutral-500 transition-all duration-150 active:scale-95 active:border-[#223039] active:bg-[#0f1720]"
                 >
                   <p className="text-deep-blue-500 text-xs">Tidak ada kerusakan pada bagian ini</p>
                   <p className="mt-1 text-xs text-neutral-600">
@@ -229,8 +187,8 @@ export function PreviewVehiclePage() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-300 bg-white px-4 py-5 text-xs text-neutral-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <Button onClick={handleSubmit} isLoading={isSubmitting}>
+      <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-300 bg-neutral-100 px-4 py-5 text-xs text-neutral-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <Button onClick={handleSubmit}>
           Lanjut Analisis Kerusakan
         </Button>
       </div>
@@ -245,7 +203,7 @@ export function PreviewVehiclePage() {
 
       {pendingCapture ? (
         <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/70 px-4 py-5 sm:items-center">
-          <div className="w-full max-w-md rounded-xl bg-white p-4 text-left shadow-xl">
+          <div className="drive-card w-full max-w-md rounded-xl p-4 text-left shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h4 className="text-sm font-semibold text-neutral-900">Gunakan Foto Ini?</h4>
@@ -271,7 +229,7 @@ export function PreviewVehiclePage() {
               <button
                 type="button"
                 onClick={retakePendingCapture}
-                className="flex h-11 items-center justify-center gap-2 rounded-lg border border-[#C7CEE2] bg-white px-3 text-xs font-semibold text-deep-blue-500 transition active:scale-[0.98]"
+                className="flex h-11 items-center justify-center gap-2 rounded-lg border border-[#223039] bg-neutral-100 px-3 text-xs font-semibold text-deep-blue-500 transition active:scale-[0.98]"
               >
                 <Camera className="h-4 w-4" aria-hidden="true" />
                 Foto Ulang
@@ -279,7 +237,7 @@ export function PreviewVehiclePage() {
               <button
                 type="button"
                 onClick={usePendingCapture}
-                className="h-11 rounded-lg bg-[#1E4D7B] px-3 text-xs font-semibold text-white transition active:scale-[0.98]"
+                className="h-11 rounded-lg bg-[#aded1f] px-3 text-xs font-semibold text-white transition active:scale-[0.98]"
               >
                 Gunakan Foto
               </button>

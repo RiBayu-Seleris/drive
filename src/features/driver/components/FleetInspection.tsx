@@ -124,12 +124,12 @@ export function FleetInspection({
   };
 
   return (
-    <PageContainer className="bg-[#F5F7FB]">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Cek Kelayakan Armada" onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-5 py-5 pb-28">
-        <div className="rounded-2xl bg-white p-4 shadow-md">
+        <div className="drive-card rounded-2xl p-4 shadow-md">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#EAF0FF] text-[#3F5FA8]">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#131c24] text-[#c2f347]">
               <Truck className="size-6" />
             </span>
             <div className="min-w-0">
@@ -143,7 +143,7 @@ export function FleetInspection({
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-2xl bg-[#EAF0FF] p-4 text-[#2A3E6B]">
+        <div className="flex items-start gap-3 rounded-2xl bg-[#131c24] p-4 text-[#c2f347]">
           <Info className="mt-0.5 size-5 shrink-0" />
           <p className="text-12">
             Foto keempat sisi armada sebelum berangkat. Masalah ringan (mis. ban kurang angin)
@@ -154,7 +154,7 @@ export function FleetInspection({
 
         <div className="flex items-center justify-between">
           <h2 className="text-16 font-bold text-neutral-900">Foto Armada (4 Sisi)</h2>
-          <span className="text-12 font-semibold text-[#3F5FA8]">{takenCount}/4</span>
+          <span className="text-12 font-semibold text-[#c2f347]">{takenCount}/4</span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -169,14 +169,14 @@ export function FleetInspection({
                   'relative flex aspect-[4/3] flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed text-center transition',
                   image
                     ? 'border-transparent'
-                    : 'border-neutral-300 bg-white text-neutral-500 hover:border-[#3F5FA8]',
+                    : 'border-neutral-300 bg-neutral-200 text-neutral-500 hover:border-[#aded1f]',
                 )}
               >
                 {image ? (
                   <>
                     <img src={image.url} alt={side.label} className="absolute inset-0 size-full object-cover" />
                     <span className="absolute inset-0 bg-black/25" />
-                    <span className="relative z-10 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-11 font-semibold text-[#237A3A]">
+                    <span className="relative z-10 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-11 font-semibold text-[#6ae78b]">
                       <CheckCircle2 className="size-3.5" /> {side.label}
                     </span>
                     <span className="relative z-10 flex items-center gap-1 text-11 font-medium text-white">
@@ -195,7 +195,7 @@ export function FleetInspection({
         </div>
 
         {unfitMode && (
-          <div className="rounded-2xl bg-white p-4 shadow-md">
+          <div className="drive-card rounded-2xl p-4 shadow-md">
             <TextArea
               label="Alasan armada tidak layak"
               rows={3}
@@ -207,7 +207,7 @@ export function FleetInspection({
         )}
       </main>
 
-      <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-neutral-200 bg-white px-5 py-4">
+      <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-neutral-200 bg-neutral-200 px-5 py-4">
         {unfitMode ? (
           <>
             <Button

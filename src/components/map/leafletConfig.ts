@@ -26,10 +26,10 @@ export const DEFAULT_MAP_ZOOM = 15;
 
 /** Warna pin per peran titik di peta. */
 export const MAP_PIN_COLOR = {
-  default: '#4B61A1',
-  origin: '#059669',
-  destination: '#E35151',
-  driver: '#1B59F8',
+  default: '#aded1f',
+  origin: '#3adfac',
+  destination: '#df3a3a',
+  driver: '#aded1f',
 } as const;
 
 export type MapPinVariant = keyof typeof MAP_PIN_COLOR;

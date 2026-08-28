@@ -324,7 +324,7 @@ export function CameraCapture({
         </div>
 
         {/* Kontrol bawah */}
-        <div className="flex h-40 items-center justify-center bg-[#323B4A] px-5">
+        <div className="flex h-40 items-center justify-center bg-[#131c24] px-5">
           {pendingImage ? (
             <div className="flex w-full gap-3">
               <button
@@ -338,7 +338,7 @@ export function CameraCapture({
               <button
                 type="button"
                 onClick={handleUsePhoto}
-                className="bg-deep-blue-500 flex h-12 flex-1 items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white"
+                className="bg-deep-blue-500 flex h-12 flex-1 items-center justify-center gap-2 rounded-lg text-sm font-semibold text-[#10200a]"
               >
                 <Check className="size-4" />
                 {confirmLabel}
@@ -350,7 +350,7 @@ export function CameraCapture({
               onClick={handleCapture}
               disabled={!isReady}
               aria-label="Ambil foto"
-              className="flex size-20 items-center justify-center rounded-full bg-white p-2 shadow-md transition active:scale-95 disabled:opacity-50"
+              className="flex size-20 items-center justify-center rounded-full bg-neutral-100 p-2 shadow-md transition active:scale-95 disabled:opacity-50"
             >
               <span className="bg-deep-blue-50 flex size-full items-center justify-center rounded-full">
                 <Camera className="size-8 text-neutral-800" />

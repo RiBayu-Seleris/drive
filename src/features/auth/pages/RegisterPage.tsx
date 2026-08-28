@@ -58,8 +58,8 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Registrasi AutoClaim!"
-      subtitle="Silakan masukkan data diri Anda untuk mendaftar"
+      title="Buat akun dulu, ya"
+      subtitle="Isi empat kolom di bawah. Setelah itu langsung bisa memindai."
       footer={
         <span>
           Sudah punya akun?{' '}

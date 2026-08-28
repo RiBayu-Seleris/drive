@@ -94,7 +94,7 @@ export function LaporanPage() {
           </div>
 
           {/* Perlu diselesaikan */}
-          <div className="mt-4 flex flex-col items-center rounded-2xl bg-white py-4 shadow-sm">
+          <div className="drive-card mt-4 flex flex-col items-center rounded-2xl py-4">
             <span className="bg-deep-blue-50 text-deep-blue-500 grid size-10 place-items-center rounded-full">
               <ClipboardCheck className="size-5" />
             </span>
@@ -177,7 +177,7 @@ function TabButton({
 function ReportCard({ item, onOpen }: { item: Laporan; onOpen: () => void }) {
   const Icon = ICONS[item.iconKey];
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="drive-card rounded-2xl p-4">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] flex items-center gap-1.5 font-medium text-neutral-500">
           <Icon className="text-deep-blue-500 size-4" />
@@ -202,7 +202,7 @@ function ReportCard({ item, onOpen }: { item: Laporan; onOpen: () => void }) {
         <button
           type="button"
           onClick={onOpen}
-          className="text-12 mt-3 w-full rounded-lg bg-neutral-100 py-2.5 font-semibold text-neutral-600"
+          className="text-12 mt-3 w-full rounded-lg bg-neutral-200 py-2.5 font-semibold text-neutral-600"
         >
           Lengkapi Data
         </button>

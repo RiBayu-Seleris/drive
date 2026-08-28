@@ -116,7 +116,7 @@ function ArmadaCard({
   const available = armada.isActive && armada.status === 'AVAILABLE';
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div className="drive-card overflow-hidden rounded-2xl">
       <button type="button" onClick={onOpen} className="relative block w-full">
         <div className="from-deep-blue-100 to-deep-blue-50 grid h-36 w-full place-items-center bg-gradient-to-br">
           <Truck className="text-deep-blue-300 size-12" />
@@ -140,7 +140,7 @@ function ArmadaCard({
             </p>
             <p className="text-12 mt-0.5 text-neutral-500">{fleetTypeLabel(armada.fleetType)}</p>
           </div>
-          <span className="text-12 shrink-0 rounded-md bg-neutral-100 px-2.5 py-1 font-semibold tracking-wide text-neutral-700">
+          <span className="text-12 shrink-0 rounded-md bg-neutral-200 px-2.5 py-1 font-semibold tracking-wide text-neutral-700">
             {armada.plateNumber}
           </span>
         </div>
@@ -154,7 +154,7 @@ function ArmadaCard({
             <button
               type="button"
               onClick={onOpen}
-              className="text-deep-blue-500 text-12 flex w-full items-center justify-center gap-1 rounded-lg bg-neutral-100 py-2.5 font-semibold"
+              className="text-deep-blue-500 text-12 flex w-full items-center justify-center gap-1 rounded-lg bg-neutral-200 py-2.5 font-semibold"
             >
               Lihat Detail Tugas
               <ChevronRight className="size-4" />

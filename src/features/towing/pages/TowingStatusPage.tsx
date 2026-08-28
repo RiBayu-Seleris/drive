@@ -177,7 +177,7 @@ export function TowingStatusPage() {
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
 
       {active && center && (
@@ -189,7 +189,7 @@ export function TowingStatusPage() {
             fitToMarkers={markers.length > 1}
             className="h-56 rounded-none"
           />
-          <div className="absolute inset-x-4 top-3 rounded-xl bg-white p-3 shadow-md">
+          <div className="drive-card absolute inset-x-4 top-3 rounded-xl p-3 shadow-md">
             <RoutePoint icon={<CircleDot className="text-deep-blue-500 size-4" />} text={data.pickupAddress || 'Lokasi penjemputan'} />
             <div className="my-1 ml-2 h-3 border-l border-dashed border-neutral-500" />
             <RoutePoint icon={<MapPin className="text-danger size-4" />} text={destination} />
@@ -324,7 +324,7 @@ function SettlementTicketCard({
           {flag.status === 'SETTLED' ? 'Lunas' : flag.status === 'AWAITING_PAYMENT' ? 'Bayar sisa' : 'Aktif'}
         </Badge>
       </div>
-      <div className="flex items-center gap-4 rounded-xl bg-neutral-100 p-3">
+      <div className="drive-card flex items-center gap-4 rounded-xl p-3">
         {code && <QRCodeSVG value={code} size={92} marginSize={1} />}
         <div className="min-w-0 flex-1">
           <p className="text-10 font-semibold text-neutral-500">KODE TIKET</p>
@@ -421,7 +421,7 @@ function HandoverCard({ order }: { order: TowingOrder }) {
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-green-100 text-green-700">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-success/20 text-success">
           <PackageCheck className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -455,11 +455,11 @@ function HandoverCard({ order }: { order: TowingOrder }) {
       <div
         className={cn(
           'text-12 flex items-start gap-2 rounded-lg px-3 py-2.5',
-          received ? 'bg-green-50 text-green-800' : 'bg-warning/10 text-neutral-700',
+          received ? 'bg-success/15 text-success' : 'bg-warning/10 text-neutral-700',
         )}
       >
         {received ? (
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-700" />
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
         ) : (
           <Clock3 className="text-warning mt-0.5 size-4 shrink-0" />
         )}

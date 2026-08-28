@@ -16,7 +16,7 @@ import { createMitraTowingFleet, TOWING_FLEET_TYPE_OPTIONS } from '../../api';
 /** Kartu pembungkus satu field (label kapital + kontrol), gaya desain Kelola Armada. */
 function CardField({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="drive-card rounded-2xl p-4">
       <label className="mb-2 block text-[11px] font-semibold tracking-wide text-neutral-500">
         {label}
       </label>
@@ -26,7 +26,7 @@ function CardField({ label, children }: { label: string; children: ReactNode }) 
 }
 
 const CONTROL_CLASS =
-  'block h-11 w-full rounded-lg border border-gray-200 bg-neutral-50 px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-deep-blue-400 focus:bg-white focus:ring-2 focus:ring-deep-blue-100 focus:outline-none';
+  'block h-11 w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-deep-blue-400 focus:bg-neutral-200 focus:ring-2 focus:ring-deep-blue-100 focus:outline-none';
 
 /** Ambil nilai field form sebagai string (FormData bisa berisi File). */
 function field(fd: FormData, key: string): string {
@@ -203,9 +203,9 @@ export function ArmadaTambahPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="hover:border-deep-blue-400 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-neutral-50 py-7 text-center transition"
+                className="hover:border-deep-blue-400 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 py-7 text-center transition"
               >
-                <span className="bg-deep-blue-500 grid size-11 place-items-center rounded-full text-white">
+                <span className="bg-deep-blue-500 grid size-11 place-items-center rounded-full text-[#10200a]">
                   <Camera className="size-5" />
                 </span>
                 <span className="text-12 font-medium text-neutral-700">Klik untuk pilih foto</span>

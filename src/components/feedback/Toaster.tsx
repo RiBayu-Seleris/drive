@@ -22,7 +22,7 @@ function ToastCard({ toast }: { toast: ToastItem }) {
   return (
     <div
       role="status"
-      className="pointer-events-auto flex w-full items-start gap-3 rounded-lg border border-neutral-300 bg-white p-3.5 shadow-lg"
+      className="pointer-events-auto flex w-full items-start gap-3 rounded-lg border border-neutral-300 bg-neutral-100 p-3.5 shadow-lg"
     >
       <Icon className={cn('mt-0.5 size-5 shrink-0', className)} />
       <div className="min-w-0 flex-1">

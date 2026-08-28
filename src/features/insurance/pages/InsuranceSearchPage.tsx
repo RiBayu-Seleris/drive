@@ -69,14 +69,14 @@ export function InsuranceSearchPage() {
     navigate(ROUTES.insuranceDetail, { state: { product, requiresDamageFreeScan } });
 
   return (
-    <PageContainer className="bg-[#F8F9FE]">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
 
-      <section className="bg-white px-4 pt-5 pb-6">
-        <h1 className="text-20 leading-tight font-bold tracking-tight text-[#003E6F]">
+      <section className="bg-neutral-100 px-4 pt-5 pb-6">
+        <h1 className="text-20 leading-tight font-bold tracking-tight text-[#c2f347]">
           Rekomendasi Asuransi untuk Anda
         </h1>
-        <p className="text-14 mt-2 leading-relaxed text-[#414750]">
+        <p className="text-14 mt-2 leading-relaxed text-[#eef4f8]">
           Pilih perlindungan terbaik yang sesuai dengan kondisi kendaraan Anda.
         </p>
 
@@ -89,7 +89,7 @@ export function InsuranceSearchPage() {
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="Cari asuransi atau fitur..."
               aria-label="Cari produk asuransi"
-              className="focus:border-deep-blue-500 focus:ring-deep-blue-200 text-14 h-12 w-full rounded-xl border border-neutral-400 bg-[#F8F9FE] pr-4 pl-11 text-neutral-900 transition placeholder:font-light placeholder:text-neutral-700 focus:ring-2 focus:outline-none"
+              className="focus:border-deep-blue-500 focus:ring-deep-blue-200 text-14 h-12 w-full rounded-xl border border-neutral-400 bg-[#131c24] pr-4 pl-11 text-neutral-900 transition placeholder:font-light placeholder:text-neutral-700 focus:ring-2 focus:outline-none"
             />
           </div>
           <button
@@ -97,7 +97,7 @@ export function InsuranceSearchPage() {
             onClick={() => setSortOpen((open) => !open)}
             aria-label="Urutkan produk"
             aria-expanded={sortOpen}
-            className="bg-deep-blue-500 hover:bg-deep-blue-600 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white transition"
+            className="bg-deep-blue-500 hover:bg-deep-blue-600 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-[#10200a] transition"
           >
             <SlidersHorizontal className="size-5" />
           </button>
@@ -111,7 +111,7 @@ export function InsuranceSearchPage() {
                 onClick={() => setSortOpen(false)}
                 className="fixed inset-0 z-20 cursor-default"
               />
-              <div className="absolute top-full right-0 z-30 mt-2 w-56 rounded-xl border border-neutral-300 bg-white p-1.5 shadow-lg">
+              <div className="drive-card absolute top-full right-0 z-30 mt-2 w-56 rounded-xl border border-neutral-300 p-1.5 shadow-lg">
                 {SORTS.map((option) => (
                   <button
                     key={option.value}
@@ -182,11 +182,11 @@ export function InsuranceSearchPage() {
           </div>
         )}
 
-        <div className="mt-6 flex items-center gap-3.5 rounded-xl bg-[#C6E7FF]/30 px-4 py-4">
-          <Info className="size-7 shrink-0 text-[#003E6F]" />
+        <div className="mt-6 flex items-center gap-3.5 rounded-xl bg-[#16240a]/30 px-4 py-4">
+          <Info className="size-7 shrink-0 text-[#c2f347]" />
           <div>
-            <p className="text-14 font-semibold text-[#191C1F]">Butuh Bantuan Memilih?</p>
-            <p className="text-12 mt-0.5 leading-relaxed text-[#414750]">
+            <p className="text-14 font-semibold text-[#eef4f8]">Butuh Bantuan Memilih?</p>
+            <p className="text-12 mt-0.5 leading-relaxed text-[#eef4f8]">
               Konsultasikan gratis dengan agen kami untuk paket yang paling sesuai.
             </p>
           </div>
@@ -212,7 +212,7 @@ function CoverageChip({
       aria-pressed={active}
       className={cn(
         'text-13 h-8 shrink-0 rounded-full px-4 font-medium transition',
-        active ? 'bg-deep-blue-500 text-white' : 'bg-[#E7E8EC] text-[#414750] hover:bg-neutral-400',
+        active ? 'bg-deep-blue-500 text-[#10200a]' : 'bg-[#0f1720] text-[#eef4f8] hover:bg-neutral-400',
       )}
     >
       {label}
@@ -227,28 +227,28 @@ function ProductCard({ product, onSelect }: { product: InsuranceProduct; onSelec
     <button
       type="button"
       onClick={onSelect}
-      className="w-full rounded-xl bg-white p-4 text-left shadow-[0_2px_12px_rgb(32_41_68_/_0.06)] transition hover:shadow-[0_4px_18px_rgb(32_41_68_/_0.1)]"
+      className="drive-card w-full rounded-xl p-4 text-left shadow-[0_2px_12px_rgb(32_41_68_/_0.06)] transition hover:shadow-[0_4px_18px_rgb(32_41_68_/_0.1)]"
     >
       <div className="flex items-start gap-3">
-        <div className="text-deep-blue-600 flex h-11 w-[62px] shrink-0 items-center justify-center rounded-lg bg-[#F3F3F8] text-sm font-bold">
+        <div className="text-deep-blue-600 flex h-11 w-[62px] shrink-0 items-center justify-center rounded-lg bg-[#131c24] text-sm font-bold">
           {providerInitials(product.provider)}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h2 className="text-14 leading-snug font-semibold text-[#191C1F]">{product.name}</h2>
-            <span className="text-11 shrink-0 rounded-xl bg-[#2DBCFE]/20 px-2.5 py-1 font-semibold text-[#00658D]">
+            <h2 className="text-14 leading-snug font-semibold text-[#eef4f8]">{product.name}</h2>
+            <span className="text-11 shrink-0 rounded-xl bg-[#aded1f]/20 px-2.5 py-1 font-semibold text-[#c2f347]">
               {coverageLabel(product)}
             </span>
           </div>
-          <p className="text-12 mt-0.5 text-[#414750]">{product.provider}</p>
+          <p className="text-12 mt-0.5 text-[#eef4f8]">{product.provider}</p>
         </div>
       </div>
 
       {benefits.length > 0 && (
         <ul className="mt-3.5 flex flex-col gap-2 pl-[74px]">
           {benefits.map((benefit) => (
-            <li key={benefit} className="text-12 flex items-start gap-2.5 text-[#414750]">
-              <CheckCircle2 className="mt-px size-4 shrink-0 text-[#003E6F]" />
+            <li key={benefit} className="text-12 flex items-start gap-2.5 text-[#eef4f8]">
+              <CheckCircle2 className="mt-px size-4 shrink-0 text-[#c2f347]" />
               <span className="min-w-0 flex-1">{benefit}</span>
             </li>
           ))}
@@ -257,13 +257,13 @@ function ProductCard({ product, onSelect }: { product: InsuranceProduct; onSelec
 
       <div className="mt-3.5 flex items-end justify-between gap-3 border-t border-neutral-400 pt-3.5">
         <div>
-          <p className="text-12 text-[#414750]">Mulai dari</p>
-          <p className="text-16 font-bold text-[#003E6F]">
+          <p className="text-12 text-[#eef4f8]">Mulai dari</p>
+          <p className="text-16 font-bold text-[#c2f347]">
             {formatCurrency(product.monthlyPremium)}
-            <span className="text-12 ml-1 font-normal text-[#414750]">/bln</span>
+            <span className="text-12 ml-1 font-normal text-[#eef4f8]">/bln</span>
           </p>
         </div>
-        <span className="bg-deep-blue-500 text-13 flex h-8 items-center rounded-lg px-5 font-semibold text-white">
+        <span className="bg-deep-blue-500 text-13 flex h-8 items-center rounded-lg px-5 font-semibold text-[#10200a]">
           Pilih
         </span>
       </div>

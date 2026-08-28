@@ -1,53 +1,97 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
 /*
- * Design system AutoClaim.
- * Token diambil 1:1 dari autoclaim-webapp (Vue) `src/assets/css/main.css`
- * dan autoclaim-flutter `core/theme/app_theme.dart` agar tampilan identik.
+ * Design system DRIVE (tema gelap).
  *
- * Catatan: skala `neutral-*` sengaja di-override mengikuti design system
- * AutoClaim (neutral-100 = putih ... neutral-900 = #374151), berbeda dari
- * default Tailwind. Ini keputusan desain yang konsisten di Flutter & Vue.
+ * Warna diambil langsung dari poster rebrand `re-brand-and-master-flow/`
+ * lewat pemindaian piksel: hijau aksen ~#83bd04 (hue 82-90deg) di atas latar
+ * hitam kebiruan (#00070f - #0e181e).
+ *
+ * PENTING — kenapa nama tokennya tidak ikut berubah:
+ * Nama `neutral-*` dan `deep-blue-*` DIPERTAHANKAN walau nilainya kini gelap
+ * dan hijau. Alasannya: dua nama itu dipakai 1.395 kali di seluruh komponen.
+ * Mengganti nilainya saja membuat seluruh aplikasi berpindah tema tanpa
+ * menyentuh satu pun logika. Alias `brand-*` disediakan untuk kode baru.
+ *
+ * Peran tiap langkah (dibaca dari pemakaian nyata, bukan ditebak):
+ *   neutral-100..300 -> permukaan & garis      (bg/border)
+ *   neutral-400..900 -> teks, makin terang     (text)
+ *   deep-blue-50     -> isian chip/panel redup (bg, 77x)
+ *   deep-blue-500    -> PRIMARY: teks 124x, tombol 42x, garis 30x
+ *   deep-blue-600+   -> teks aksen lebih terang
+ * Arah skala deep-blue SENGAJA dibalik: di tema terang angka besar = makin
+ * gelap; di tema gelap teks harus makin TERANG, jadi angka besar = makin muda.
  */
 @theme {
   --font-sans: 'Poppins', sans-serif;
+  /* Judul & angka — bersudut, bergaya instrumen. */
+  --font-display: 'Chakra Petch', 'Poppins', sans-serif;
+  /* Label data, kode, dan pembacaan HUD. Tidak untuk teks isi. */
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Neutral (override design system) */
-  --color-neutral-100: #ffffff;
-  --color-neutral-200: #f9fafb;
-  --color-neutral-300: #f3f4f6;
-  --color-neutral-400: #e5e7eb;
-  --color-neutral-500: #d1d5db;
-  --color-neutral-600: #9ca3af;
-  --color-neutral-700: #6b7280;
-  --color-neutral-800: #4b5563;
-  --color-neutral-900: #374151;
+  /* ---------- Permukaan & teks (gelap) ---------- */
+  --color-neutral-100: #131c24; /* kartu / panel terangkat */
+  --color-neutral-200: #0f1720; /* permukaan halus */
+  --color-neutral-300: #223039; /* garis & pembatas */
+  --color-neutral-400: #4a5c68; /* garis tegas + teks paling redup */
+  --color-neutral-500: #7c8b96; /* teks redup */
+  --color-neutral-600: #94a3ae; /* teks sekunder */
+  --color-neutral-700: #aebbc4; /* teks sekunder tegas */
+  --color-neutral-800: #ccd6dd; /* teks kuat */
+  --color-neutral-900: #eef4f8; /* teks utama */
 
-  /* Deep Blue (Primary) */
-  --color-deep-blue-50: #edeff6;
-  --color-deep-blue-100: #c7cee2;
-  --color-deep-blue-200: #acb6d4;
-  --color-deep-blue-300: #8695c0;
-  --color-deep-blue-400: #6f81b4;
-  --color-deep-blue-500: #4b61a1; /* Primary */
-  --color-deep-blue-600: #445893;
-  --color-deep-blue-700: #354572;
-  --color-deep-blue-800: #293559;
-  --color-deep-blue-900: #202944;
+  /* ---------- Hijau DRIVE (primary) ---------- */
+  --color-deep-blue-50: #16240a;
+  --color-deep-blue-100: #1f3310;
+  --color-deep-blue-200: #2e4a13;
+  --color-deep-blue-300: #497306;
+  --color-deep-blue-400: #83bd04; /* hijau tua merek */
+  --color-deep-blue-500: #aded1f; /* PRIMARY — hijau terang merek */
+  --color-deep-blue-600: #c2f347;
+  --color-deep-blue-700: #d5f77e;
+  --color-deep-blue-800: #e6fab4;
+  --color-deep-blue-900: #f4fde0;
 
-  /* Brand & status */
-  --color-green-cust: #37ab87;
-  --color-success: #059669;
-  --color-danger: #e35151;
-  --color-orange: #ee793d;
-  --color-warning: #f59e0b;
+  /* Alias bernama jujur untuk kode baru (nilai identik). */
+  --color-brand-50: #16240a;
+  --color-brand-100: #1f3310;
+  --color-brand-200: #2e4a13;
+  --color-brand-300: #497306;
+  --color-brand-400: #83bd04; /* hijau tua merek */
+  --color-brand-500: #aded1f; /* PRIMARY — hijau terang merek */
+  --color-brand-600: #c2f347;
+  --color-brand-700: #d5f77e;
+  --color-brand-800: #e6fab4;
+  --color-brand-900: #f4fde0;
 
-  /* Severity (persentase kerusakan) */
-  --color-severity-blue: #3b82f6; /* <= 25% */
-  --color-severity-green: #22c55e; /* <= 50% */
-  --color-severity-yellow: #fbbf24; /* <= 75% */
-  --color-severity-red: #ef4444; /* > 75% */
+  /* ---------- Permukaan dasar ---------- */
+  --color-surface-base: #070c11; /* latar halaman */
+  --color-surface-sunken: #04080b; /* lebih dalam dari halaman */
+  --color-surface-raised: #1a242d; /* di atas kartu */
+
+  /* ---------- Brand & status (dikalibrasi untuk latar gelap) ---------- */
+  --color-green-cust: #3fd0a3;
+  --color-success: #22c98d;
+  --color-danger: #ff6b6b;
+  --color-orange: #ff8a4c;
+  --color-warning: #fbbf24;
+
+  /* ---------- Severity (persentase kerusakan) ---------- */
+  --color-severity-blue: #60a5fa; /* <= 25% */
+  --color-severity-green: #4ade80; /* <= 50% */
+  --color-severity-yellow: #fcd34d; /* <= 75% */
+  --color-severity-red: #f87171; /* > 75% */
+
+  /*
+   * Jarak tepi halaman. 16px terasa menempel di bingkai perangkat, terutama
+   * pada kartu bersudut membulat yang tepinya sudah "masuk" secara optis.
+   * 20px memberi ruang napas tanpa mempersempit isi.
+   */
+  --spacing-gutter: 20px;
+
+  --radius-card: 18px;
+  --radius-hero: 26px;
 
   --text-10: 10px;
   --text-11: 11px;
@@ -70,16 +114,31 @@ body {
     font-family: 'Poppins', sans-serif;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    color-scheme: dark;
+    background: var(--color-surface-sunken);
   }
 
   html::-webkit-scrollbar {
     display: none;
   }
 
+  /*
+   * Latar DRIVE: hitam kebiruan dengan dua sapuan cahaya hijau redup.
+   *
+   * Sengaja memakai `background-attachment: fixed` + radial-gradient statis,
+   * BUKAN canvas/WebGL. Gradien statis dirender sekali oleh compositor dan
+   * tidak memakan frame budget sama sekali; efek 3D akan menambah ~600 KB
+   * dan menguras baterai di perangkat kelas bawah, padahal tampilannya sama.
+   */
   body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background: var(--color-neutral-300);
+    background-color: var(--color-surface-base);
+    background-image:
+      radial-gradient(75rem 40rem at 50% -12rem, rgba(173, 237, 31, 0.13), transparent 70%),
+      radial-gradient(45rem 30rem at 108% 8%, rgba(63, 208, 163, 0.07), transparent 65%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: var(--color-neutral-900);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -107,6 +166,12 @@ body {
   select {
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0;
+  }
+
+  /* Teks placeholder harus redup, bukan segelap latar. */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-neutral-500);
   }
 
   img {
@@ -137,5 +202,269 @@ body {
   }
   .pt-safe {
     padding-top: env(safe-area-inset-top);
+  }
+
+  /*
+   * Utilitas khas DRIVE.
+   *
+   * Prinsipnya: TERANG DATANG DARI ATAS-KIRI. Setiap permukaan yang terangkat
+   * mendapat gradien halus dari arah itu plus garis sorot setebal 1px di tepi
+   * atas, dan bayangan lembut di bawahnya. Tanpa itu, tema gelap berubah jadi
+   * deretan kotak datar yang semuanya terlihat sama — persis masalah yang
+   * membuat versi sebelumnya terasa hambar.
+   *
+   * Semuanya statis: tidak ada animasi berjalan, jadi nol biaya saat diam.
+   */
+
+  /* Kartu dasar. */
+  .drive-card {
+    border: 1px solid #1e2a34;
+    border-radius: var(--radius-card);
+    background-color: var(--color-neutral-100);
+    background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0) 46%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 14px 28px -22px rgba(0, 0, 0, 0.95);
+  }
+
+  /* Kartu yang membawa aksen merek — dipakai hemat, untuk yang perlu menonjol. */
+  .drive-card-accent {
+    border: 1px solid rgba(173, 237, 31, 0.3);
+    border-radius: var(--radius-card);
+    background-color: var(--color-neutral-100);
+    background-image:
+      radial-gradient(130% 100% at 0% 0%, rgba(173, 237, 31, 0.17), transparent 58%),
+      linear-gradient(158deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 46%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(213, 247, 126, 0.14),
+      0 16px 34px -24px rgba(173, 237, 31, 0.55);
+  }
+
+  /* Kartu aksi utama: lebih besar, lebih bercahaya. */
+  .drive-hero {
+    border: 1px solid rgba(173, 237, 31, 0.36);
+    border-radius: var(--radius-hero);
+    background-image:
+      radial-gradient(120% 120% at 8% 0%, rgba(173, 237, 31, 0.26), transparent 62%),
+      linear-gradient(150deg, #16241a, #101922 58%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(213, 247, 126, 0.2),
+      0 22px 44px -28px rgba(173, 237, 31, 0.7);
+  }
+
+  /* Wadah ikon. Bergradien, bukan warna rata. */
+  .drive-chip {
+    border: 1px solid rgba(173, 237, 31, 0.26);
+    background-image: linear-gradient(150deg, rgba(173, 237, 31, 0.24), rgba(173, 237, 31, 0.05));
+  }
+  .drive-chip-solid {
+    background-image: linear-gradient(148deg, #aded1f, #83bd04);
+    box-shadow: 0 8px 18px -10px rgba(173, 237, 31, 0.85);
+  }
+  .drive-chip-danger {
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    background-image: linear-gradient(150deg, rgba(255, 107, 107, 0.22), rgba(255, 107, 107, 0.05));
+  }
+
+  /* Label bagian: batang hijau pendek + huruf kapital renggang. */
+  /*
+   * Label HUD. Monospace + tracking lebar + awalan `//` membuatnya terbaca
+   * sebagai keluaran sistem, bukan tulisan tangan desainer — itu inti dari
+   * kesan "mesin yang sedang bekerja".
+   */
+  .drive-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-deep-blue-500);
+  }
+  .drive-eyebrow::before {
+    content: '//';
+    font-weight: 700;
+    opacity: 0.55;
+  }
+
+  /*
+   * Bingkai HUD: kurung sudut diagonal, seperti penanda bidik.
+   * Hanya dua sudut (bukan empat) supaya tetap berkarakter tanpa jadi ramai.
+   */
+  .hud-frame::before,
+  .hud-frame::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-color: rgba(173, 237, 31, 0.7);
+    pointer-events: none;
+  }
+  .hud-frame::before {
+    top: 15px;
+    left: 15px;
+    border-top: 2px solid;
+    border-left: 2px solid;
+    border-top-left-radius: 5px;
+  }
+  .hud-frame::after {
+    right: 15px;
+    bottom: 15px;
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+    border-bottom-right-radius: 5px;
+  }
+
+  /*
+   * Sapuan pemindai.
+   *
+   * Dipasang sebagai ELEMEN sendiri, bukan pseudo-element: `.hud-frame` sudah
+   * memakai ::before dan ::after untuk kurung bidik, dan satu elemen hanya
+   * punya satu dari masing-masing — memakai keduanya membuat sapuan menimpa
+   * kurung kiri-atas tanpa peringatan apa pun.
+   *
+   * HANYA `transform` yang dianimasikan, jadi seluruhnya ditangani compositor
+   * GPU: tidak memicu layout maupun repaint. Dipakai pada SATU elemen saja
+   * (aksi utama) agar terasa hidup tanpa membebani perangkat kelas bawah.
+   */
+  .hud-sweep {
+    position: absolute;
+    inset-inline: 0;
+    top: -45%;
+    height: 45%;
+    background: linear-gradient(180deg, transparent, rgba(173, 237, 31, 0.18), transparent);
+    animation: hud-sweep 4s linear infinite;
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  @keyframes hud-sweep {
+    to {
+      transform: translateY(340%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hud-sweep {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  /* Pembacaan data: angka & kode dalam monospace. */
+  .hud-readout {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Cahaya hijau di belakang elemen penting. */
+  .drive-glow {
+    box-shadow:
+      0 0 0 1px rgba(173, 237, 31, 0.22),
+      0 0 24px -6px rgba(173, 237, 31, 0.45);
+  }
+
+  /* Garis tepi kartu bergradien (dipertahankan untuk pemakaian lama). */
+  .drive-edge {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-neutral-100), var(--color-neutral-100)) padding-box,
+      linear-gradient(160deg, rgba(173, 237, 31, 0.45), rgba(173, 237, 31, 0.06) 45%) border-box;
+  }
+
+  /*
+   * Kepala halaman. deep-blue-500 dulu biru tua sehingga aman dipakai sebagai
+   * blok 248px; sebagai hijau terang blok sebesar itu menyilaukan. Header
+   * memakai permukaan gelap + sapuan cahaya hijau, persis seperti di poster.
+   */
+  .drive-header {
+    background-color: #0a1218;
+    background-image:
+      radial-gradient(125% 105% at 50% -14%, rgba(173, 237, 31, 0.32), transparent 60%),
+      /* Kisi teknis tipis — memberi kesan instrumen seperti di poster tanpa
+         menambah satu pun berkas gambar. Opasitasnya sengaja sangat rendah;
+         yang dicari tekstur, bukan pola yang terbaca. */
+      repeating-linear-gradient(
+        0deg,
+        rgba(173, 237, 31, 0.05) 0 1px,
+        transparent 1px 34px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(173, 237, 31, 0.05) 0 1px,
+        transparent 1px 34px
+      );
+  }
+
+  /*
+   * Meluruhkan tepi bawah blok header supaya tidak ada garis potong keras
+   * saat kisi berakhir di tengah halaman.
+   */
+  .drive-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 42%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 42%, transparent 100%);
+  }
+
+  /* Garis cahaya tipis sebagai penutup bawah header. */
+  .drive-hairline {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(173, 237, 31, 0.55) 22%,
+      rgba(213, 247, 126, 0.85) 50%,
+      rgba(173, 237, 31, 0.55) 78%,
+      transparent
+    );
+  }
+
+  /* Teks bergradien untuk angka besar (skor, persentase). */
+  .drive-gradient-text {
+    background: linear-gradient(140deg, #d5f77e 0%, #aded1f 45%, #83bd04 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Judul memakai font display dengan tracking rapat. */
+  .drive-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Baris kartu yang bisa digeser, berhenti rapi di tiap kartu. */
+  /*
+   * Baris kartu yang bisa digeser.
+   *
+   * Jarak tepi KANAN sengaja tidak memakai `padding-inline-end`: pada wadah
+   * flex yang meluap, sebagian browser tidak menghitung padding kanan ke dalam
+   * area gulir, sehingga kartu terakhir menempel persis di tepi layar saat
+   * digulir habis. Spacer di `::after` selalu terhitung. Lebarnya dikurangi
+   * `gap` supaya jarak kiri dan kanan benar-benar sama.
+   */
+  .drive-rail {
+    --rail-gap: 14px;
+    display: flex;
+    gap: var(--rail-gap);
+    overflow-x: auto;
+    padding-inline-start: var(--spacing-gutter);
+    scroll-padding-inline-start: var(--spacing-gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .drive-rail::after {
+    content: '';
+    flex: 0 0 calc(var(--spacing-gutter) - var(--rail-gap));
+  }
+  .drive-rail::-webkit-scrollbar {
+    display: none;
+  }
+  .drive-rail > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
   }
 }

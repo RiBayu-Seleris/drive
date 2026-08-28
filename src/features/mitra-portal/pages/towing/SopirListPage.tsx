@@ -28,7 +28,7 @@ const SOPIR_FILTERS = [
 
 const SOPIR_STATUS_META: Record<string, { label: string; tone: string }> = {
   AVAILABLE: { label: 'Tersedia', tone: 'bg-green-cust/12 text-green-cust' },
-  BUSY: { label: 'Bertugas', tone: 'bg-deep-blue-500 text-white' },
+  BUSY: { label: 'Bertugas', tone: 'bg-deep-blue-500 text-[#10200a]' },
   OFFLINE: { label: 'Offline', tone: 'bg-neutral-200 text-neutral-600' },
   INACTIVE: { label: 'Nonaktif', tone: 'bg-neutral-200 text-neutral-600' },
 };
@@ -123,7 +123,7 @@ function SopirCard({ sopir, onOpen }: { sopir: MitraTowingDriver; onOpen: () => 
     <button
       type="button"
       onClick={onOpen}
-      className="block w-full rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
+      className="drive-card block w-full rounded-2xl p-4 text-left transition active:scale-[0.99]"
     >
       <div className="flex items-start gap-3">
         <div className="bg-deep-blue-50 text-deep-blue-600 grid size-12 shrink-0 place-items-center rounded-full text-sm font-semibold">
@@ -143,7 +143,7 @@ function SopirCard({ sopir, onOpen }: { sopir: MitraTowingDriver; onOpen: () => 
         <span className="text-12">Spesialis: {specialization}</span>
       </div>
 
-      <div className="mt-3 border-t border-neutral-100 pt-3">
+      <div className="mt-3 border-t border-neutral-300 pt-3">
         <div className="flex items-center justify-between gap-3">
           {sopir.status === 'BUSY' ? (
             <div className="min-w-0">
@@ -167,7 +167,7 @@ function SopirCard({ sopir, onOpen }: { sopir: MitraTowingDriver; onOpen: () => 
           <span
             className={cn(
               'grid size-9 shrink-0 place-items-center rounded-full',
-              isOffline ? 'bg-neutral-100 text-neutral-400' : 'bg-deep-blue-50 text-deep-blue-600',
+              isOffline ? 'bg-neutral-200 text-neutral-400' : 'bg-deep-blue-50 text-deep-blue-600',
             )}
           >
             <Phone className="size-4" />

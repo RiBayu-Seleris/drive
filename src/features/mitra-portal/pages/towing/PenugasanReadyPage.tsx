@@ -104,7 +104,7 @@ export function PenugasanReadyPage() {
         </p>
 
         {/* Armada */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold tracking-wide text-neutral-400">ARMADA</p>
             <Truck className="text-deep-blue-500 size-4" />
@@ -124,7 +124,7 @@ export function PenugasanReadyPage() {
         </div>
 
         {/* Driver */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold tracking-wide text-neutral-400">DRIVER</p>
             <User className="text-deep-blue-500 size-4" />
@@ -149,7 +149,7 @@ export function PenugasanReadyPage() {
         </div>
 
         {/* Rute */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <p className="text-[11px] font-semibold tracking-wide text-neutral-400">RUTE PENUGASAN</p>
           <div className="mt-3 flex gap-3">
             <div className="flex flex-col items-center pt-1">
@@ -183,7 +183,7 @@ export function PenugasanReadyPage() {
           <button
             type="button"
             onClick={() => toast.info('Lihat detail rute segera hadir.')}
-            className="text-deep-blue-500 text-12 mt-3 w-full rounded-lg bg-neutral-100 py-2.5 font-semibold"
+            className="text-deep-blue-500 text-12 mt-3 w-full rounded-lg bg-neutral-200 py-2.5 font-semibold"
           >
             Lihat Detail
           </button>
@@ -223,7 +223,7 @@ export function PenugasanReadyPage() {
 
 function EstTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
+    <div className="drive-card flex items-center gap-3 rounded-2xl p-3">
       <span className="bg-deep-blue-50 text-deep-blue-500 grid size-9 place-items-center rounded-lg">
         <Icon className="size-4" />
       </span>

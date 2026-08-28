@@ -124,7 +124,7 @@ export function WorkshopRoutePage() {
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}`);
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
 
       {/* Peta dominan. `min-h` wajib: tinggi persentase (`h-full`) di dalam
@@ -151,8 +151,8 @@ export function WorkshopRoutePage() {
               className={cn(
                 'absolute right-4 bottom-4 z-1001 grid size-11 place-items-center rounded-full shadow-md transition',
                 following
-                  ? 'bg-deep-blue-500 text-white'
-                  : 'text-deep-blue-600 bg-white hover:bg-neutral-200',
+                  ? 'bg-deep-blue-500 text-[#10200a]'
+                  : 'text-deep-blue-600 bg-neutral-100 hover:bg-neutral-200',
                 !userPoint && 'opacity-50',
               )}
             >
@@ -169,7 +169,7 @@ export function WorkshopRoutePage() {
       </div>
 
       {/* Kartu rute + Berhenti */}
-      <div className="pb-safe border-t border-neutral-300 bg-white px-5 pt-4">
+      <div className="pb-safe border-t border-neutral-300 bg-neutral-100 px-5 pt-4">
         <p className="text-16 text-center font-semibold text-neutral-900">
           {minutes > 0 ? `${Math.max(1, Math.round(minutes))} Menit` : 'Rute'}
           {km > 0 && ` · ${km.toFixed(1)} km`}

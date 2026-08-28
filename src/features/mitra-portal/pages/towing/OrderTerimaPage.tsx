@@ -51,7 +51,7 @@ export function OrderTerimaPage() {
           <p className="text-12 mt-1 text-neutral-500">Sedang menyiapkan bantuan untuk Anda</p>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+        <div className="drive-card mt-6 rounded-2xl border border-neutral-300 p-4">
           <p className="text-[11px] font-semibold tracking-wide text-neutral-400">
             RINGKASAN PESANAN
           </p>
@@ -73,7 +73,7 @@ export function OrderTerimaPage() {
         <MapPreview
           className="mt-4 h-40"
           overlay={
-            <span className="text-12 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 font-medium text-neutral-700 shadow">
+            <span className="text-12 inline-flex items-center gap-2 rounded-full bg-neutral-200 px-3 py-1.5 font-medium text-neutral-700 shadow">
               <span className="bg-deep-blue-500 size-2 animate-pulse rounded-full" />
               Driver sedang menuju lokasi
             </span>

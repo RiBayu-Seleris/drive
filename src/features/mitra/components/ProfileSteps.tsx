@@ -102,7 +102,7 @@ export function FileUploadField({
       </label>
       <label
         htmlFor={inputId}
-        className="hover:border-deep-blue-500 flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-neutral-700 shadow-sm transition"
+        className="hover:border-deep-blue-500 flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-3 text-neutral-700 shadow-sm transition"
       >
         {file ? (
           <CheckCircle2 className="text-success size-5 shrink-0" />

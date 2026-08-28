@@ -600,7 +600,7 @@ export function InsurancePurchasePage() {
   };
 
   return (
-    <PageContainer className="bg-[#F8F9FE]">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 px-4 pt-4">
         <input
@@ -677,24 +677,24 @@ export function InsurancePurchasePage() {
         )}
 
         {/* Ringkasan paket yang dibeli — aksen oranye seperti desain. */}
-        <div className="overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
-          <div className="flex gap-3.5 border-l-4 border-[#F76B2D] p-4">
+        <div className="drive-card overflow-hidden rounded-xl shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
+          <div className="flex gap-3.5 border-l-4 border-[#dd632c] p-4">
             <div className="min-w-0 flex-1">
-              <h2 className="text-16 font-semibold text-[#003E6F]">{product.name}</h2>
-              <p className="text-12 mt-1 leading-relaxed text-[#414750]">
+              <h2 className="text-16 font-semibold text-[#c2f347]">{product.name}</h2>
+              <p className="text-12 mt-1 leading-relaxed text-[#eef4f8]">
                 {product.description || `${product.provider} · ${coverageLabel(product)}`}
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-16 font-bold text-[#003E6F]">
+              <p className="text-16 font-bold text-[#c2f347]">
                 {formatCurrency(product.monthlyPremium)}
               </p>
-              <p className="text-11 text-[#414750]">per bulan</p>
+              <p className="text-11 text-[#eef4f8]">per bulan</p>
             </div>
           </div>
           {product.benefits.length > 0 && (
             <div className="px-4 pb-4">
-              <p className="text-13 flex items-center gap-2.5 rounded-lg bg-[#F3F3F8] px-3.5 py-2.5 font-medium text-[#00658D]">
+              <p className="text-13 flex items-center gap-2.5 rounded-lg bg-[#131c24] px-3.5 py-2.5 font-medium text-[#c2f347]">
                 <CheckCircle2 className="size-5 shrink-0" />
                 {product.benefits[0]}
               </p>
@@ -908,7 +908,7 @@ export function InsurancePurchasePage() {
         </Section>
 
         <div>
-          <h2 className="text-18 mb-3 font-semibold text-[#003E6F]">Metode Pembayaran</h2>
+          <h2 className="text-18 mb-3 font-semibold text-[#c2f347]">Metode Pembayaran</h2>
           <div className="flex flex-col gap-3">
             {PAYMENT_METHODS.map((method) => {
               const active = paymentMethod === method.value;
@@ -920,7 +920,7 @@ export function InsurancePurchasePage() {
                   onClick={() => setPaymentMethod(method.value)}
                   aria-pressed={active}
                   className={cn(
-                    'flex items-center gap-3.5 rounded-xl border bg-white p-3.5 text-left transition',
+                    'drive-card flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition',
                     active
                       ? 'border-deep-blue-500 shadow-[0_2px_12px_rgb(75_97_161_/_0.14)]'
                       : 'border-neutral-400',
@@ -931,7 +931,7 @@ export function InsurancePurchasePage() {
                       'flex size-11 shrink-0 items-center justify-center rounded-full',
                       active
                         ? 'bg-deep-blue-50 text-deep-blue-600'
-                        : 'bg-[#EDEEF2] text-neutral-700',
+                        : 'bg-[#131c24] text-neutral-700',
                     )}
                   >
                     <Icon className="size-5" />
@@ -939,7 +939,7 @@ export function InsurancePurchasePage() {
                   <span
                     className={cn(
                       'text-14 min-w-0 flex-1 font-semibold',
-                      active ? 'text-[#003E6F]' : 'text-[#414750]',
+                      active ? 'text-[#c2f347]' : 'text-[#eef4f8]',
                     )}
                   >
                     {method.label}
@@ -958,7 +958,7 @@ export function InsurancePurchasePage() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-[#F3F3F8] p-4">
+        <div className="rounded-xl bg-[#131c24] p-4">
           <PriceRow label="Premi Dasar" value={basePremium} />
           <div className="mt-2">
             <PriceRow label="Biaya Admin" value={adminFee} />
@@ -971,7 +971,7 @@ export function InsurancePurchasePage() {
           </div>
         </div>
 
-        <div className="space-y-3 rounded-xl border border-neutral-400 bg-white p-4">
+        <div className="drive-card space-y-3 rounded-xl border border-neutral-400 p-4">
           <CheckRow
             checked={declarationAccepted}
             onChange={setDeclarationAccepted}
@@ -988,7 +988,7 @@ export function InsurancePurchasePage() {
 
         {/* Bilah aksi menempel di bawah viewport; margin negatif membatalkan
             padding form agar tetap selebar layar seperti desain. */}
-        <div className="pb-safe sticky bottom-0 -mx-4 mt-auto border-t border-neutral-300 bg-white px-4">
+        <div className="pb-safe sticky bottom-0 -mx-4 mt-auto border-t border-neutral-300 bg-neutral-100 px-4">
           <div className="flex h-full w-full py-3">
             <Button
               type="submit"
@@ -1224,26 +1224,26 @@ function VehicleCard({
   verified: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
-      <div className="relative flex h-[190px] items-center justify-center bg-gradient-to-br from-[#2F455C] to-[#8FA3B8]">
+    <div className="drive-card overflow-hidden rounded-xl shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
+      <div className="relative flex h-[190px] items-center justify-center bg-gradient-to-br from-[#aded1f] to-[#aded1f]">
         {photo ? (
           <img src={photo} alt={title} className="h-full w-full object-cover" />
         ) : (
           <CarFront className="size-16 text-white/70" />
         )}
         {verified && (
-          <span className="text-12 absolute top-3 right-3 rounded-lg bg-[#003E6F] px-3 py-1.5 font-semibold text-white">
+          <span className="text-12 absolute top-3 right-3 rounded-lg bg-[#aded1f] px-3 py-1.5 font-semibold text-white">
             Terverifikasi
           </span>
         )}
       </div>
       <div className="flex items-center justify-between gap-3 p-4">
         <div className="min-w-0">
-          <h2 className="text-18 truncate font-bold text-[#003E6F]">{title}</h2>
-          {meta && <p className="text-13 mt-0.5 text-[#414750]">{meta}</p>}
+          <h2 className="text-18 truncate font-bold text-[#c2f347]">{title}</h2>
+          {meta && <p className="text-13 mt-0.5 text-[#eef4f8]">{meta}</p>}
         </div>
         {plate && (
-          <span className="text-14 shrink-0 rounded-lg bg-[#EDEEF2] px-3.5 py-2 font-semibold text-[#003E6F]">
+          <span className="text-14 shrink-0 rounded-lg bg-[#131c24] px-3.5 py-2 font-semibold text-[#c2f347]">
             {plate}
           </span>
         )}
@@ -1255,25 +1255,25 @@ function VehicleCard({
 function ScanResultCard({ percentage }: { percentage: number }) {
   // Skor kesehatan = kebalikan dari persentase kerusakan hasil analisis AI.
   const health = Math.max(0, Math.min(100, 100 - percentage));
-  const barColor = percentage <= 0 ? '#2AB857' : SEVERITY_COLOR[severityFromPercent(percentage)];
+  const barColor = percentage <= 0 ? '#3adf6e' : SEVERITY_COLOR[severityFromPercent(percentage)];
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
+    <div className="drive-card rounded-xl p-4 shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-16 flex items-center gap-2 font-bold text-[#003E6F]">
-          <Sparkles className="size-5 text-[#F76B2D]" />
+        <h2 className="text-16 flex items-center gap-2 font-bold text-[#c2f347]">
+          <Sparkles className="size-5 text-[#e7906a]" />
           Hasil Scan AI
         </h2>
-        <span className="text-11 flex items-center gap-1.5 rounded-xl bg-[#2DBCFE]/20 px-2.5 py-1 font-semibold text-[#00658D]">
-          <span className="size-1.5 rounded-full bg-[#00658D]" />
+        <span className="text-11 flex items-center gap-1.5 rounded-xl bg-[#aded1f]/20 px-2.5 py-1 font-semibold text-[#c2f347]">
+          <span className="size-1.5 rounded-full bg-[#aded1f]" />
           SELESAI
         </span>
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-14 text-[#414750]">Skor Kesehatan Kendaraan</p>
-        <p className="text-16 font-bold text-[#003E6F]">{health.toFixed(0)}%</p>
+        <p className="text-14 text-[#eef4f8]">Skor Kesehatan Kendaraan</p>
+        <p className="text-16 font-bold text-[#c2f347]">{health.toFixed(0)}%</p>
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#E7E8EC]">
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#0f1720]">
         <div
           className="h-full rounded-full transition-[width]"
           style={{ width: `${health}%`, backgroundColor: barColor }}
@@ -1285,8 +1285,8 @@ function ScanResultCard({ percentage }: { percentage: number }) {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="space-y-3 rounded-xl bg-white p-4 shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
-      <h2 className="text-16 font-semibold text-[#191C1F]">{title}</h2>
+    <div className="drive-card space-y-3 rounded-xl p-4 shadow-[0_2px_12px_rgb(32_41_68_/_0.06)]">
+      <h2 className="text-16 font-semibold text-[#eef4f8]">{title}</h2>
       {children}
     </div>
   );
@@ -1295,8 +1295,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function SummaryLine({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-10 font-medium text-[#414750] uppercase">{label}</p>
-      <p className="text-13 font-semibold text-[#191C1F]">{value}</p>
+      <p className="text-10 font-medium text-[#eef4f8] uppercase">{label}</p>
+      <p className="text-13 font-semibold text-[#eef4f8]">{value}</p>
     </div>
   );
 }
@@ -1312,10 +1312,10 @@ function PriceRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className={strong ? 'text-16 font-bold text-[#003E6F]' : 'text-14 text-[#414750]'}>
+      <span className={strong ? 'text-16 font-bold text-[#c2f347]' : 'text-14 text-[#eef4f8]'}>
         {label}
       </span>
-      <span className={strong ? 'text-20 font-bold text-[#003E6F]' : 'text-14 text-[#414750]'}>
+      <span className={strong ? 'text-20 font-bold text-[#c2f347]' : 'text-14 text-[#eef4f8]'}>
         {formatCurrency(value)}
       </span>
     </div>

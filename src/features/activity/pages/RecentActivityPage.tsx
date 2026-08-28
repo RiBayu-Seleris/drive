@@ -148,8 +148,8 @@ export function RecentActivityPage() {
   return (
     <PageContainer>
       <AppHeader showLogo />
-      <main className="min-h-screen bg-[#FFFFFF]">
-        <section className="relative bg-gradient-to-b from-[#DCE8F7] to-[#FFFFFF] px-8 py-7">
+      <main className="min-h-screen bg-[#131c24]">
+        <section className="relative bg-gradient-to-b from-[#0f1720] to-[#131c24] px-8 py-7">
           <div className="pointer-events-none absolute -bottom-11 -left-3 h-auto w-auto">
             <img src={LeftSVG} alt="" srcSet="" />
           </div>
@@ -157,7 +157,7 @@ export function RecentActivityPage() {
             <img src={RightSVG} alt="" srcSet="" />
           </div>
 
-          <div className="relative mx-auto mb-6 grid w-fit grid-cols-2 rounded-[20px] bg-white p-1 shadow-[0_2px_8px_rgb(15_23_42_/_0.12)]">
+          <div className="relative mx-auto mb-6 grid w-fit grid-cols-2 rounded-[20px] bg-neutral-100 p-1 shadow-[0_2px_8px_rgb(15_23_42_/_0.12)]">
             <HistoryTabButton
               active={activeTab === 'payment'}
               onClick={() => setActiveTab('payment')}
@@ -180,7 +180,7 @@ export function RecentActivityPage() {
             <button
               type="button"
               onClick={() => moveDay(-1)}
-              className="bg-deep-blue-500 flex size-7 items-center justify-center rounded-full text-white shadow-sm"
+              className="bg-deep-blue-500 flex size-7 items-center justify-center rounded-full text-[#10200a] shadow-sm"
               aria-label="Tanggal sebelumnya"
             >
               <ChevronLeft className="size-5" />
@@ -221,7 +221,7 @@ export function RecentActivityPage() {
           </div>
         </section>
 
-        <section className="mt-1 bg-[#FFFFFF] px-5 pb-10">
+        <section className="mt-1 bg-[#131c24] px-5 pb-10">
           {activeTab === 'payment' ? (
             <PaymentPanel
               items={payments.data ?? []}
@@ -260,7 +260,7 @@ function HistoryTabButton({
       onClick={onClick}
       className={[
         'h-12 w-[96px] rounded-[18px] text-center text-[11px] leading-tight font-medium transition-colors',
-        active ? 'bg-deep-blue-500 text-white shadow-md' : 'bg-white text-neutral-900',
+        active ? 'bg-deep-blue-500 text-[#10200a] shadow-md' : 'bg-neutral-100 text-neutral-900',
       ].join(' ')}
     >
       {children}
@@ -307,7 +307,7 @@ function ActivityPanel({
   onOpen: (ticket: string) => void;
 }) {
   return (
-    <div className="rounded-xl bg-white px-3 py-5 shadow-[0_8px_22px_rgb(15_23_42_/_0.08)]">
+    <div className="drive-card rounded-xl px-3 py-5 shadow-[0_8px_22px_rgb(15_23_42_/_0.08)]">
       <h1 className="mb-4 text-[14px] font-semibold text-neutral-900">Aktifitas Terkini</h1>
       {loading ? (
         <ActivitySkeleton />
@@ -390,7 +390,7 @@ function PaymentPanel({
   onRetry: () => void;
 }) {
   return (
-    <div className="bg-white px-0 py-5">
+    <div className="bg-neutral-100 px-0 py-5">
       <h1 className="mb-4 px-1 text-[14px] font-semibold text-neutral-900">History Pembayaran</h1>
       {loading ? (
         <PaymentSkeleton />
@@ -421,7 +421,7 @@ function PaymentRow({ item, index }: { item: PaymentHistory; index: number }) {
       <div
         className={[
           'flex size-8 shrink-0 items-center justify-center rounded-full',
-          isInsurance ? 'bg-[#FFE6E3] text-[#FF3B30]' : 'bg-[#FDECE2] text-[#EE793D]',
+          isInsurance ? 'bg-[#131c24] text-[#e7716a]' : 'bg-[#131c24] text-[#e7946a]',
         ].join(' ')}
       >
         <WalletCards className="size-4" />
@@ -433,7 +433,7 @@ function PaymentRow({ item, index }: { item: PaymentHistory; index: number }) {
           <span className="text-right">{formatTimeOnly(item.createdAt)}</span>
         </div>
       </div>
-      <p className="w-[74px] shrink-0 text-right text-[11px] font-semibold text-[#FF3B30]">
+      <p className="w-[74px] shrink-0 text-right text-[11px] font-semibold text-[#e7716a]">
         {formatSignedIDR(amount)}
       </p>
     </div>

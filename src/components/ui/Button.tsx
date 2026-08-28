@@ -5,14 +5,21 @@ import { cn } from '@/lib/utils/cn';
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
+// Tema DRIVE: hijau aksennya terang, jadi teks di atasnya harus GELAP.
+// Putih di atas #aded1f cuma 3,2:1 (di bawah ambang keterbacaan); teks gelap
+// mencapai ~11:1 dan itu juga yang terlihat pada tombol di poster.
+const ON_BRAND = 'text-[#10200a]';
+
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:
-    'border border-transparent bg-deep-blue-500 text-white shadow-sm hover:bg-white hover:text-deep-blue-500 active:bg-deep-blue-600 active:text-white disabled:bg-deep-blue-300 disabled:shadow-none',
-  secondary: 'border border-transparent bg-deep-blue-50 text-deep-blue-600 hover:bg-deep-blue-100',
+  // Tombol utama memakai gradien dua warna merek, bukan warna rata — itu yang
+  // membuatnya terbaca sebagai tombol, bukan bidang hijau.
+  primary: `border border-transparent bg-[linear-gradient(148deg,#aded1f,#83bd04)] ${ON_BRAND} shadow-[0_10px_26px_-12px_rgba(173,237,31,0.85)] hover:brightness-110 active:brightness-95 disabled:bg-neutral-300 disabled:bg-none disabled:text-neutral-500 disabled:shadow-none`,
+  secondary:
+    'border border-deep-blue-200 bg-deep-blue-50 text-deep-blue-600 hover:bg-deep-blue-100 active:bg-deep-blue-200',
   outline:
-    'border border-deep-blue-500 bg-white text-deep-blue-500 hover:bg-deep-blue-50 active:bg-deep-blue-100',
+    'border border-deep-blue-500 bg-transparent text-deep-blue-500 hover:bg-deep-blue-50 active:bg-deep-blue-100',
   ghost: 'border border-transparent text-deep-blue-600 hover:bg-deep-blue-50',
-  danger: 'border border-transparent bg-danger text-white hover:brightness-95 active:brightness-90',
+  danger: `border border-transparent bg-danger text-[#1e0606] hover:brightness-110 active:brightness-95`,
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {

@@ -17,7 +17,7 @@ export function QuickActionGrid({ actions }: { actions: QuickAction[] }) {
             onClick={() =>
               action.to ? navigate(action.to) : toast.info('Fitur ini segera hadir.')
             }
-            className="flex flex-col items-center justify-between gap-2.5 rounded-2xl bg-white p-3.5 text-center shadow-sm transition active:scale-95"
+            className="drive-card flex flex-col items-center justify-between gap-2.5 rounded-2xl p-3.5 text-center transition active:scale-95"
           >
             {action.image ? (
               <span className="grid h-14 place-items-center">

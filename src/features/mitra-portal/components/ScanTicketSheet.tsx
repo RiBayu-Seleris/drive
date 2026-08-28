@@ -108,7 +108,7 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
       {cameraOn ? (
         <Suspense
           fallback={
-            <div className="text-12 grid h-56 place-items-center rounded-xl bg-neutral-100 text-neutral-600">
+            <div className="drive-card text-12 grid h-56 place-items-center rounded-xl text-neutral-600">
               <span className="flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin" /> Menyiapkan pemindai…
               </span>
@@ -148,7 +148,7 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
         }}
         placeholder="Contoh: RPJ-XXXXXX"
         autoCapitalize="characters"
-        className="focus:border-deep-blue-500 focus:ring-deep-blue-200 h-12 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold tracking-wide text-neutral-900 shadow-sm transition placeholder:font-normal placeholder:tracking-normal placeholder:text-neutral-500 focus:ring-2 focus:outline-none"
+        className="focus:border-deep-blue-500 focus:ring-deep-blue-200 h-12 w-full rounded-lg border border-neutral-300 bg-neutral-200 px-4 text-sm font-semibold tracking-wide text-neutral-900 shadow-sm transition placeholder:font-normal placeholder:tracking-normal placeholder:text-neutral-500 focus:ring-2 focus:outline-none"
       />
     </Modal>
   );

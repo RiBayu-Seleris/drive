@@ -151,10 +151,10 @@ export function LocationPicker({ value, onPick, className }: LocationPickerProps
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cari alamat / tempat"
-          className="focus:border-deep-blue-500 h-10 w-full rounded-lg border border-neutral-400 bg-white pr-3 pl-9 text-sm focus:outline-none"
+          className="focus:border-deep-blue-500 h-10 w-full rounded-lg border border-neutral-400 bg-neutral-100 pr-3 pl-9 text-sm focus:outline-none"
         />
         {(results.length > 0 || isSearching) && (
-          <div className="absolute z-1000 mt-1 w-full overflow-hidden rounded-lg border border-neutral-300 bg-white shadow-lg">
+          <div className="absolute z-1000 mt-1 w-full overflow-hidden rounded-lg border border-neutral-300 bg-neutral-100 shadow-lg">
             {isSearching ? (
               <p className="px-3 py-2 text-xs text-neutral-600">Mencari…</p>
             ) : (
@@ -186,7 +186,7 @@ export function LocationPicker({ value, onPick, className }: LocationPickerProps
 
         {/* Pin tetap di tengah (overlay) — titik inilah yang dipilih. */}
         <div className="pointer-events-none absolute top-1/2 left-1/2 z-500 -translate-x-1/2 -translate-y-full">
-          <MapPin className="size-9 text-[#E35151]" fill="#E35151" strokeWidth={1.5} />
+          <MapPin className="size-9 text-[#e76a6a]" fill="#dd2c2c" strokeWidth={1.5} />
         </div>
 
         <button
@@ -194,7 +194,7 @@ export function LocationPicker({ value, onPick, className }: LocationPickerProps
           onClick={handleMyLocation}
           disabled={locating}
           aria-label="Gunakan lokasi saya"
-          className="text-deep-blue-600 absolute right-3 bottom-3 z-600 flex size-10 items-center justify-center rounded-full bg-white shadow-md disabled:opacity-60"
+          className="text-deep-blue-600 absolute right-3 bottom-3 z-600 flex size-10 items-center justify-center rounded-full bg-neutral-100 shadow-md disabled:opacity-60"
         >
           <LocateFixed className="size-5" />
         </button>

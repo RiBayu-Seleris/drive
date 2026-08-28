@@ -53,7 +53,7 @@ export function Modal({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'w-full max-w-[480px] bg-white shadow-xl',
+          'w-full max-w-[480px] bg-neutral-100 shadow-xl',
           variant === 'sheet'
             ? 'pb-safe animate-[slideUp_.2s_ease-out] rounded-t-3xl'
             : 'rounded-lg',

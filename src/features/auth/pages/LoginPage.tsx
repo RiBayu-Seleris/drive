@@ -24,8 +24,8 @@ function withRedirect(path: string, redirectTo?: string): string {
 
 const LOGIN_COPY: Record<LoginMode, LoginCopy> = {
   user: {
-    title: 'Masuk Pengguna',
-    subtitle: 'Kelola checkup kendaraan, klaim asuransi, dan riwayat pembayaran Anda.',
+    title: 'Selamat datang kembali',
+    subtitle: 'Riwayat pemeriksaan, klaim, dan pembayaran Anda menunggu di dalam.',
     submitText: 'Masuk sebagai Pengguna',
     helper: (redirectTo) => (
       <>
@@ -55,8 +55,8 @@ const LOGIN_COPY: Record<LoginMode, LoginCopy> = {
     },
   },
   mitra: {
-    title: 'Masuk Mitra',
-    subtitle: 'Untuk bengkel dan mitra towing yang sudah aktif di AutoClaim.',
+    title: 'Masuk sebagai mitra',
+    subtitle: 'Halaman ini untuk bengkel dan armada derek yang sudah bergabung.',
     submitText: 'Masuk sebagai Mitra',
     helper: () => (
       <>
@@ -91,8 +91,8 @@ const LOGIN_COPY: Record<LoginMode, LoginCopy> = {
     ),
   },
   sopir: {
-    title: 'Masuk Sopir',
-    subtitle: 'Untuk sopir towing yang sudah dibuat oleh admin mitra towing.',
+    title: 'Masuk sebagai sopir',
+    subtitle: 'Akun Anda dibuatkan oleh admin armada. Belum punya? Tanyakan ke mereka.',
     submitText: 'Masuk sebagai Sopir',
     helper: () => (
       <>
@@ -185,7 +185,7 @@ function LoginPage({ mode }: { mode: LoginMode }) {
           {copy.submitText}
         </Button>
 
-        <div className="bg-deep-blue-50 text-12 text-deep-blue-700 mt-2 rounded-lg px-4 py-3">
+        <div className="mt-3 rounded-xl border border-[#22313c] bg-neutral-200 py-3 pr-4 pl-4 text-[12px] leading-relaxed text-neutral-600 shadow-[inset_2px_0_0_0_var(--color-deep-blue-500)]">
           {copy.helper(redirectTo)}
         </div>
       </form>

@@ -27,7 +27,7 @@ export function MitraFilterChips({
             className={cn(
               'shrink-0 rounded-full px-4 py-2 text-[14px] font-medium transition active:scale-95',
               active
-                ? 'bg-deep-blue-500 text-white shadow-sm'
+                ? 'bg-deep-blue-500 text-[#10200a] shadow-sm'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200',
             )}
           >

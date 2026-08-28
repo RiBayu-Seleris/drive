@@ -195,7 +195,7 @@ export function WorkshopDetailPage() {
   const isOpen = place.openStatus.toUpperCase() !== 'CLOSED' && place.openStatus !== 'Tutup';
 
   return (
-    <PageContainer className="bg-white pb-10">
+    <PageContainer className="bg-neutral-200 pb-10">
       {/* Hero */}
       <div className="relative h-44 w-full shrink-0 bg-neutral-300">
         {place.imageUrl ? (
@@ -240,7 +240,7 @@ export function WorkshopDetailPage() {
               className={cn(
                 'flex-1 rounded-lg py-2 text-[12px] font-medium transition',
                 tab === t.id
-                  ? 'bg-deep-blue-500 text-[12px] text-white shadow-sm'
+                  ? 'bg-deep-blue-500 text-[12px] text-[#10200a] shadow-sm'
                   : 'text-[12px] text-neutral-700',
               )}
             >
@@ -263,7 +263,7 @@ export function WorkshopDetailPage() {
       </div>
 
       {/* Footer aksi */}
-      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-white px-5 py-3">
+      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-neutral-100 px-5 py-3">
         {tab === 'overview' ? (
           <div className="flex flex-col gap-3">
             {/* Klaim yang sudah disetujui: pilih bengkel ini sebagai tempat perbaikan. */}
@@ -387,7 +387,7 @@ function OverviewTab({ place, isOpen }: { place: RecommendationPlace; isOpen: bo
   const tags = [
     'Towing',
     place.acceptingOrders ? 'Menerima Order' : 'Order Penuh',
-    'Rekanan AutoClaim',
+    'Rekanan DRIVE',
   ];
   return (
     <div className="flex flex-col gap-5">
@@ -531,7 +531,7 @@ function ReviewsTab({ workshopId, onWrite }: { workshopId: number; onWrite: () =
                     U
                   </div>
                   <div>
-                    <p className="text-12 font-semibold text-neutral-900">Pengguna AutoClaim</p>
+                    <p className="text-12 font-semibold text-neutral-900">Pengguna DRIVE</p>
                     <p className="text-[12px] text-neutral-600">{formatDate(r.createdAt)}</p>
                   </div>
                 </div>

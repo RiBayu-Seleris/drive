@@ -78,12 +78,12 @@ export function WorkshopListPage() {
   return (
     <PageContainer>
       <AppHeader showLogo />
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-neutral-200 p-6">
         <div className="mx-auto mb-8 max-w-2xl text-center">
-          <h1 className="mb-4 text-[20px] leading-tight font-bold text-gray-900">
+          <h1 className="mb-4 text-[20px] leading-tight font-bold text-neutral-900">
             Rekomendasi Bengkel untuk Kendaraan Anda
           </h1>
-          <p className="text-[14px] leading-relaxed text-gray-600">
+          <p className="text-[14px] leading-relaxed text-neutral-600">
             {claimNumber
               ? 'Biaya perbaikan hanya ditanggung di bengkel rekanan asuransi Anda. Bengkel lain tetap bisa dipilih, tapi biayanya Anda bayar sendiri.'
               : 'Berikut adalah rekomendasi bengkel terdekat dan terpercaya untuk memperbaiki kerusakan mobil Anda.'}
@@ -93,19 +93,19 @@ export function WorkshopListPage() {
         <div className="mx-auto mb-6 flex max-w-2xl items-center gap-2">
           <div className="relative flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="size-4 text-gray-400" />
+              <Search className="size-4 text-neutral-500" />
             </div>
             <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               type="text"
               placeholder="Search"
-              className="h-10 w-full rounded-lg border border-gray-300 pr-3 pl-9 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="h-10 w-full rounded-lg border border-neutral-300 pr-3 pl-9 text-sm focus:border-transparent focus:ring-2 focus:ring-deep-blue-500 focus:outline-none"
             />
           </div>
           <button
             type="button"
-            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-300 transition-colors hover:bg-gray-50"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-neutral-300 transition-colors hover:bg-neutral-200"
           >
             <img className="size-4" src="/assets/rekomendasi_bengkel/document-filter.png" alt="" />
           </button>
@@ -124,9 +124,9 @@ export function WorkshopListPage() {
         ) : (
           <div className="mx-auto flex h-auto w-full max-w-2xl flex-col gap-y-5">
             {claimNumber && partnerPlaces.length > 0 && (
-              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
-                <ShieldCheck className="size-4 shrink-0 text-emerald-700" />
-                <p className="text-[12px] font-semibold text-emerald-800">
+              <div className="flex items-center gap-2 rounded-lg bg-success/15 px-3 py-2">
+                <ShieldCheck className="size-4 shrink-0 text-success" />
+                <p className="text-[12px] font-semibold text-success">
                   Rekanan asuransi Anda — biaya ditanggung klaim
                 </p>
               </div>
@@ -136,20 +136,20 @@ export function WorkshopListPage() {
             ))}
 
             {claimNumber && otherPlaces.length > 0 && (
-              <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5">
+              <div className="mt-2 rounded-lg border border-warning bg-warning/15 px-3 py-2.5">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="size-4 shrink-0 text-amber-700" />
-                  <p className="text-[12px] font-bold text-amber-900">
+                  <AlertTriangle className="size-4 shrink-0 text-warning" />
+                  <p className="text-[12px] font-bold text-warning">
                     Di luar rekanan — Anda bayar sendiri
                   </p>
                 </div>
-                <p className="mt-1 text-[11px] leading-4 text-amber-800">
+                <p className="mt-1 text-[11px] leading-4 text-warning">
                   Klaim asuransi tidak berlaku di bengkel-bengkel berikut.
                 </p>
               </div>
             )}
             {otherPlaces.map((place) => (
-              <div key={place.id} className="rounded-xl border-l-4 border-amber-400 pl-1">
+              <div key={place.id} className="rounded-xl border-l-4 border-warning pl-1">
                 <WorkshopCard place={place} onClick={() => void handleSelect(place)} />
               </div>
             ))}
@@ -168,9 +168,9 @@ function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick:
     <button
       type="button"
       onClick={onClick}
-      className="w-full cursor-pointer overflow-hidden rounded-xl bg-white text-left shadow-sm transition-shadow hover:shadow-md"
+      className="drive-card w-full cursor-pointer overflow-hidden rounded-xl text-left transition-shadow hover:shadow-md"
     >
-      <div className="flex flex-row gap-x-2">
+      <div className="flex flex-row gap-x-3 p-3">
         <div className="h-auto w-[30%] shrink-0">
           {place.imageUrl ? (
             <img
@@ -184,14 +184,14 @@ function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick:
             </div>
           )}
         </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-y-2 py-3 pr-5">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-y-2">
           <div className="mb-2 flex flex-row justify-between">
             <div>
-              <h3 className="hover:text-deep-blue-700 cursor-pointer text-[12px] font-semibold text-[#4B61A1]">
+              <h3 className="hover:text-deep-blue-700 cursor-pointer text-[12px] font-semibold text-[#c2f347]">
                 {place.name}
               </h3>
               {place.isInsurerPartner && (
-                <span className="mt-1 inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                <span className="mt-1 inline-flex rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
                   Rekanan Asuransi
                 </span>
               )}
@@ -200,17 +200,17 @@ function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick:
               <span
                 className={cn(
                   'rounded text-[12px] font-medium',
-                  isOpen ? 'text-green-600' : 'text-red-600',
+                  isOpen ? 'text-success' : 'text-danger',
                 )}
               >
                 {isOpen ? 'Buka' : 'Tutup'}
               </span>
-              <span className="text-[10px] text-gray-600">{closeText}</span>
+              <span className="text-[10px] text-neutral-600">{closeText}</span>
             </div>
           </div>
-          <p className="mb-3 line-clamp-2 text-[13px] text-gray-600">{place.address}</p>
+          <p className="mb-3 line-clamp-2 text-[13px] text-neutral-600">{place.address}</p>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-[10px] text-gray-600">
+            <div className="flex items-center gap-4 text-[10px] text-neutral-600">
               <span>{Math.max(1, Math.round(place.estimatedMinutes || 15))} min</span>
               <span>•</span>
               <span>{Math.max(0.1, place.distanceKm || 0).toFixed(1)} km</span>
@@ -222,13 +222,13 @@ function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick:
                     key={index}
                     className={cn(
                       'size-3',
-                      index < Math.floor(place.rating) ? 'text-yellow-400' : 'text-gray-300',
+                      index < Math.floor(place.rating) ? 'text-warning' : 'text-neutral-300',
                     )}
                     fill="currentColor"
                   />
                 ))}
               </div>
-              <span className="text-[12px] font-medium text-gray-700">
+              <span className="text-[12px] font-medium text-neutral-700">
                 {place.rating.toFixed(1)}
               </span>
             </div>

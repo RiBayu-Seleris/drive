@@ -18,7 +18,7 @@ export function MitraSearch({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="focus:border-deep-blue-400 focus:ring-deep-blue-100 h-12 w-full rounded-xl border border-neutral-200 bg-white pr-4 pl-11 text-sm text-neutral-900 shadow-sm transition placeholder:text-neutral-500 focus:ring-2 focus:outline-none"
+        className="drive-card focus:border-deep-blue-400 focus:ring-deep-blue-100 h-12 w-full rounded-xl border border-neutral-200 pr-4 pl-11 text-sm text-neutral-900 transition placeholder:text-neutral-500 focus:ring-2 focus:outline-none"
       />
     </div>
   );

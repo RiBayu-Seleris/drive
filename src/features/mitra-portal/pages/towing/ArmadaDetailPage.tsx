@@ -239,7 +239,7 @@ export function ArmadaDetailPage() {
         </div>
 
         {/* Status operasional */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-14 font-semibold text-neutral-900">Status Operasional</h2>
             <CheckCircle2 className="text-green-cust size-5" />
@@ -249,14 +249,14 @@ export function ArmadaDetailPage() {
               <span>Status Unit</span>
               <span className="text-green-cust font-semibold">{armada.statusLabel}</span>
             </div>
-            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
               <div
                 className="bg-green-cust h-full rounded-full"
                 style={{ width: available ? '100%' : '60%' }}
               />
             </div>
           </div>
-          <div className="mt-3 flex items-end justify-between border-t border-neutral-100 pt-3">
+          <div className="mt-3 flex items-end justify-between border-t border-neutral-300 pt-3">
             <div>
               <p className="text-[11px] text-neutral-500">Update Terakhir</p>
               <p className="text-14 font-bold text-neutral-900">{armada.lastSeen}</p>
@@ -272,7 +272,7 @@ export function ArmadaDetailPage() {
         </div>
 
         {/* Riwayat perjalanan */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <h2 className="text-14 font-semibold text-neutral-900">Riwayat Perjalanan Terakhir</h2>
           <div className="mt-3 space-y-4">
             {(armada.trips ?? []).map((trip, idx, arr) => (
@@ -292,7 +292,7 @@ export function ArmadaDetailPage() {
           <button
             type="button"
             onClick={() => toast.info('Riwayat lengkap segera hadir.')}
-            className="text-deep-blue-500 text-12 mt-3 w-full rounded-lg bg-neutral-100 py-2.5 font-semibold"
+            className="text-deep-blue-500 text-12 mt-3 w-full rounded-lg bg-neutral-200 py-2.5 font-semibold"
           >
             Lihat Semua Riwayat
           </button>
@@ -323,7 +323,7 @@ export function ArmadaDetailPage() {
           <button
             type="button"
             onClick={() => toast.info(`Menghubungi ${armada.driverName}…`)}
-            className="text-deep-blue-700 mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2.5 text-sm font-semibold"
+            className="text-deep-blue-700 mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 py-2.5 text-sm font-semibold"
           >
             <Phone className="size-4" />
             Hubungi Pengemudi
@@ -331,9 +331,9 @@ export function ArmadaDetailPage() {
         </div>
 
         {/* Lokasi */}
-        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card mt-4 rounded-2xl p-4">
           <h2 className="text-14 font-semibold text-neutral-900">Lokasi Terkini</h2>
-          <div className="relative mt-3 grid h-28 place-items-center overflow-hidden rounded-xl bg-neutral-100">
+          <div className="drive-card relative mt-3 grid h-28 place-items-center overflow-hidden rounded-xl">
             <span className="text-[11px] tracking-wide text-neutral-400">MAP PREVIEW</span>
             <MapPin className="text-danger absolute size-7" />
           </div>
@@ -401,7 +401,7 @@ function SpecTile({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-sm">
+    <div className="drive-card rounded-2xl p-3">
       <Icon className="text-deep-blue-500 size-4" />
       <p className="mt-2 text-[11px] text-neutral-500">{label}</p>
       <p className="text-12 font-semibold text-neutral-900">{value}</p>

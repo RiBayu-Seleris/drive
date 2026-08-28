@@ -162,7 +162,7 @@ export function WorkshopKemitraanPage() {
       <AppHeader title="Kemitraan Asuransi" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="bg-deep-blue-500 rounded-2xl p-4 text-white">
+        <div className="bg-deep-blue-500 rounded-2xl p-4 text-[#10200a]">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
               <Handshake className="size-5" />
@@ -200,7 +200,7 @@ export function WorkshopKemitraanPage() {
           </div>
         ) : (
           list.map((row) => (
-            <div key={row.id} className="rounded-2xl bg-white p-4 shadow-sm">
+            <div key={row.id} className="drive-card rounded-2xl p-4">
               <div className="flex items-start gap-3">
                 <span className="bg-deep-blue-50 text-deep-blue-600 grid size-11 shrink-0 place-items-center rounded-full">
                   <Building2 className="size-5" />
@@ -231,7 +231,7 @@ export function WorkshopKemitraanPage() {
               )}
 
               {row.status === 'PENDING' && row.canRespond && (
-                <div className="mt-3 flex gap-2 border-t border-neutral-100 pt-3">
+                <div className="mt-3 flex gap-2 border-t border-neutral-300 pt-3">
                   <Button size="sm" isLoading={busyId === row.id} onClick={() => handleAccept(row)}>
                     Terima
                   </Button>
@@ -250,7 +250,7 @@ export function WorkshopKemitraanPage() {
               )}
 
               {row.status === 'PENDING' && !row.canRespond && (
-                <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-300 pt-3">
                   <span className="text-12 text-neutral-500">Menunggu jawaban asuransi</span>
                   <button
                     type="button"
@@ -267,7 +267,7 @@ export function WorkshopKemitraanPage() {
               )}
 
               {row.status === 'ACTIVE' && (
-                <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-300 pt-3">
                   <span className="text-12 text-green-cust font-medium">
                     Direkomendasikan ke nasabahnya
                   </span>

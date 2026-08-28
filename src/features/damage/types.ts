@@ -34,6 +34,18 @@ export interface DamageResult {
   plateNumber?: string;
   /** True jika backend sudah menandai laporan AI untuk ticket ini sebagai terbayar/terbuka. */
   reportUnlocked?: boolean;
+  /**
+   * True bila angkanya TIDAK berasal dari analisis foto sungguhan — mesin
+   * `/assess` sedang mati sehingga backend mengundi angkanya, atau mode uji
+   * kerusakan ringan sedang menyala. Dipakai untuk memasang label DATA DUMMY.
+   *
+   * Tanpa label ini, angka dadu dan angka sungguhan terlihat persis sama di
+   * layar. Begitu `/assess` hidup kembali, penanda ini berhenti terkirim dan
+   * labelnya hilang sendiri.
+   */
+  isMock?: boolean;
+  /** Alasan angka ditandai palsu, dari backend. Ditampilkan sebagai keterangan. */
+  mockNote?: string;
 }
 
 /** Ringkasan input scan yang dikirim untuk dianalisis. */

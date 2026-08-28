@@ -41,15 +41,15 @@ export function RegisterSuccessPage() {
   const continueLabel = state.redirect ? 'Lanjutkan' : 'Mulai Jelajahi';
 
   return (
-    <PageContainer className="bg-[#F8F9FE]">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo showBack={false} />
 
       <div className="flex flex-1 flex-col px-5 py-6">
         {/* Ikon sukses konsentris, mengikuti pola halaman sukses lain. */}
         <div className="mt-4 flex justify-center">
-          <div className="grid size-32 place-items-center rounded-full bg-green-500/10">
-            <div className="grid size-24 place-items-center rounded-full bg-green-500/15">
-              <div className="grid size-16 place-items-center rounded-full bg-green-500 text-white shadow-lg">
+          <div className="grid size-32 place-items-center rounded-full bg-success/10">
+            <div className="grid size-24 place-items-center rounded-full bg-success/15">
+              <div className="grid size-16 place-items-center rounded-full bg-success text-white shadow-lg">
                 <Check className="size-9" strokeWidth={3} />
               </div>
             </div>
@@ -64,7 +64,7 @@ export function RegisterSuccessPage() {
           Akun Anda sudah aktif dan siap digunakan.
         </p>
 
-        <div className="mt-6 rounded-2xl bg-neutral-100/70 p-4">
+        <div className="drive-card mt-6 rounded-2xl/70 p-4">
           <p className="text-[11px] font-semibold tracking-wide text-neutral-400">DETAIL AKUN</p>
           <div className="mt-3 space-y-3">
             <div className="flex items-center justify-between gap-3">
@@ -75,7 +75,7 @@ export function RegisterSuccessPage() {
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-13 shrink-0 text-neutral-600">Status Email</span>
-              <span className="rounded-full bg-green-50 px-3 py-1 text-[11px] font-semibold text-green-600">
+              <span className="rounded-full bg-success/15 px-3 py-1 text-[11px] font-semibold text-success">
                 Terverifikasi
               </span>
             </div>
@@ -123,7 +123,7 @@ function NextStep({
   description: string;
 }) {
   return (
-    <div className="flex gap-3 rounded-xl border border-neutral-200 bg-white p-3">
+    <div className="drive-card flex gap-3 rounded-xl border border-neutral-200 p-3">
       <div className="text-deep-blue-600 bg-deep-blue-50 grid size-8 shrink-0 place-items-center rounded-lg">
         {icon}
       </div>

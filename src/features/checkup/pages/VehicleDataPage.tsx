@@ -46,8 +46,8 @@ export function VehicleDataPage() {
   };
 
   return (
-    <PageContainer className="bg-white">
-      <div className="flex min-h-dvh flex-col px-6 pt-14 pb-8 text-neutral-900">
+    <PageContainer className="bg-neutral-200">
+      <div className="flex min-h-dvh flex-col px-6 pt-8 pb-8 text-neutral-900">
         <button type="button" onClick={() => navigate(ROUTES.home)} className="mx-auto">
           <Logo className="[&_img]:h-11" />
         </button>

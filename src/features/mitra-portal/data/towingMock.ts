@@ -1,3 +1,4 @@
+import { BarChart3, FileText, PackageCheck, Truck, UserRound, Wallet } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import type { MitraActivity, QuickAction } from '../types';
 
@@ -7,44 +8,60 @@ import type { MitraActivity, QuickAction } from '../types';
  */
 export const TOWING_BALANCE = 2_900_000;
 
-// Ilustrasi diekstrak dari desain Figma (UI-FLOW/Mitra-Towing/svg/Home.svg).
-const ASSET = '/assets/mitra/towing';
+/*
+ * Aksi cepat memakai ikon + tint, bukan berkas gambar.
+ *
+ * Sebelumnya enam ilustrasi SVG hasil ekspor Figma merek lama (biru–oranye,
+ * total ~96 KB) yang menyala sendiri di atas latar gelap DRIVE. Portal bengkel
+ * sudah lebih dulu memakai pola ikon+tint ini; towing sekarang menyusul supaya
+ * dua portal terlihat seperti satu aplikasi, bukan dua.
+ */
+const TINT_BRAND = 'bg-deep-blue-50 text-deep-blue-600';
+const TINT_GREEN = 'bg-green-cust/15 text-green-cust';
+const TINT_AMBER = 'bg-warning/15 text-warning';
+const TINT_RED = 'bg-[#df3a5e]/10 text-[#e76a85]';
 
 export const TOWING_QUICK_ACTIONS: QuickAction[] = [
   {
     key: 'sopir',
     label: 'Data Sopir Towing',
-    image: `${ASSET}/qa-sopir.svg`,
+    icon: UserRound,
+    tint: TINT_BRAND,
     to: ROUTES.mitraSopir,
   },
   {
     key: 'armada',
     label: 'Armada Towing',
-    image: `${ASSET}/qa-armada.svg`,
+    icon: Truck,
+    tint: TINT_AMBER,
     to: ROUTES.mitraArmada,
   },
   {
     key: 'saldo',
     label: 'Tarik Saldo',
-    image: `${ASSET}/qa-saldo.svg`,
+    icon: Wallet,
+    tint: TINT_RED,
     to: ROUTES.mitraTarikSaldo,
   },
   {
     key: 'laporan',
     label: 'Laporan Sopir Towing',
-    image: `${ASSET}/qa-laporan.svg`,
+    icon: FileText,
+    tint: TINT_GREEN,
     to: ROUTES.mitraLaporan,
   },
   {
     key: 'transaksi',
-    label: 'Transaction report',
-    image: `${ASSET}/qa-transaksi.svg`,
+    label: 'Laporan Transaksi',
+    icon: BarChart3,
+    tint: TINT_BRAND,
     to: ROUTES.mitraSaldo,
   },
   {
     key: 'order',
     label: 'Order',
-    image: `${ASSET}/qa-order.svg`,
+    icon: PackageCheck,
+    tint: TINT_GREEN,
     to: ROUTES.mitraOrder,
   },
 ];

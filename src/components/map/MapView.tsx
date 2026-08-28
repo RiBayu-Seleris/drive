@@ -165,7 +165,7 @@ export function MapView({
           center={[marker.lat, marker.lng]}
           radius={9}
           pathOptions={{
-            color: '#FFFFFF',
+            color: '#eef4f8',
             weight: 3,
             fillColor: MAP_PIN_COLOR[marker.variant ?? 'default'],
             fillOpacity: 1,

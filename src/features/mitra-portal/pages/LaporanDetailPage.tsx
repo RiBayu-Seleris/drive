@@ -16,7 +16,7 @@ import { getMitraReport, submitMitraReport } from '../financeApi';
 import type { Laporan } from '../types';
 
 const SELECT_CLASS =
-  'block h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-neutral-900 focus:border-deep-blue-500 focus:ring-2 focus:ring-deep-blue-200 focus:outline-none';
+  'block h-11 w-full rounded-lg border border-neutral-300 bg-neutral-200 px-3 text-sm text-neutral-900 focus:border-deep-blue-500 focus:ring-2 focus:ring-deep-blue-200 focus:outline-none';
 
 /** Form penyelesaian tugas (sesuai desain "Laporan Detail"). */
 export function LaporanDetailPage() {
@@ -116,12 +116,12 @@ export function LaporanDetailPage() {
           <button
             type="button"
             onClick={() => toast.info('Tambah foto bukti segera hadir.')}
-            className="hover:border-deep-blue-400 flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-300 bg-neutral-50 text-neutral-400 transition"
+            className="hover:border-deep-blue-400 flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 text-neutral-400 transition"
           >
             <Plus className="size-6" />
             <span className="text-[11px]">Tambah Foto</span>
           </button>
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-neutral-100">
+          <div className="drive-card relative aspect-square overflow-hidden rounded-xl">
             <div className="grid size-full place-items-center">
               <ImageIcon className="size-8 text-neutral-300" />
             </div>

@@ -7,12 +7,12 @@ import { formatCurrency } from '@/lib/utils/format';
 
 /*
  * Warna tiket diambil langsung dari desain (UI-Flow/Users/Klaim Disetujui - …svg):
- * badan tiket #F8A301 dengan ornamen #FFC048, teks status oranye tua #D97706.
+ * badan tiket #dfa63a dengan ornamen #dfa63a, teks status oranye tua #df923a.
  * Sengaja hex, bukan token design system, karena ini elemen ilustratif.
  */
-const TICKET_BG = 'bg-[#F8A301]';
+const TICKET_BG = 'bg-[#dfa63a]';
 /** Warna latar halaman; dipakai takik perforasi agar terlihat berlubang. */
-const PAGE_BG = 'bg-[#FBFCFF]';
+const PAGE_BG = 'bg-[#131c24]';
 
 /*
  * Lipatan sobekan: 320ms terasa gesit tanpa terkesan meloncat. Easing-nya
@@ -41,8 +41,8 @@ const STATE_STYLE: Partial<Record<ClaimTicketState, { label: string; text: strin
     // diproses" seperti di SVG desain justru membantah judulnya sendiri.
     processing: {
       label: 'Tiket belum digunakan',
-      text: 'text-[#D97706]',
-      dot: 'bg-[#D97706]',
+      text: 'text-[#e7ad6a]',
+      dot: 'bg-[#df923a]',
     },
     expired: {
       label: 'Tiket sudah digunakan',
@@ -118,7 +118,7 @@ export function ClaimTicket({
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-14 -right-10 size-48 rotate-12 rounded-[42%] bg-[#FFC048]"
+          className="pointer-events-none absolute -top-14 -right-10 size-48 rotate-12 rounded-[42%] bg-[#dfa63a]"
         />
         <div
           aria-hidden
@@ -129,7 +129,7 @@ export function ClaimTicket({
           {status ? (
             <span
               className={cn(
-                'text-10 inline-flex min-w-0 items-center gap-x-1 rounded-full bg-white py-1 pr-3 pl-1.5 font-semibold shadow-sm',
+                'text-10 inline-flex min-w-0 items-center gap-x-1 rounded-full bg-neutral-100 py-1 pr-3 pl-1.5 font-semibold shadow-sm',
                 status.text,
               )}
             >
@@ -145,7 +145,7 @@ export function ClaimTicket({
           ) : (
             <span />
           )}
-          <Logo className="shrink-0 [&_img]:h-6" />
+          <Logo tone="mono" className="shrink-0 [&_img]:h-6" />
         </div>
 
         <dl className="relative mt-2 grid grid-cols-2 gap-x-4 gap-y-3">
@@ -226,7 +226,7 @@ export function ClaimTicket({
         onClick={() => setRevealed((current) => !current)}
         aria-expanded={revealed}
         aria-controls={panelId}
-        className="text-12 text-deep-blue-600 hover:bg-deep-blue-50 mt-3 inline-flex items-center justify-center gap-1.5 self-center rounded-full border border-neutral-300 bg-white px-4 py-2 font-semibold shadow-sm transition active:scale-[0.99]"
+        className="text-12 text-deep-blue-600 hover:bg-deep-blue-50 mt-3 inline-flex items-center justify-center gap-1.5 self-center rounded-full border border-neutral-300 bg-neutral-100 px-4 py-2 font-semibold shadow-sm transition active:scale-[0.99]"
       >
         {revealed ? 'Sembunyikan kode' : 'Tampilkan kode'}
         <ChevronDown

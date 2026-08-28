@@ -18,7 +18,7 @@ export function MapPreview({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-xl bg-[#e9eef0]',
+        'relative overflow-hidden rounded-xl bg-[#131c24]',
         'bg-[linear-gradient(90deg,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:22px_22px]',
         className,
       )}

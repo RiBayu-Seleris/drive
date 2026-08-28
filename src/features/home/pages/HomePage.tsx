@@ -2,7 +2,36 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Mail, WalletCards } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+/** Ikon lucide maupun ikon DRIVE sama-sama menerima props SVG. */
+type IconComponent = LucideIcon | ((props: { className?: string }) => JSX.Element);
+import {
+  Camera,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Cpu,
+  FileText,
+  Gauge,
+  Hospital,
+  LayoutGrid,
+  LifeBuoy,
+  Mail,
+  MessageCircle,
+  MessagesSquare,
+  Phone,
+  PhoneCall,
+  Receipt,
+  ScanLine,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Truck,
+  WalletCards,
+  Wrench,
+  Zap,
+} from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ROUTES, buildPath } from '@/app/routes';
@@ -13,16 +42,13 @@ import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { getVehicles } from '@/features/vehicle/api';
 import { hasPolis, type SavedVehicle } from '@/features/vehicle/types';
 import { getActivities, getPaymentHistory } from '@/features/activity/api';
-import LogoOnly from '/assets/home/logo-only.svg';
 
+// Ikon garis menggantikan SVG raster lama (mobil biru-oranye merek AutoClaim).
+// Ikon vektor ikut warna tema, jadi rebrand berikutnya tidak perlu aset baru.
 const SERVICE_MENU = [
-  {
-    image: '/assets/home/ajukan_klaim.svg',
-    label: 'Cek Kondisi Kendaraan',
-    to: ROUTES.checkCondition,
-  },
-  { image: '/assets/home/lihat_klaim.svg', label: 'Hasil Checkup', to: ROUTES.recentActivity },
-  { image: '/assets/home/cari_bengkel.svg', label: 'Cari Bengkel', to: ROUTES.workshopList },
+  { icon: ScanLine, label: 'Cek Kondisi Kendaraan', to: ROUTES.checkCondition },
+  { icon: ClipboardList, label: 'Hasil Checkup', to: ROUTES.recentActivity },
+  { icon: Wrench, label: 'Cari Bengkel', to: ROUTES.workshopList },
 ] as const;
 
 const SHEET_MIN_HEIGHT = 25;
@@ -44,55 +70,84 @@ const paymentLabel = (type: string): string =>
 const byNewest = <T extends { createdAt: string }>(a: T, b: T): number =>
   new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 
+// Isi lama adalah salin-tempel template asuransi JIWA ("perlu medical
+// check-up?", "beli DRIVE") — tidak nyambung dengan alat inspeksi kendaraan.
+// Diganti pertanyaan yang benar-benar dijawab oleh sistem ini.
 const ADVANTAGES = [
   {
-    title: 'Siapa yang bisa beli AutoClaim?',
+    title: 'DRIVE ini sebenarnya apa?',
     content:
-      'AutoClaim dapat dibeli oleh siapa saja yang memiliki kendaraan bermotor dan ingin proses klaim yang cepat dan transparan.',
+      'Kami membaca kondisi mobil Anda dari foto: apa yang rusak, di bagian mana, dan seberapa parah. Hasilnya dipakai untuk mengajukan klaim, atau untuk membeli polis.',
   },
   {
-    title: 'Kapan proteksi aktif?',
+    title: 'Mobil saya perlu disurvei petugas?',
     content:
-      'Proteksi AutoClaim aktif setelah pembayaran berhasil dan polis diterbitkan sesuai ketentuan yang berlaku.',
+      'Tidak. Anda sendiri yang memotret, dipandu langkah demi langkah lewat aplikasi. Tidak ada janji temu, tidak ada yang perlu ditunggu.',
   },
   {
-    title: 'Apakah saya perlu medical check-up?',
+    title: 'Kapan asuransinya mulai jalan?',
     content:
-      'Tidak. AutoClaim tidak memerlukan medical check-up sehingga proses pembelian menjadi lebih mudah.',
+      'Begitu premi masuk. Kalau produk yang Anda pilih punya masa tunggu, hitungannya dimulai dari hari pembayaran diterima — bukan dari hari Anda memesan.',
   },
   {
-    title: 'Transparan & Cepat',
+    title: 'Hasil pindaian berlaku berapa lama?',
     content:
-      'Seluruh proses klaim dilakukan secara transparan dan cepat melalui sistem digital AutoClaim.',
+      'Hasil menggambarkan kondisi mobil pada saat difoto, jadi ada masa berlakunya. Kalau sudah lewat, potret ulang dulu sebelum polis bisa diterbitkan.',
   },
 ];
 
 const SUPPORT = [
-  { image: '/assets/home/whatsapp.png', title: 'WhatsApp', desc: 'Respon Cepat' },
-  { image: '/assets/home/chat.png', title: 'Chat', desc: 'Respon Cepat' },
+  { icon: MessageCircle, title: 'WhatsApp', desc: 'Respon Cepat' },
+  { icon: MessagesSquare, title: 'Chat', desc: 'Respon Cepat' },
   { icon: Mail, title: 'Email', desc: '24/7' },
-  { image: '/assets/home/phone.png', title: 'Telepon', desc: 'Respon Cepat' },
+  { icon: Phone, title: 'Telepon', desc: 'Respon Cepat' },
 ] as const;
 
+// Menggantikan carousel promo lama yang ketiga slide-nya memakai berkas gambar
+// yang SAMA PERSIS (car_promo2.png x3) dan masih berlogo AutoClaim.
+// Isinya kini kemampuan DRIVE seperti di poster rebrand.
 const PROMO_SLIDES = [
   {
-    id: 'promo-1',
-    image: '/assets/home/car_promo2.png',
-    alt: 'Promo AutoClaim 1',
+    id: 'cap-damage',
+    icon: Camera,
+    title: 'Baret sampai penyok',
+    desc: 'Goresan tipis, penyok, retak, kaca pecah — semuanya kami catat.',
   },
   {
-    id: 'promo-2',
-    image: '/assets/home/car_promo2.png',
-    alt: 'Promo AutoClaim 2',
+    id: 'cap-part',
+    icon: Cpu,
+    title: 'Bagian mana yang kena',
+    desc: 'Bemper, fender, pintu, lampu. Bukan sekadar "ada rusak di depan".',
   },
   {
-    id: 'promo-3',
-    image: '/assets/home/car_promo2.png',
-    alt: 'Promo AutoClaim 3',
+    id: 'cap-severity',
+    icon: Gauge,
+    title: 'Seberapa parah',
+    desc: 'Ringan, sedang, atau berat. Ukurannya sama untuk semua mobil.',
+  },
+  {
+    id: 'cap-cost',
+    icon: Receipt,
+    title: 'Kira-kira habis berapa',
+    desc: 'Perkiraan biaya per bagian, jauh sebelum Anda sampai bengkel.',
   },
 ] as const;
 
-const PROMO_AUTOPLAY_MS = 4500;
+const HOW_IT_WORKS = [
+  {
+    title: 'Potret mobilnya',
+    desc: 'Ikuti panduannya, sisi per sisi. Tidak perlu jago memotret.',
+  },
+  {
+    title: 'Kami baca fotonya',
+    desc: 'Kerusakan ditandai satu per satu, lengkap dengan tingkat parahnya.',
+  },
+  {
+    title: 'Hasilnya keluar',
+    desc: 'Rincian kerusakan, kisaran biaya, dan bengkel yang bisa Anda datangi.',
+  },
+] as const;
+
 const PROMO_SWIPE_THRESHOLD = 40;
 
 const formatDate = (date: string) => {
@@ -145,9 +200,7 @@ export function HomePage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAdvantage, setActiveAdvantage] = useState<number | null>(null);
-  const [activePromo, setActivePromo] = useState(0);
   const [activePolicy, setActivePolicy] = useState(0);
-  const promoDragStartRef = useRef<number | null>(null);
   const policyDragStartRef = useRef<number | null>(null);
 
   const vehiclesQuery = useQuery({
@@ -176,22 +229,8 @@ export function HomePage() {
   const recentPayments = [...(paymentsQuery.data ?? [])].sort(byNewest).slice(0, HOME_LIST_LIMIT);
 
   useEffect(() => {
-    if (PROMO_SLIDES.length < 2) return;
-
-    const interval = window.setInterval(() => {
-      setActivePromo((current) => (current + 1) % PROMO_SLIDES.length);
-    }, PROMO_AUTOPLAY_MS);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     if (activePolicy >= policyVehicles.length) setActivePolicy(0);
   }, [activePolicy, policyVehicles.length]);
-
-  const showPromo = (index: number) => {
-    setActivePromo((index + PROMO_SLIDES.length) % PROMO_SLIDES.length);
-  };
 
   const showPolicy = (index: number) => {
     if (policyVehicles.length === 0) return;
@@ -202,33 +241,6 @@ export function HomePage() {
     useScanStore.getState().reset();
     useScanStore.getState().setScanPurpose('standard');
     useDamageStore.getState().reset();
-  };
-
-  const handlePromoDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
-    promoDragStartRef.current = event.clientX;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handlePromoDragEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (promoDragStartRef.current === null) return;
-
-    const deltaX = event.clientX - promoDragStartRef.current;
-    promoDragStartRef.current = null;
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    if (Math.abs(deltaX) < PROMO_SWIPE_THRESHOLD) return;
-    showPromo(activePromo + (deltaX > 0 ? -1 : 1));
-  };
-
-  const handlePromoDragCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
-    promoDragStartRef.current = null;
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
   };
 
   const handlePolicyDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -259,126 +271,207 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative w-full bg-gray-50 pb-20">
-      <div className="bg-deep-blue-500 absolute top-0 z-0 flex h-[248px] w-full justify-center">
-        <img src="/assets/home/bg-header.png" alt="" className="mt-14 w-full object-fill" />
-      </div>
+    <div className="relative w-full bg-neutral-200 pb-24">
+      {/*
+        HERO SINEMATIK.
+        Sebelumnya kepala halaman cuma strip gelap setinggi 248px berisi teks.
+        Sebuah foto dengan peluruhan gradien memberi kedalaman yang tidak bisa
+        dicapai warna rata — dan foto ini sudah ada di aset (51 KB), jadi tidak
+        menambah beban unduh yang berarti.
+      */}
+      <header className="relative h-[336px] w-full overflow-hidden">
+        <img
+          src="/assets/home/home.webp"
+          alt=""
+          fetchPriority="high"
+          className="absolute inset-0 size-full object-cover object-[62%_center]"
+        />
+        {/* Peluruhan ke bawah: foto melebur ke warna halaman, tanpa garis potong. */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,17,0.55)_0%,rgba(7,12,17,0.35)_30%,rgba(15,23,32,0.92)_76%,#0f1720_100%)]" />
+        {/* Sapuan hijau merek dari kiri atas — sumber cahaya yang sama dengan kartu. */}
+        <div className="absolute inset-0 bg-[radial-gradient(100%_68%_at_16%_6%,rgba(173,237,31,0.3),transparent_58%)]" />
+        <div className="drive-header drive-fade-b absolute inset-0 opacity-35" />
 
-      <div className="relative z-10 flex w-full flex-col pt-7">
-        <Link to={ROUTES.home} className="mx-auto mb-[30px]">
-          <Logo className="brightness-0 invert [&_img]:h-9" />
-        </Link>
+        <div className="relative flex h-full flex-col px-gutter pt-7">
+          <Link to={ROUTES.home} className="mx-auto">
+            <Logo className="[&_img]:h-9" />
+          </Link>
 
-        {!isAuthenticated ? (
-          <div className="flex w-full flex-row justify-between px-4">
-            <div className="flex w-full flex-col gap-y-0.5">
-              <p className="text-[16px] font-semibold text-[#F0F1F2] max-[424px]:text-[14px] max-[320px]:text-[12px]">
-                Hai, Selamat Datang
-              </p>
-              <p className="text-[12px] font-medium text-[#F0F1F2] max-[424px]:text-[10px]">
-                Auto Claim Indonesia
-              </p>
-            </div>
-            <Link
-              to={buildPath.loginWithRedirect(ROUTES.home)}
-              className="flex w-full items-center justify-end"
-            >
-              <span className="text-deep-blue-500 flex items-center justify-center rounded-[6px] bg-[#FAFBFC] px-10 py-2 text-[12px] font-semibold">
-                Masuk
-              </span>
-            </Link>
+          {/* Pembacaan status: menegaskan ada mesin yang bekerja di belakang. */}
+          <div className="mx-auto mt-3 flex items-center gap-2 rounded-full border border-[#22313c] bg-[#0b1218]/80 px-3 py-1">
+            <span className="bg-deep-blue-500 size-1.5 rounded-full shadow-[0_0_8px_2px_rgba(173,237,31,0.6)]" />
+            <span className="hud-readout text-deep-blue-500 text-[9.5px] tracking-[0.18em] uppercase">
+              Siap memindai
+            </span>
           </div>
-        ) : (
-          <>
-            <div className="mx-4 flex items-center gap-4">
-              <div className="size-13 overflow-hidden rounded-full bg-white p-1">
+
+          <div className="mt-auto pb-[76px]">
+            {!isAuthenticated ? (
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="drive-eyebrow">Selamat datang</span>
+                  <p className="drive-title mt-2 text-[27px] leading-[1.12] text-neutral-900 max-[380px]:text-[23px]">
+                    Foto mobilnya.
+                    <br />
+                    Sisanya biar kami.
+                  </p>
+                </div>
+                <Link
+                  to={buildPath.loginWithRedirect(ROUTES.home)}
+                  className="drive-card flex shrink-0 items-center gap-1 px-3.5 py-2 text-[12px] font-semibold text-neutral-900"
+                >
+                  Masuk
+                  <ChevronRight className="text-deep-blue-500 size-4" aria-hidden />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3.5">
                 <img
                   src="/assets/home/avatar.png"
                   alt=""
-                  className="rounded-full bg-neutral-200 object-cover"
+                  className="border-deep-blue-500/45 size-13 shrink-0 rounded-full border-2 bg-neutral-200 object-cover"
                 />
+                <div className="min-w-0">
+                  <span className="drive-eyebrow">Selamat datang kembali</span>
+                  <p className="drive-title mt-1 truncate text-[23px] text-neutral-900">
+                    {user?.fullname ?? 'Pengguna'}
+                  </p>
+                </div>
               </div>
-              <div className="flex min-w-0 flex-col text-neutral-50">
-                <p className="truncate text-[14px] font-semibold">
-                  Halo, {user?.fullname ?? 'Pengguna'}
-                </p>
-                <p className="text-xs">Auto Claim Indonesia</p>
-              </div>
-            </div>
+            )}
+          </div>
+        </div>
+      </header>
 
-            <div className="mt-6 px-4">
-              <div className="overflow-hidden rounded-xl">
-                {vehiclesQuery.isLoading ? (
-                  <PolicyCardSkeleton />
-                ) : policyVehicles.length > 0 ? (
-                  <div
-                    className="flex touch-pan-y transition-transform duration-500 ease-out"
-                    style={{ transform: `translateX(-${activePolicy * 100}%)` }}
-                    onPointerDown={handlePolicyDragStart}
-                    onPointerUp={handlePolicyDragEnd}
-                    onPointerCancel={handlePolicyDragCancel}
-                  >
-                    {policyVehicles.map((vehicle) => (
-                      <PolicyVehicleCard key={vehicle.vehiclePlate} vehicle={vehicle} />
-                    ))}
-                  </div>
-                ) : (
-                  <PolicyEmptyCard onOpenVehicles={() => navigate(ROUTES.myVehicles)} />
-                )}
-              </div>
-              {policyVehicles.length > 1 && (
-                <div className="mt-3 flex justify-center gap-2">
-                  {policyVehicles.map((vehicle, index) => (
-                    <button
-                      key={vehicle.vehiclePlate}
-                      type="button"
-                      className={cn(
-                        'border-deep-blue-200 size-2 rounded-full border transition-colors',
-                        activePolicy === index && 'bg-deep-blue-200',
-                      )}
-                      aria-label={`Lihat polis ${index + 1}`}
-                      aria-current={activePolicy === index ? 'true' : undefined}
-                      onClick={() => showPolicy(index)}
-                    />
+      {/*
+        Kartu aksi utama sengaja MENIMPA tepi bawah foto (-mt). Tumpang tindih
+        inilah yang membuat halaman terbaca berlapis; tanpa itu ia kembali jadi
+        tumpukan blok yang berhenti dan mulai di garis yang sama.
+      */}
+      <div className="relative z-20 -mt-[62px] px-gutter">
+        <Link
+          to={ROUTES.checkCondition}
+          onClick={prepareStandardScan}
+          className="drive-hero hud-frame relative flex items-center gap-4 overflow-hidden p-5"
+        >
+          <span className="hud-sweep" aria-hidden />
+          <span className="drive-chip-solid relative flex size-14 shrink-0 items-center justify-center rounded-2xl">
+            <ScanLine className="size-7 text-[#10200a]" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="drive-eyebrow">Mulai di sini</span>
+            <span className="drive-title mt-1 block text-[19px] leading-tight text-neutral-900">
+              Periksa Mobil Anda
+            </span>
+            <span className="mt-1 block text-[11.5px] leading-relaxed text-neutral-600">
+              Cukup beberapa foto. Tidak sampai lima menit.
+            </span>
+          </span>
+          <ChevronRight className="text-deep-blue-500 size-6 shrink-0" aria-hidden />
+        </Link>
+      </div>
+
+      <div className="relative z-10 flex w-full flex-col">
+        {isAuthenticated && (
+          <div className="mt-5 px-gutter">
+            <div className="overflow-hidden rounded-xl">
+              {vehiclesQuery.isLoading ? (
+                <PolicyCardSkeleton />
+              ) : policyVehicles.length > 0 ? (
+                <div
+                  className="flex touch-pan-y transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${activePolicy * 100}%)` }}
+                  onPointerDown={handlePolicyDragStart}
+                  onPointerUp={handlePolicyDragEnd}
+                  onPointerCancel={handlePolicyDragCancel}
+                >
+                  {policyVehicles.map((vehicle) => (
+                    <PolicyVehicleCard key={vehicle.vehiclePlate} vehicle={vehicle} />
                   ))}
                 </div>
+              ) : (
+                <PolicyEmptyCard onOpenVehicles={() => navigate(ROUTES.myVehicles)} />
               )}
             </div>
-          </>
+            {policyVehicles.length > 1 && (
+              <div className="mt-3 flex justify-center gap-2">
+                {policyVehicles.map((vehicle, index) => (
+                  <button
+                    key={vehicle.vehiclePlate}
+                    type="button"
+                    className={cn(
+                      'h-2 rounded-full transition-all',
+                      activePolicy === index
+                        ? 'bg-deep-blue-500 w-7'
+                        : 'w-2 bg-neutral-400',
+                    )}
+                    aria-label={`Lihat polis ${index + 1}`}
+                    aria-current={activePolicy === index ? 'true' : undefined}
+                    onClick={() => showPolicy(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
-        <section className="mt-6 rounded-t-2xl bg-white p-4">
-          <div className="grid grid-cols-4 items-start gap-3">
+        <section className="mt-5 px-gutter pb-7">
+          <div className="grid grid-cols-4 items-stretch gap-2">
             {SERVICE_MENU.map((item) => (
               <Link
                 key={item.label}
                 to={item.to}
                 onClick={item.to === ROUTES.checkCondition ? prepareStandardScan : undefined}
-                className="flex flex-col items-center gap-2"
+                className="drive-card flex flex-col items-center gap-2.5 px-2 py-3.5"
               >
-                <div className="flex size-12 items-center justify-center">
-                  <img src={item.image} alt="" className="size-12 object-contain" />
-                </div>
-                <p className="text-center text-[10px] leading-tight text-[#4B5563]">
+                <span className="drive-chip flex size-10 items-center justify-center rounded-xl">
+                  <item.icon className="text-deep-blue-500 size-5" aria-hidden />
+                </span>
+                <p className="text-center text-[10px] leading-tight font-medium text-neutral-800">
                   {renderServiceLabel(item.label)}
                 </p>
               </Link>
             ))}
+            {/*
+              Ubin ini bercabang, jadi labelnya ikut bercabang.
+
+              Tamu → langsung ke halaman Bantuan Darurat. Label "Bantuan
+              Darurat" tepat, dan warna merah memang pantas.
+
+              Sudah masuk → membuka bottom sheet berisi LIMA kelompok dan 12
+              item: Deteksi, Layanan Asuransi, DRIVE, Bantuan Darurat, dan
+              Kontak. Yang darurat cuma 3 dari 12. Menamainya "Bantuan Darurat"
+              membuat user yang mencari "Cari Bengkel" atau "Klaim" tidak akan
+              pernah menduga keduanya ada di balik tombol itu — dan warna merah
+              justru menahannya menekan, karena terbaca sebagai tombol darurat.
+            */}
             <button
               type="button"
-              className="flex flex-col items-center gap-2"
+              className="drive-card flex flex-col items-center gap-2.5 px-2 py-3.5"
               onClick={() => (isAuthenticated ? setSheetOpen(true) : navigate(ROUTES.emergency))}
+              aria-haspopup={isAuthenticated ? 'dialog' : undefined}
             >
-              <div className="flex size-12 items-center justify-center">
-                <img
-                  src={isAuthenticated ? '/assets/home/More.svg' : '/assets/home/emergency2.svg'}
-                  alt=""
-                  className="size-12 object-contain"
-                />
-              </div>
-              <p className="text-center text-[10px] leading-tight text-[#4B5563]">
-                Bantuan <br />
-                Darurat
+              <span
+                className={cn(
+                  'flex size-10 items-center justify-center rounded-xl',
+                  isAuthenticated ? 'drive-chip' : 'drive-chip-danger',
+                )}
+              >
+                {isAuthenticated ? (
+                  <LayoutGrid className="text-deep-blue-500 size-5" aria-hidden />
+                ) : (
+                  <LifeBuoy className="text-danger size-5" aria-hidden />
+                )}
+              </span>
+              <p className="text-center text-[10px] leading-tight font-medium text-neutral-800">
+                {isAuthenticated ? (
+                  'Lainnya'
+                ) : (
+                  <>
+                    Bantuan <br />
+                    Darurat
+                  </>
+                )}
               </p>
             </button>
           </div>
@@ -403,16 +496,16 @@ export function HomePage() {
                       key={item.ticket || item.createdAt}
                       className={cn(
                         'relative flex flex-col items-start rounded-xl p-4',
-                        index === 0 && 'bg-[#F2F4FB]/50',
+                        index === 0 && 'bg-[#131c24]/50',
                       )}
                     >
                       {index === 0 && (
-                        <div className="absolute top-2 right-2 size-2 rounded-full bg-[#FF314A]" />
+                        <div className="absolute top-2 right-2 size-2 rounded-full bg-[#df3a4e]" />
                       )}
                       <div className="flex w-full flex-col gap-y-3">
-                        <h3 className="text-xs font-semibold text-[#4B5563]">{item.title}</h3>
-                        <p className="text-xs text-gray-600">&quot;{item.description}&quot;</p>
-                        <div className="flex items-center justify-between text-xs text-gray-400">
+                        <h3 className="text-xs font-semibold text-[#eef4f8]">{item.title}</h3>
+                        <p className="text-xs text-neutral-600">&quot;{item.description}&quot;</p>
+                        <div className="flex items-center justify-between text-xs text-neutral-500">
                           <p>{formatDate(item.createdAt)}</p>
                           <p>{formatTime(item.createdAt)}</p>
                         </div>
@@ -442,19 +535,19 @@ export function HomePage() {
                         key={item.id}
                         className="flex flex-row items-center justify-center gap-3"
                       >
-                        <div className="flex size-8 items-center justify-center rounded-full bg-[#FFEBEA] text-[#FF3B30]">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-[#131c24] text-[#e7716a]">
                           <WalletCards className="size-4" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-[12px] font-semibold text-[#323B4A]">
+                          <p className="text-[12px] font-semibold text-[#eef4f8]">
                             {paymentLabel(item.title)}
                           </p>
-                          <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                          <div className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
                             <p>{formatDate(item.createdAt)}</p>
                             <p>{formatTime(item.createdAt)}</p>
                           </div>
                         </div>
-                        <p className="text-[12px] font-semibold text-[#FF3B30]">
+                        <p className="text-[12px] font-semibold text-[#e7716a]">
                           {formatCurrency(amount)}
                         </p>
                       </div>
@@ -466,75 +559,77 @@ export function HomePage() {
           </>
         )}
 
-        <div className="overflow-x-hidden bg-white">
-          <div className="mx-4 mt-6 mb-5 overflow-hidden rounded-[12px]">
-            <div
-              className="flex touch-pan-y transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${activePromo * 100}%)` }}
-              onPointerDown={handlePromoDragStart}
-              onPointerUp={handlePromoDragEnd}
-              onPointerCancel={handlePromoDragCancel}
-            >
-              {PROMO_SLIDES.map((slide) => (
-                <img
-                  key={slide.id}
-                  src={slide.image}
-                  className="h-auto w-full shrink-0 rounded-[12px] object-cover"
-                  alt={slide.alt}
-                  draggable={false}
-                />
-              ))}
-            </div>
+        {/*
+          Dulu carousel satu kartu penuh layar dengan titik indikator. Untuk
+          empat kartu pendek itu boros ruang dan menyembunyikan tiga di antaranya.
+          Baris geser ber-snap menampilkan kartu berikutnya "mengintip", yang
+          sekaligus memberi tahu pengguna bahwa masih ada lanjutannya.
+        */}
+        <section className="bg-neutral-100 pt-7 pb-6">
+          <div className="px-gutter">
+            <span className="drive-eyebrow">Yang kami lihat</span>
+            <h2 className="drive-title mt-1.5 text-[19px] text-neutral-900">
+              Tidak ada yang terlewat
+            </h2>
           </div>
-          <div className="ml-[18px] flex flex-row gap-x-[14px]">
+          <div className="drive-rail mt-4 pb-1">
             {PROMO_SLIDES.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                className={cn(
-                  'border-deep-blue-300 size-2.5 rounded-full border transition-colors',
-                  activePromo === index && 'bg-deep-blue-300',
-                )}
-                aria-label={`Lihat promo ${index + 1}`}
-                aria-current={activePromo === index ? 'true' : undefined}
-                onClick={() => showPromo(index)}
-              />
+              <article key={slide.id} className="drive-card relative w-[228px] p-4">
+                <span className="hud-readout absolute top-3.5 right-4 text-[10px] text-neutral-500">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="drive-chip flex size-11 items-center justify-center rounded-xl">
+                  <slide.icon className="text-deep-blue-500 size-5" aria-hidden />
+                </span>
+                <h3 className="drive-title mt-3 text-[14px] text-neutral-900">{slide.title}</h3>
+                <p className="mt-1.5 text-[11.5px] leading-relaxed text-neutral-600">
+                  {slide.desc}
+                </p>
+              </article>
             ))}
-          </div>
-        </div>
-
-        <section className="mt-8 mb-6 bg-white px-4 py-4">
-          <h2 className="mb-4 text-[14px] text-neutral-900">Kenapa Harus AutoClaim?</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <WhyItem color="from-[#3977FF] to-[#224899]" text="Bandingkan dengan Mudah" />
-            <WhyItem color="from-[#6EE031] to-[#66B13E]" text="Informasi Transparan" />
-            <WhyItem color="from-[#F5982E] to-[#DE8F35]" text="Pembelian Online & Praktis" />
           </div>
         </section>
 
-        <section className="mb-5 px-4">
+        <section className="mb-6 bg-neutral-100 px-gutter pt-2 pb-4">
+          <span className="drive-eyebrow">Kenapa kami</span>
+          <h2 className="drive-title mt-1.5 mb-4 text-[19px] text-neutral-900">
+            Alasan orang bertahan
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            <WhyItem icon={Sparkles} text="Gampang dibandingkan" />
+            <WhyItem icon={ShieldCheck} text="Tidak ada yang ditutupi" />
+            <WhyItem icon={Zap} text="Beli dari rumah" />
+          </div>
+        </section>
+
+        <section className="mb-5 px-gutter">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-neutral-800">Keunggulan Auto Claim</h2>
+            <div>
+              <span className="drive-eyebrow">Sering ditanya</span>
+              <h2 className="drive-title mt-1.5 text-[19px] text-neutral-900">
+                Barangkali ini juga
+              </h2>
+            </div>
           </div>
           <div className="space-y-3">
             {ADVANTAGES.map((item, index) => (
-              <div key={item.title} className="rounded-xl border border-[#EAECEF] bg-white">
+              <div key={item.title} className="drive-card">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between px-3 py-3"
                   onClick={() => setActiveAdvantage(activeAdvantage === index ? null : index)}
                 >
-                  <p className="text-left text-[12px] text-[#6B7280]">{item.title}</p>
+                  <p className="text-left text-[12px] text-[#aebbc4]">{item.title}</p>
                   <ChevronDown
                     className={cn(
-                      'size-5 text-[#D0D2D6] transition-transform duration-300',
+                      'size-5 text-[#7c8b96] transition-transform duration-300',
                       activeAdvantage === index && 'rotate-180',
                     )}
                   />
                 </button>
                 {activeAdvantage === index && (
                   <div className="px-4 pb-3">
-                    <p className="text-[10px] leading-relaxed text-gray-500">{item.content}</p>
+                    <p className="text-[10px] leading-relaxed text-neutral-500">{item.content}</p>
                   </div>
                 )}
               </div>
@@ -542,39 +637,51 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="flex w-full flex-col gap-y-2 px-4">
-          <p className="text-[14px] font-medium text-[#EE793D]">
-            Bagaimana Menggunakan Auto Claim?
-          </p>
-          <div className="flex w-full flex-col gap-y-1">
-            <p className="text-[16px] font-semibold text-[#374151]">
-              3 Langkah Mudah Akses AutoClaim
+        <section className="flex w-full flex-col gap-y-2 px-gutter">
+          <span className="drive-eyebrow">Cara kerja</span>
+          <div className="mt-1.5 flex w-full flex-col gap-y-1.5">
+            <p className="drive-title text-[22px] leading-tight text-neutral-900">
+              Tiga langkah, selesai
             </p>
-            <p className="text-[12px] font-normal text-[#6F81B4]">
-              Gak perlu ribet, aktifin proteksi hanya dalam 3 langkah mudah!
+            <p className="text-[12px] leading-relaxed text-neutral-600">
+              Tidak ada formulir panjang. Tidak ada antre.
             </p>
           </div>
         </section>
-        <div className="mt-6 mb-5 flex items-center justify-center">
-          <img src="/assets/home/howtoU.webp" alt="" />
-        </div>
+        {/*
+          Menggantikan howtoU.webp — gambar raster berlogo AutoClaim yang
+          teksnya ikut tercetak di dalamnya, sehingga tidak bisa diterjemahkan,
+          tidak terbaca pembaca layar, dan tidak ikut berubah saat rebrand.
+        */}
+        <ol className="mt-5 mb-6 flex w-full flex-col gap-y-2 px-gutter">
+          {HOW_IT_WORKS.map((step, index) => (
+            <li key={step.title} className="drive-card flex items-start gap-3.5 p-4">
+              <span className="drive-chip-solid hud-readout mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-[#10200a]">
+                {index + 1}
+              </span>
+              <span className="min-w-0">
+                <span className="drive-title block text-[14px] text-neutral-900">{step.title}</span>
+                <span className="block text-[11px] leading-relaxed text-neutral-600">
+                  {step.desc}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
 
-        <section className="bg-white p-4">
-          <h2 className="mb-4 text-[14px] font-medium text-[#374151]">
-            Butuh bantuan? Hubungi CS kami sekarang
+        <section className="bg-neutral-100 px-gutter py-4">
+          <span className="drive-eyebrow">Bantuan</span>
+          <h2 className="drive-title mt-1.5 mb-4 text-[16px] text-neutral-900">
+            Ada yang mau ditanya?
           </h2>
-          <div className="grid grid-cols-4 gap-3 divide-x divide-dashed divide-neutral-500 py-2">
+          <div className="grid grid-cols-4 gap-2">
             {SUPPORT.map((item) => (
-              <div key={item.title} className="w-full text-center">
-                <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-full">
-                  {'image' in item ? (
-                    <img src={item.image} alt={item.title} className="size-8" />
-                  ) : (
-                    <item.icon className="size-8 text-orange-600" />
-                  )}
+              <div key={item.title} className="drive-card w-full px-1 py-3 text-center">
+                <div className="drive-chip mx-auto mb-2 flex size-10 items-center justify-center rounded-xl">
+                  <item.icon className="text-deep-blue-500 size-5" aria-hidden />
                 </div>
-                <p className="text-[10px] font-semibold text-[#374151]">{item.title}</p>
-                <p className="text-[10px] font-normal text-[#FF725E]">{item.desc}</p>
+                <p className="text-[10px] font-semibold text-[#eef4f8]">{item.title}</p>
+                <p className="text-[10px] font-normal text-neutral-600">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -588,9 +695,13 @@ export function HomePage() {
 
 function PolicyVehicleCard({ vehicle }: { vehicle: SavedVehicle }) {
   return (
-    <div className="relative h-[166px] w-full shrink-0 overflow-hidden rounded-xl bg-white shadow-[inset_3px_3px_4.1px_rgba(0,0,0,0.15)]">
-      <img src="/assets/home/car.webp" alt="" className="absolute top-0 right-0 h-auto w-[266px]" />
-      <img src="/assets/home/bg-carousel.png" alt="" className="h-full w-full" />
+    <div className="drive-edge relative h-[166px] w-full shrink-0 overflow-hidden rounded-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(130%_110%_at_100%_0%,rgba(173,237,31,0.2),transparent_62%)]" />
+      <img
+        src="/assets/home/car.webp"
+        alt=""
+        className="absolute top-0 right-0 h-auto w-[240px] opacity-70"
+      />
       <div className="absolute top-4 left-4 flex max-w-[62%] flex-col gap-4">
         <PolicyInfo label="No. Polis" value={vehicle.polisNumber} />
         <PolicyInfo label="Jenis Kendaraan" value={vehicle.vehicleName || vehicle.vehicleType} />
@@ -602,20 +713,20 @@ function PolicyVehicleCard({ vehicle }: { vehicle: SavedVehicle }) {
 
 function PolicyEmptyCard({ onOpenVehicles }: { onOpenVehicles: () => void }) {
   return (
-    <div className="relative h-[166px] w-full overflow-hidden rounded-xl bg-white shadow-[inset_3px_3px_4.1px_rgba(0,0,0,0.15)]">
+    <div className="drive-edge relative h-[166px] w-full overflow-hidden rounded-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(130%_110%_at_100%_0%,rgba(173,237,31,0.14),transparent_62%)]" />
       <img
         src="/assets/home/car.webp"
         alt=""
-        className="absolute top-0 right-0 h-auto w-[266px] opacity-80"
+        className="absolute top-0 right-0 h-auto w-[240px] opacity-40"
       />
-      <img src="/assets/home/bg-carousel.png" alt="" className="h-full w-full" />
       <div className="absolute top-4 left-4 flex max-w-[62%] flex-col gap-3">
         <PolicyInfo label="No. Polis" value="-" />
         <PolicyInfo label="Jenis Kendaraan" value="-" />
         <button
           type="button"
           onClick={onOpenVehicles}
-          className="text-deep-blue-500 mt-1 w-fit rounded-lg bg-white/85 px-3 py-2 text-[11px] font-semibold shadow-sm"
+          className="bg-deep-blue-500 mt-1 w-fit rounded-lg px-3 py-2 text-[11px] font-semibold text-[#10200a]"
         >
           Tambah Kendaraan
         </button>
@@ -659,11 +770,11 @@ function HomeSection({
   children: ReactNode;
 }) {
   return (
-    <section className={cn('bg-white px-4', className)}>
+    <section className={cn('bg-neutral-100 px-gutter', className)}>
       <div className="mb-4 flex items-center justify-between pt-4">
         <h2 className="text-[15px] font-semibold text-neutral-800">{title}</h2>
         {action && (
-          <button type="button" onClick={onAction} className="cursor-pointer text-xs text-blue-600">
+          <button type="button" onClick={onAction} className="cursor-pointer text-xs text-deep-blue-500">
             {action}
           </button>
         )}
@@ -691,21 +802,16 @@ function HomeListSkeleton() {
 }
 
 function HomeEmpty({ text }: { text: string }) {
-  return <p className="py-6 text-center text-xs text-gray-400">{text}</p>;
+  return <p className="py-6 text-center text-xs text-neutral-500">{text}</p>;
 }
 
-function WhyItem({ color, text }: { color: string; text: string }) {
+function WhyItem({ icon: Icon, text }: { icon: IconComponent; text: string }) {
   return (
-    <div className="rounded-xl bg-white p-0 text-center">
-      <div
-        className={cn(
-          'mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-linear-to-bl',
-          color,
-        )}
-      >
-        <img src={LogoOnly} alt="" srcSet="" />
+    <div className="drive-card rounded-xl px-2 py-3.5 text-center">
+      <div className="drive-chip mx-auto mb-2.5 flex size-11 items-center justify-center rounded-2xl">
+        <Icon className="text-deep-blue-500 size-5" aria-hidden />
       </div>
-      <p className="text-[10px] text-gray-600">{text}</p>
+      <p className="text-[10.5px] leading-snug font-medium text-neutral-700">{text}</p>
     </div>
   );
 }
@@ -810,7 +916,7 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
         onClick={() => closeSheet()}
       />
       <div
-        className="fixed bottom-0 left-1/2 z-[9999] flex w-full max-w-md flex-col rounded-t-[24px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.26)]"
+        className="fixed bottom-0 left-1/2 z-[9999] flex w-full max-w-md flex-col rounded-t-[24px] bg-neutral-100 shadow-[0_-4px_20px_rgba(0,0,0,0.26)]"
         style={{
           height: `${sheetHeight}dvh`,
           transform: `translate3d(-50%, ${isVisible ? '0' : '100%'}, 0)`,
@@ -827,12 +933,12 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
         >
-          <div className="h-1 w-12 rounded-full bg-gray-300" />
+          <div className="h-1 w-12 rounded-full bg-neutral-300" />
         </div>
         <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-[26px] py-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
           <SheetGroup title="Deteksi">
             <SheetItem
-              image="/assets/home/ajukan_klaim.svg"
+              icon={ScanLine}
               label={
                 <>
                   Cek Kondisi
@@ -844,7 +950,7 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
               onClick={goStandardScan}
             />
             <SheetItem
-              image="/assets/home/lihat_klaim.svg"
+              icon={ClipboardList}
               label={
                 <>
                   Hasil
@@ -855,7 +961,7 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
               onClick={() => go(ROUTES.recentActivity)}
             />
             <SheetItem
-              image="/assets/home/cari_bengkel.svg"
+              icon={Wrench}
               label={
                 <>
                   Cari
@@ -870,26 +976,26 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
 
           <SheetGroup title="Layanan Asuransi">
             <SheetItem
-              image="/assets/home/ajukan_klaim.svg"
+              icon={ShieldCheck}
               label="Asuransi"
               align="center"
               onClick={() => go(ROUTES.insuranceSearch)}
             />
             <SheetItem
-              image="/assets/home/lihat_klaim.svg"
+              icon={FileText}
               label="Klaim"
               onClick={() => go(ROUTES.claims)}
             />
           </SheetGroup>
 
-          <SheetGroup title="AutoClaim">
+          <SheetGroup title="DRIVE">
             <SheetItem
-              image="/assets/home/logo-only.svg"
+              icon={Star}
               label={
                 <>
                   Rating
                   <br />
-                  AutoClaim
+                  DRIVE
                 </>
               }
               align="center"
@@ -902,13 +1008,15 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
                 terbuka untuk tamu — user yang sudah login justru kehilangan
                 akses ke nomor darurat saat isinya dipindah ke sheet ini. */}
             <SheetItem
-              image="/assets/checkup_vehicle/call.png"
+              icon={PhoneCall}
+              tone="danger"
               label="Hubungi Darurat"
               align="center"
               onClick={() => closeSheet(() => window.location.assign('tel:112'))}
             />
             <SheetItem
-              image="/assets/checkup_vehicle/hospital.png"
+              icon={Hospital}
+              tone="danger"
               label={
                 <>
                   Rumah
@@ -920,7 +1028,8 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
               onClick={() => go(ROUTES.emergencyHospitals)}
             />
             <SheetItem
-              image="/assets/checkup_vehicle/derek.png"
+              icon={Truck}
+              tone="danger"
               label="Towing"
               onClick={() => go(ROUTES.emergencyTowing)}
             />
@@ -928,14 +1037,14 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
 
           <SheetGroup title="Kontak" compact>
             <SheetItem
-              image="/assets/home/chat.png"
+              icon={MessagesSquare}
               label="Chat"
               align="center"
               onClick={() => closeSheet()}
             />
-            <SheetItem image="/assets/home/phone.png" label="Telepon" onClick={callPhone} />
+            <SheetItem icon={Phone} label="Telepon" onClick={callPhone} />
             <SheetItem
-              image="/assets/home/whatsapp.png"
+              icon={MessageCircle}
               label="WhatsApp"
               align="center"
               onClick={() => closeSheet()}
@@ -958,21 +1067,24 @@ function SheetGroup({
 }) {
   return (
     <div className={cn(compact ? 'mb-0' : 'mb-4 last:mb-0')}>
-      <h3 className="mb-4 text-[16px] leading-none font-semibold text-gray-900">{title}</h3>
+      <h3 className="mb-4 text-[16px] leading-none font-semibold text-neutral-900">{title}</h3>
       <div className="grid grid-cols-3 items-center justify-between gap-x-4">{children}</div>
     </div>
   );
 }
 
 function SheetItem({
-  image,
+  icon: Icon,
   label,
   align = 'center',
+  tone = 'brand',
   onClick,
 }: {
-  image?: string;
+  icon: IconComponent;
   label: ReactNode;
   align?: 'start' | 'center' | 'end';
+  /** `danger` untuk tindakan darurat supaya beda tegas dari menu biasa. */
+  tone?: 'brand' | 'danger';
   onClick: () => void;
 }) {
   return (
@@ -986,10 +1098,13 @@ function SheetItem({
       )}
       onClick={onClick}
     >
-      <div className="flex size-[52px] items-center justify-center rounded-xl bg-[#EFF2FB]">
-        {image ? <img src={image} alt="" className="size-9 object-contain" /> : null}
+      <div className="drive-chip flex size-[52px] items-center justify-center rounded-xl">
+        <Icon
+          className={cn('size-6', tone === 'danger' ? 'text-danger' : 'text-deep-blue-500')}
+          aria-hidden
+        />
       </div>
-      <p className="mt-2 h-8 max-w-[82px] text-center text-[12px] leading-[1.25] text-[#1F2937]">
+      <p className="mt-2 h-8 max-w-[82px] text-center text-[12px] leading-[1.25] text-[#eef4f8]">
         {label}
       </p>
     </button>

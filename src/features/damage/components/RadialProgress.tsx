@@ -113,7 +113,7 @@ export function RadialProgress({
               dx="0"
               dy="12"
               stdDeviation="15"
-              floodColor="#0F172A"
+              floodColor="#131c24"
               floodOpacity="0.06"
             />
           </filter>
@@ -129,17 +129,17 @@ export function RadialProgress({
               dx="0"
               dy="10"
               stdDeviation="12.5"
-              floodColor="#0F172A"
+              floodColor="#131c24"
               floodOpacity="0.10"
             />
           </filter>
         </defs>
 
         {/* Cincin dalam — permukaan putih tempat track berada (efek timbul). */}
-        <circle cx={cx} cy={cy} r={innerRingR} fill="#FFFFFF" filter={`url(#${ringShadowId})`} />
+        <circle cx={cx} cy={cy} r={innerRingR} fill="#131c24" filter={`url(#${ringShadowId})`} />
 
         {/* Track abu-abu. */}
-        <path d={arc} fill="none" stroke="#E0E3E7" strokeWidth={t} strokeLinecap="round" />
+        <path d={arc} fill="none" stroke="#223039" strokeWidth={t} strokeLinecap="round" />
 
         {/* Isian sesuai persentase. */}
         {clamped > 0 && (
@@ -156,7 +156,7 @@ export function RadialProgress({
         )}
 
         {/* Cakram tengah putih + teks. */}
-        <circle cx={cx} cy={cy} r={discR} fill="#FFFFFF" filter={`url(#${discShadowId})`} />
+        <circle cx={cx} cy={cy} r={discR} fill="#131c24" filter={`url(#${discShadowId})`} />
         <text
           x={cx}
           y={valueTextY}
@@ -174,7 +174,7 @@ export function RadialProgress({
             y={labelTextY}
             textAnchor="middle"
             dominantBaseline="central"
-            fill="#404040"
+            fill="#131c24"
             fontSize={labelFontSize}
             fontWeight={500}
           >

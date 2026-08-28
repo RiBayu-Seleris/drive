@@ -30,7 +30,7 @@ function initials(name: string): string {
 }
 
 const FIELD_CLASS =
-  'block h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-deep-blue-400 focus:ring-2 focus:ring-deep-blue-100 focus:outline-none';
+  'block h-11 w-full rounded-lg border border-neutral-300 bg-neutral-200 px-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-deep-blue-400 focus:ring-2 focus:ring-deep-blue-100 focus:outline-none';
 
 /** Penugasan armada + pemilihan sopir untuk sebuah order. */
 export function PenugasanPage() {
@@ -122,7 +122,7 @@ export function PenugasanPage() {
               </div>
             </div>
           )}
-          <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="drive-card mb-4 rounded-2xl p-4">
             <p className="text-[11px] font-semibold tracking-wide text-neutral-400">ORDER</p>
             <p className="text-14 mt-1 font-semibold text-neutral-900">
               {order.userFullname || order.orderCode}
@@ -135,7 +135,7 @@ export function PenugasanPage() {
 
           {/* Armada terpilih */}
           {selectedFleetData && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
+            <div className="drive-card rounded-2xl p-4">
               <div className="flex items-center gap-3">
                 <div className="from-deep-blue-700 to-deep-blue-500 grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br">
                   <Truck className="size-7 text-white/40" />
@@ -145,7 +145,7 @@ export function PenugasanPage() {
                     {selectedFleetData.fleetType}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold">
+                    <span className="rounded-md bg-neutral-200 px-2 py-0.5 text-[11px] font-semibold">
                       {selectedFleetData.plateNumber}
                     </span>
                     <span className="text-green-cust flex items-center gap-1 text-[11px] font-medium">
@@ -158,7 +158,7 @@ export function PenugasanPage() {
             </div>
           )}
 
-          <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="drive-card mt-3 rounded-2xl p-4">
             <label className="mb-2 block text-[11px] font-semibold tracking-wide text-neutral-400">
               PILIH ARMADA
             </label>
@@ -183,7 +183,7 @@ export function PenugasanPage() {
           </div>
           <div className="mt-3 space-y-3">
             {availableDrivers.length === 0 ? (
-              <div className="rounded-2xl bg-white p-4 text-center shadow-sm">
+              <div className="drive-card rounded-2xl p-4 text-center">
                 <p className="text-12 font-semibold text-neutral-900">Tidak ada sopir tersedia</p>
                 <p className="text-[11px] text-neutral-500">
                   Aktifkan sopir sebelum menerima order.
@@ -198,10 +198,10 @@ export function PenugasanPage() {
                     type="button"
                     onClick={() => setSelectedDriver(s.id)}
                     className={cn(
-                      'flex w-full items-center gap-3 rounded-2xl border bg-white p-3 text-left transition',
+                      'drive-card flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition',
                       active
                         ? 'border-deep-blue-500 ring-deep-blue-100 ring-2'
-                        : 'border-neutral-100',
+                        : 'border-neutral-300',
                     )}
                   >
                     <div className="bg-deep-blue-50 text-deep-blue-600 grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold">

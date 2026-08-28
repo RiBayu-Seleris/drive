@@ -131,7 +131,7 @@ export function VehicleSidesPage() {
             : 'Untuk analisis kerusakan, ambil gambar dari beberapa sudut kendaraan anda'}
         </p>
 
-        <div className="mt-6 w-full rounded-lg border border-neutral-300 bg-white p-4 text-left shadow-sm">
+        <div className="mt-6 w-full rounded-lg border border-neutral-300 bg-neutral-100 p-4 text-left shadow-sm">
           <p className="text-deep-blue-500 text-center text-sm font-semibold">Pemeriksaan AI</p>
           <div className="mt-4 border-t border-neutral-300 pt-4">
             <p className="text-[10px] font-semibold tracking-wide text-neutral-500 uppercase">
@@ -164,8 +164,8 @@ export function VehicleSidesPage() {
           </div>
         </div>
 
-        <h5 className="text-md mt-10 font-[600] text-[#374151]">{current.label}</h5>
-        <h5 className="mt-1 text-sm font-[400] text-[#4B5563]">{SIDE_HINT[current.id]}</h5>
+        <h5 className="text-md mt-10 font-[600] text-[#eef4f8]">{current.label}</h5>
+        <h5 className="mt-1 text-sm font-[400] text-[#eef4f8]">{SIDE_HINT[current.id]}</h5>
         <img src={SIDE_IMAGE[current.id]} alt={current.label} className="mt-6" />
         <p className="mt-6 text-xs font-semibold">
           {insuranceMode ? 'Ambil foto bagian ini' : 'Apakah Bagian Ini Mengalami Kerusakan?'}
@@ -174,7 +174,7 @@ export function VehicleSidesPage() {
         {insuranceMode ? (
           <button
             type="button"
-            className="bg-deep-blue-500 mt-10 flex w-full items-center justify-center gap-2 rounded-lg p-3 text-sm text-white"
+            className="bg-deep-blue-500 mt-10 flex w-full items-center justify-center gap-2 rounded-lg p-3 text-sm text-[#10200a]"
             onClick={() => setCameraOpen(true)}
           >
             Ambil Foto
@@ -183,7 +183,7 @@ export function VehicleSidesPage() {
           <div className="mt-10 flex w-full gap-3 text-white">
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#059669] p-3 text-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#3adfac] p-3 text-sm"
               onClick={handleDamaged}
             >
               <Check className="size-6" />
@@ -191,7 +191,7 @@ export function VehicleSidesPage() {
             </button>
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#E35151] p-3 text-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#df3a3a] p-3 text-sm"
               onClick={handleNotDamaged}
             >
               <X className="size-6" />

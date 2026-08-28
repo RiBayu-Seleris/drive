@@ -235,7 +235,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
       <AppHeader title="Instruksi Pembayaran" showBack={false} />
       <div className="flex flex-1 flex-col gap-4 px-5 py-5">
         {/* Status / hitung mundur */}
-        <div className="rounded-xl border border-neutral-300 bg-white p-5 text-center">
+        <div className="drive-card rounded-xl border border-neutral-300 p-5 text-center">
           {!invoice ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <Spinner className="size-8" />
@@ -251,7 +251,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
                     : 'Selesaikan pembayaran sebelum waktu habis'}
               </p>
               <p
-                className={`mt-3 text-3xl font-bold ${isTerminal ? 'text-[#E35151]' : 'text-deep-blue-500'}`}
+                className={`mt-3 text-3xl font-bold ${isTerminal ? 'text-[#e76a6a]' : 'text-deep-blue-500'}`}
               >
                 {isTerminal ? status : formatClock(remaining)}
               </p>
@@ -261,7 +261,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
 
         {/* Instruksi metode */}
         {invoice && !isTerminal && method === 'QRIS' && invoice.qrString && (
-          <div className="flex flex-col items-center rounded-xl border border-neutral-300 bg-white p-5">
+          <div className="drive-card flex flex-col items-center rounded-xl border border-neutral-300 p-5">
             <p className="text-14 font-bold text-neutral-900">Bayar dengan QRIS</p>
             <p className="text-12 mt-1 text-center text-neutral-600">
               Scan kode di bawah dari aplikasi e-wallet atau m-banking
@@ -276,7 +276,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
         )}
 
         {invoice && !isTerminal && method === 'VA' && invoice.vaNumber && (
-          <div className="rounded-xl border border-neutral-300 bg-white p-5">
+          <div className="drive-card rounded-xl border border-neutral-300 p-5">
             <p className="text-14 font-bold text-neutral-900">
               Transfer ke Virtual Account {invoice.vaBank || ''}
             </p>
@@ -316,7 +316,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
         )}
 
         {/* Ringkasan */}
-        <div className="rounded-xl border border-neutral-300 bg-white p-4">
+        <div className="drive-card rounded-xl border border-neutral-300 p-4">
           <p className="text-14 font-bold text-neutral-900">Ringkasan Pembayaran</p>
           <div className="mt-3 flex flex-col gap-2">
             <SummaryRow label="Status" value={invoice?.status ?? 'PENDING'} />
@@ -327,7 +327,7 @@ function RealWaiting({ ctx }: { ctx: PaymentContext }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-3 border-t border-neutral-300 bg-white px-5 py-4">
+      <div className="sticky bottom-0 flex flex-col gap-3 border-t border-neutral-300 bg-neutral-100 px-5 py-4">
         {isTerminal ? (
           <Button size="lg" onClick={handleCreateNew}>
             Buat Pembayaran Baru

@@ -75,7 +75,7 @@ export function DropoffProof({
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Bukti Serah Terima" onBack={submitting ? undefined : onBack} />
       <div className="flex flex-1 flex-col px-5 py-4">
         <div className="bg-deep-blue-50 text-12 flex items-start gap-2 rounded-lg px-3 py-2.5 text-neutral-700">
@@ -98,7 +98,7 @@ export function DropoffProof({
                   type="button"
                   onClick={() => setCameraAngle(id)}
                   disabled={submitting}
-                  className="mt-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-neutral-400 bg-neutral-100 disabled:opacity-60"
+                  className="drive-card mt-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-neutral-400 disabled:opacity-60"
                 >
                   {photo ? (
                     <img src={photo.url} alt={label} className="size-full object-cover" />

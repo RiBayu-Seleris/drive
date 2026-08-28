@@ -21,6 +21,7 @@ import {
   LogOut,
   MapPin,
   Navigation,
+  PackageCheck,
   Phone,
   Search,
   Star,
@@ -29,6 +30,7 @@ import {
   UserRound,
   Wallet,
   X,
+  type LucideIcon,
 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -50,6 +52,8 @@ import { cn } from '@/lib/utils/cn';
 import { keepDigits, keepPhone } from '@/lib/utils/inputFilters';
 import { uploadFilePublic } from '@/lib/upload/publicUpload';
 import { formatCurrency, formatDateTime } from '@/lib/utils/format';
+import { Logo } from '@/components/brand/Logo';
+import { TowingHero } from '@/components/brand/MitraArt';
 import {
   changeDriverPassword,
   getDriverProfile,
@@ -130,9 +134,9 @@ const TRACKING_STEPS = [
   },
 ] as const;
 
-const PAGE_BG = 'bg-[#F8F9FE]';
+const PAGE_BG = 'bg-[#131c24]';
 const DRIVER_CARD =
-  'rounded-xl border border-[#C1C7D2]/30 bg-white shadow-[0_2px_4px_rgb(31_48_91_/_0.04)] flex flex-col gap-y-3 p-5';
+  'drive-card rounded-xl border border-[#223039]/30 flex flex-col gap-y-3 p-5';
 
 function hasCoord(lat: number, lng: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
@@ -477,7 +481,7 @@ export function DriverTasksPage() {
   const handleLogout = async () => {
     const ok = await confirm({
       title: 'Keluar akun sopir',
-      message: 'Anda akan kembali ke portal login AutoClaim.',
+      message: 'Anda akan kembali ke portal login DRIVE.',
       confirmText: 'Keluar',
       tone: 'danger',
     });
@@ -676,22 +680,15 @@ function DriverHome({
   const completionPct = tasks.length > 0 ? Math.round((finishedCount / tasks.length) * 100) : 0;
 
   return (
-    <main className="flex flex-1 flex-col bg-white pb-20">
-      {/* Hero: ilustrasi desain (biru + jalan + truk) sebagai layer dasar full-bleed,
-          logo & profil menumpang di atasnya — persis Dashboard.svg. */}
-      <section className="relative bg-[#425B95] text-white">
-        <img
-          src="/assets/mitra/towing/hero-towing.svg"
-          alt=""
-          className="pointer-events-none block w-full"
-        />
+    <main className="flex flex-1 flex-col bg-neutral-200 pb-20">
+      {/* Hero: ilustrasi sebagai lapisan dasar full-bleed, logo & profil
+          menumpang di atasnya. Latarnya gelap, bukan hijau terang — teks putih
+          di atas hijau merek cuma 3,2:1. */}
+      <section className="drive-header relative text-white">
+        <TowingHero aria-hidden className="pointer-events-none block w-full" />
         <div className="absolute inset-x-0 top-0 px-4 pt-4">
           <div className="flex justify-center">
-            <img
-              src="/assets/auth/logo-autoclaim.png"
-              alt="AutoClaim"
-              className="h-8 w-auto brightness-0 invert"
-            />
+            <Logo className="[&_img]:h-8" />
           </div>
 
           <div className="mt-5 flex items-center justify-between gap-4">
@@ -703,7 +700,7 @@ function DriverHome({
                   className="size-11 shrink-0 rounded-full border-2 border-white object-cover"
                 />
               ) : (
-                <div className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-lg font-semibold text-[#425B95]">
+                <div className="grid size-11 shrink-0 place-items-center rounded-full bg-neutral-200 text-lg font-semibold text-[#c2f347]">
                   {driverInitial(displayName)}
                 </div>
               )}
@@ -719,7 +716,7 @@ function DriverHome({
             >
               <Bell className="size-6" />
               {assignedTasks.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-[#F5455C] px-1 text-[12px] font-bold text-white">
+                <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-[#df3a4f] px-1 text-[12px] font-bold text-white">
                   {assignedTasks.length}
                 </span>
               )}
@@ -730,17 +727,20 @@ function DriverHome({
 
       <section className="relative z-10 -mt-14 grid grid-cols-3 gap-3.5 px-5">
         <HomeMenuCard
-          image="/assets/mitra/towing/qa-sopir.svg"
+          icon={UserRound}
+          tint="bg-deep-blue-50 text-deep-blue-600"
           label="Data Sopir Towing"
           onClick={onOpenBiodata}
         />
         <HomeMenuCard
-          image="/assets/mitra/towing/qa-order.svg"
+          icon={PackageCheck}
+          tint="bg-green-cust/15 text-green-cust"
           label="Order"
           onClick={onOpenOrders}
         />
         <HomeMenuCard
-          image="/assets/mitra/towing/qa-laporan.svg"
+          icon={FileText}
+          tint="bg-warning/15 text-warning"
           label="Laporan Sopir Towing"
           onClick={onOpenHistory}
         />
@@ -763,20 +763,20 @@ function DriverHome({
           />
         )}
 
-        <div className="relative min-h-[110px] overflow-hidden rounded-2xl bg-[#EDEFF6] p-4">
+        <div className="relative min-h-[110px] overflow-hidden rounded-2xl bg-[#131c24] p-4">
           <div className="relative z-10 max-w-[62%]">
             <div className="flex items-center gap-0.5">
               {[0, 1, 2, 3, 4].map((value) => (
-                <Star key={value} className="size-4 fill-[#F5B942] text-[#F5B942]" />
+                <Star key={value} className="size-4 fill-[#e7bd6a] text-[#e7bd6a]" />
               ))}
               <span className="text-14 ml-2 font-bold text-neutral-900">{rating}</span>
             </div>
-            <p className="mt-2 text-[12px] whitespace-nowrap text-[#4B5568]">
+            <p className="mt-2 text-[12px] whitespace-nowrap text-[#eef4f8]">
               Telah mengantar {monthlyFinishedCount} kali dalam 1 bulan
             </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200">
               <div
-                className="h-full rounded-full bg-[#3F5FA8]"
+                className="h-full rounded-full bg-[#aded1f]"
                 style={{ width: `${completionPct}%` }}
               />
             </div>
@@ -795,12 +795,12 @@ function DriverHome({
 /** Judul & pill kartu status berdasarkan status sopir yang sebenarnya. */
 function availabilityCopy(status: string): { title: string; pill: string; dot: string } {
   if (status === 'BUSY') {
-    return { title: 'Sedang Bertugas', pill: 'Sedang mengerjakan order', dot: '#F5B942' };
+    return { title: 'Sedang Bertugas', pill: 'Sedang mengerjakan order', dot: '#dfa73a' };
   }
   if (status === 'OFFLINE') {
-    return { title: 'Sedang Offline', pill: 'Tidak menerima order', dot: '#AAB1C0' };
+    return { title: 'Sedang Offline', pill: 'Tidak menerima order', dot: '#223039' };
   }
-  return { title: 'Sopir Towing Aktif', pill: 'Online & Siap Melayani', dot: '#74E088' };
+  return { title: 'Sopir Towing Aktif', pill: 'Online & Siap Melayani', dot: '#3adf58' };
 }
 
 function DriverOrders({
@@ -840,7 +840,7 @@ function DriverOrders({
     <>
       <AppHeader showLogo onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-24">
-        <section className="relative min-h-[120px] overflow-hidden rounded-xl bg-linear-to-br from-[#33427B] to-[#4A5FA8] p-4 text-white shadow-sm">
+        <section className="relative min-h-[120px] overflow-hidden rounded-xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-4 text-white shadow-sm">
           <div className="relative z-10">
             <p className="text-[12px] font-semibold tracking-wide text-white/60 uppercase">
               Status Driver
@@ -861,12 +861,12 @@ function DriverOrders({
             onClick={() => onToggleAvailability(online ? 'OFFLINE' : 'AVAILABLE')}
             className={cn(
               'absolute top-3.5 right-3.5 z-10 flex h-7 w-12 items-center rounded-full px-1 transition-colors disabled:opacity-50',
-              online || busy ? 'bg-[#2AB857]' : 'bg-white/30',
+              online || busy ? 'bg-[#3adf6e]' : 'bg-white/30',
             )}
           >
             <span
               className={cn(
-                'size-5 rounded-full bg-white shadow transition-transform',
+                'size-5 rounded-full bg-neutral-200 shadow transition-transform',
                 (online || busy) && 'translate-x-5',
               )}
             />
@@ -874,7 +874,7 @@ function DriverOrders({
           <Truck className="absolute right-4 bottom-3 size-24 text-white/20" />
         </section>
 
-        <section className="grid grid-cols-3 divide-x divide-[#C1C7D2]/30 rounded-xl border border-[#C1C7D2]/30 bg-white p-3 text-center">
+        <section className="drive-card grid grid-cols-3 divide-x divide-[#223039]/30 rounded-xl border border-[#223039]/30 p-3 text-center">
           <OrderStat value={String(finishedCount)} label="Selesai" />
           <OrderStat value={rating} label="Rating" />
           <OrderStat value={`${kmEstimate(tasks)}`} label="KM Total" />
@@ -882,7 +882,7 @@ function DriverOrders({
 
         <div className="flex items-center justify-between">
           <h2 className="text-18 font-medium text-neutral-900">Permintaan Masuk</h2>
-          <button type="button" className="text-12 font-semibold text-[#3F5FA8]">
+          <button type="button" className="text-12 font-semibold text-[#c2f347]">
             Lihat Semua
           </button>
         </div>
@@ -958,13 +958,13 @@ function DriverHistory({ tasks, onBack }: { tasks: DriverTask[]; onBack: () => v
     <>
       <AppHeader showLogo onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-24">
-        <label className="flex h-12 items-center gap-3 rounded-xl border border-[#AAB1C0] bg-transparent px-3">
-          <Search className="size-5 text-[#747C8B]" />
+        <label className="flex h-12 items-center gap-3 rounded-xl border border-[#223039] bg-transparent px-3">
+          <Search className="size-5 text-[#aebbc4]" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Cari plat nomor atau tanggal..."
-            className="text-12 min-w-0 flex-1 bg-transparent text-neutral-900 outline-none placeholder:text-[#747C8B]"
+            className="text-12 min-w-0 flex-1 bg-transparent text-neutral-900 outline-none placeholder:text-[#aebbc4]"
           />
         </label>
 
@@ -1044,19 +1044,19 @@ function DriverAccount({
                 className="size-26 rounded-xl object-cover shadow-sm"
               />
             ) : (
-              <div className="grid size-22 place-items-center rounded-xl bg-[#3F5FA8] text-3xl font-semibold text-white shadow-sm">
+              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-3xl font-semibold text-white shadow-sm">
                 {driverInitial(displayName)}
               </div>
             )}
-            <span className="absolute -right-2 -bottom-2 grid size-8 place-items-center rounded-full bg-white text-[#3F5FA8] shadow-md">
+            <span className="absolute -right-2 -bottom-2 grid size-8 place-items-center rounded-full bg-neutral-200 text-[#c2f347] shadow-md">
               <BadgeCheck className="size-5" />
             </span>
           </div>
           <h1 className="mt-4 text-[18px] leading-tight font-semibold text-neutral-900">
             {displayName}
           </h1>
-          <p className="text-12 mt-1 flex items-center gap-1 font-medium text-[#747C8B]">
-            <Star className="size-4 fill-[#F5B942] text-[#F5B942]" />
+          <p className="text-12 mt-1 flex items-center gap-1 font-medium text-[#aebbc4]">
+            <Star className="size-4 fill-[#e7bd6a] text-[#e7bd6a]" />
             {rating} Rating
           </p>
         </section>
@@ -1070,7 +1070,7 @@ function DriverAccount({
         <Card className={DRIVER_CARD}>
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#123A6D] text-white">
+              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-white">
                 <Truck className="size-6" />
               </span>
               <div className="min-w-0">
@@ -1079,7 +1079,7 @@ function DriverAccount({
                 </p>
                 <p className="text-12 text-neutral-600">
                   Plat Nomor:{' '}
-                  <span className="font-medium text-[#123A6D]">
+                  <span className="font-medium text-[#c2f347]">
                     {activeTask?.fleetPlateNumber || '-'}
                   </span>
                 </p>
@@ -1088,7 +1088,7 @@ function DriverAccount({
             <span
               className={cn(
                 'text-11 rounded-full px-3 py-1 font-bold whitespace-nowrap',
-                activeTask ? 'bg-[#E8F5EC] text-[#2F9B54]' : 'bg-[#EEF0F5] text-neutral-500',
+                activeTask ? 'bg-[#131c24] text-[#6ae795]' : 'bg-[#131c24] text-neutral-500',
               )}
             >
               {activeTask ? 'Bertugas' : 'Standby'}
@@ -1097,10 +1097,10 @@ function DriverAccount({
         </Card>
 
         <section>
-          <p className="mb-3 text-[12px] font-bold tracking-wide text-[#8A93AC] uppercase">
+          <p className="mb-3 text-[12px] font-bold tracking-wide text-[#aebbc4] uppercase">
             Akun Saya
           </p>
-          <div className="overflow-hidden rounded-xl border border-[#C1C7D2]/30 bg-white">
+          <div className="drive-card overflow-hidden rounded-xl border border-[#223039]/30">
             <AccountMenuItem
               icon={<UserPen className="size-5" />}
               label="Ubah Profil"
@@ -1164,15 +1164,15 @@ function OrderDetailScreen({
               <h1 className="text-16 mt-3 truncate font-medium text-neutral-900">
                 {task.userFullname || taskVehicleTitle(task)}
               </h1>
-              <p className="text-14 mt-1 font-medium tracking-[0.2em] text-[#747C8B] uppercase">
+              <p className="text-14 mt-1 font-medium tracking-[0.2em] text-[#aebbc4] uppercase">
                 {plate === '-' ? task.orderCode : plate}
               </p>
             </div>
-            <CarFront className="mt-1 size-6 shrink-0 text-[#123A6D]" />
+            <CarFront className="mt-1 size-6 shrink-0 text-[#c2f347]" />
           </div>
           <div className="my-4 h-px bg-neutral-200" />
           <p className="text-13 flex items-start gap-2 text-neutral-800">
-            <span className="mt-1.5 size-2 shrink-0 rounded-full bg-[#CE4136]" />
+            <span className="mt-1.5 size-2 shrink-0 rounded-full bg-[#df463a]" />
             <span>
               <b>Masalah:</b> {driverTaskProblem(task)}
             </span>
@@ -1180,17 +1180,17 @@ function OrderDetailScreen({
         </Card>
 
         <Card className={DRIVER_CARD}>
-          <p className="text-12 font-medium text-[#747C8B] uppercase">Rute Pengiriman</p>
+          <p className="text-12 font-medium text-[#aebbc4] uppercase">Rute Pengiriman</p>
           <DetailRouteLine task={task} />
         </Card>
 
         <Card className={DRIVER_CARD}>
           <div className="flex items-center justify-between gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#EEF0F5] text-neutral-600">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#131c24] text-neutral-600">
               <UserRound className="size-5" />
             </span>
             <div className="min-w-0">
-              <p className="text-11 font-medium text-[#747C8B]">Pelanggan</p>
+              <p className="text-11 font-medium text-[#aebbc4]">Pelanggan</p>
               <p className="text-14 truncate font-medium text-neutral-900">
                 {task.userFullname || '-'}
               </p>
@@ -1198,7 +1198,7 @@ function OrderDetailScreen({
             {task.userPhone && (
               <a
                 href={`tel:${task.userPhone}`}
-                className="ml-auto grid size-10 shrink-0 place-items-center rounded-full border border-[#3F5FA8] text-[#3F5FA8]"
+                className="ml-auto grid size-10 shrink-0 place-items-center rounded-full border border-[#aded1f] text-[#c2f347]"
                 aria-label="Telepon customer"
               >
                 <Phone className="size-5" />
@@ -1207,18 +1207,18 @@ function OrderDetailScreen({
           </div>
         </Card>
 
-        <div className="flex items-center justify-between rounded-xl bg-[#F0F2F7] p-4">
-          <p className="text-14 text-[#747C8B]">Estimasi Pendapatan</p>
-          <p className="text-18 font-semibold text-[#00508A]">
+        <div className="flex items-center justify-between rounded-xl bg-[#131c24] p-4">
+          <p className="text-14 text-[#aebbc4]">Estimasi Pendapatan</p>
+          <p className="text-18 font-semibold text-[#c2f347]">
             {formatCurrency(driverTaskRevenue(task))}
           </p>
         </div>
 
         {isAssigned ? (
-          <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[46px_1fr] gap-3 border-t border-[#AAB1C0] bg-white/95 px-4 py-4 backdrop-blur">
+          <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[46px_1fr] gap-3 border-t border-[#223039] bg-white/95 px-4 py-4 backdrop-blur">
             <Button
               variant="outline"
-              className="h-[46px] rounded-xl border-[#747C8B] px-0 text-[#747C8B] hover:bg-[#FBE7E5]"
+              className="h-[46px] rounded-xl border-[#2f3f4a] px-0 text-[#aebbc4] hover:bg-[#131c24]"
               disabled={isUpdating}
               onClick={onReject}
               aria-label="Tolak order"
@@ -1226,7 +1226,7 @@ function OrderDetailScreen({
               <X className="size-5" />
             </Button>
             <Button
-              className="h-[46px] rounded-lg bg-[#4B61A1] font-medium"
+              className="h-[46px] rounded-lg bg-[#aded1f] font-medium"
               isLoading={isUpdating}
               onClick={onAccept}
             >
@@ -1273,13 +1273,13 @@ function AcceptedOrderScreen({
       <AppHeader showLogo onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-4 pt-12 pb-24">
         <section className="mb-4 flex flex-col items-center text-center">
-          <div className="grid size-16 place-items-center rounded-full bg-[#DDF2E5] text-[#2AB857]">
+          <div className="grid size-16 place-items-center rounded-full bg-[#0f1720] text-[#6ae791]">
             <Check className="size-8" />
           </div>
           <h1 className="mt-5 text-[22px] leading-tight font-medium text-neutral-900">
             Pesanan Diterima
           </h1>
-          <p className="text-13 mt-1 text-[#616978]">
+          <p className="text-13 mt-1 text-[#aebbc4]">
             Permintaan derek telah berhasil dikonfirmasi.
           </p>
         </section>
@@ -1287,27 +1287,27 @@ function AcceptedOrderScreen({
         <Card className={DRIVER_CARD}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-12 text-[#747C8B]">Estimasi Pendapatan</p>
-              <p className="mt-1 text-[20px] font-semibold text-[#00508A]">
+              <p className="text-12 text-[#aebbc4]">Estimasi Pendapatan</p>
+              <p className="mt-1 text-[20px] font-semibold text-[#c2f347]">
                 {formatCurrency(driverTaskRevenue(task))}
               </p>
             </div>
-            <span className="grid size-11 place-items-center rounded-xl bg-[#E3F2FE] text-[#3F5FA8]">
+            <span className="grid size-11 place-items-center rounded-xl bg-[#131c24] text-[#c2f347]">
               <Wallet className="size-5" />
             </span>
           </div>
         </Card>
 
         <Card className={DRIVER_CARD}>
-          <p className="text-[12px] font-medium text-[#747C8B] uppercase">Kendaraan</p>
+          <p className="text-[12px] font-medium text-[#aebbc4] uppercase">Kendaraan</p>
           <h2 className="text-16 mt-2 font-medium text-neutral-900">
             {task.userFullname || taskVehicleTitle(task)}
           </h2>
-          <span className="text-12 mt-2 inline-flex rounded-lg bg-[#EEF0F5] px-3 py-1 font-bold tracking-[0.2em] text-neutral-600 uppercase">
+          <span className="text-12 mt-2 inline-flex rounded-lg bg-[#131c24] px-3 py-1 font-bold tracking-[0.2em] text-neutral-600 uppercase">
             {plate === '-' ? task.orderCode : plate}
           </span>
-          <p className="text-13 mt-3 flex items-center gap-2 font-medium text-[#CE4136]">
-            <span className="size-2 rounded-full bg-[#CE4136]" />
+          <p className="text-13 mt-3 flex items-center gap-2 font-medium text-[#e7736a]">
+            <span className="size-2 rounded-full bg-[#df463a]" />
             {driverTaskProblem(task)}
           </p>
         </Card>
@@ -1323,7 +1323,7 @@ function AcceptedOrderScreen({
         </Card>
 
         {markers.length > 0 && (
-          <div className="relative overflow-hidden rounded-xl border border-[#C1C7D2]">
+          <div className="relative overflow-hidden rounded-xl border border-[#223039]">
             <MapView
               center={pickup ?? destination ?? DEFAULT_MAP_POINT}
               markers={markers}
@@ -1332,16 +1332,16 @@ function AcceptedOrderScreen({
               className="h-40 rounded-xl"
             />
             {km !== null && (
-              <span className="text-12 absolute bottom-3 left-3 z-[500] rounded-full bg-white px-3 py-1.5 font-bold text-neutral-900 shadow">
+              <span className="text-12 absolute bottom-3 left-3 z-[500] rounded-full bg-neutral-200 px-3 py-1.5 font-bold text-neutral-900 shadow">
                 {km.toFixed(1)} KM • {tripEtaMnt(km)} Menit
               </span>
             )}
           </div>
         )}
 
-        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[1fr_86px] gap-4 border-t border-[#C1C7D2] bg-white/95 px-4 py-4 backdrop-blur">
+        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[1fr_86px] gap-4 border-t border-[#223039] bg-white/95 px-4 py-4 backdrop-blur">
           <Button
-            className="h-[46px] rounded-lg bg-[#4B61A1] font-medium"
+            className="h-[46px] rounded-lg bg-[#aded1f] font-medium"
             onClick={onStart}
             leftIcon={<Navigation className="size-5" />}
           >
@@ -1350,7 +1350,7 @@ function AcceptedOrderScreen({
           {task.userPhone && (
             <a
               href={`tel:${task.userPhone}`}
-              className="grid h-[46px] place-items-center rounded-xl border border-[#C1C7D2] bg-white text-[#00508A]"
+              className="drive-card grid h-[46px] place-items-center rounded-xl border border-[#223039] text-[#c2f347]"
               aria-label="Telepon customer"
             >
               <Phone className="size-5" />
@@ -1400,9 +1400,9 @@ function TrackingOrderScreen({
   const plate = driverTaskPlate(task);
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo onBack={onBack} />
-      <div className="relative h-[42dvh] min-h-[348px] shrink-0 overflow-hidden bg-[#DDE6F6] [&_.leaflet-control-zoom]:hidden">
+      <div className="relative h-[42dvh] min-h-[348px] shrink-0 overflow-hidden bg-[#0f1720] [&_.leaflet-control-zoom]:hidden">
         <MapView
           center={pickup ?? destination ?? DEFAULT_MAP_POINT}
           markers={markers}
@@ -1410,15 +1410,15 @@ function TrackingOrderScreen({
           fitToMarkers={markers.length > 1}
           className="h-full rounded-none"
         />
-        <div className="absolute inset-x-5 top-4 z-[500] flex items-center justify-between gap-3 rounded-full bg-white px-5 py-3 shadow-md">
-          <span className="text-12 flex min-w-0 items-center gap-3 font-medium text-[#00508A]">
+        <div className="absolute inset-x-5 top-4 z-[500] flex items-center justify-between gap-3 rounded-full bg-neutral-200 px-5 py-3 shadow-md">
+          <span className="text-12 flex min-w-0 items-center gap-3 font-medium text-[#c2f347]">
             <Truck className="size-4 shrink-0" />
             <span className="truncate">{driverStatusLabel(task.status)}</span>
           </span>
           {tripEtaLabel(task) !== '-' && (
             <>
               <span className="h-4 w-px shrink-0 bg-neutral-200" />
-              <span className="text-12 whitespace-nowrap text-[#4B5563]">
+              <span className="text-12 whitespace-nowrap text-[#eef4f8]">
                 {tripEtaLabel(task)} lagi
               </span>
             </>
@@ -1426,18 +1426,18 @@ function TrackingOrderScreen({
         </div>
       </div>
 
-      <main className="-mt-6 flex flex-1 flex-col gap-4 rounded-t-[28px] bg-white px-4 pt-5 pb-24 shadow-[0_-12px_28px_rgb(31_48_91_/_0.10)]">
+      <main className="-mt-6 flex flex-1 flex-col gap-4 rounded-t-[28px] bg-neutral-200 px-4 pt-5 pb-24 shadow-[0_-12px_28px_rgb(31_48_91_/_0.10)]">
         <div className="mx-auto h-1.5 w-12 rounded-full bg-neutral-300" />
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="text-16 grid size-12 shrink-0 place-items-center rounded-full bg-[#E3F2FE] font-bold text-[#3F5FA8]">
+            <div className="text-16 grid size-12 shrink-0 place-items-center rounded-full bg-[#131c24] font-bold text-[#c2f347]">
               {driverInitial(task.userFullname || 'Pelanggan')}
             </div>
             <div className="min-w-0">
               <h1 className="text-16 truncate font-medium text-neutral-900">
                 {task.userFullname || '-'}
               </h1>
-              <p className="text-12 truncate text-[#747C8B]">
+              <p className="text-12 truncate text-[#aebbc4]">
                 {plate === '-' ? task.orderCode : plate}
               </p>
             </div>
@@ -1445,7 +1445,7 @@ function TrackingOrderScreen({
           {task.userPhone && (
             <a
               href={`tel:${task.userPhone}`}
-              className="text-12 flex h-10 shrink-0 items-center gap-2 rounded-full border border-[#3F5FA8] px-3 font-semibold text-[#3F5FA8]"
+              className="text-12 flex h-10 shrink-0 items-center gap-2 rounded-full border border-[#aded1f] px-3 font-semibold text-[#c2f347]"
               aria-label="Telepon customer"
             >
               <Phone className="size-4" />
@@ -1454,12 +1454,12 @@ function TrackingOrderScreen({
           )}
         </div>
 
-        <p className="text-12 font-medium text-[#747C8B] uppercase">Order Progress</p>
+        <p className="text-12 font-medium text-[#aebbc4] uppercase">Order Progress</p>
         <DriverProgress status={task.status} />
 
         {next ? (
           <Button
-            className="mt-auto h-12 rounded-lg bg-[#4B61A1] font-medium"
+            className="mt-auto h-12 rounded-lg bg-[#aded1f] font-medium"
             isLoading={isUpdating}
             onClick={onAdvance}
           >
@@ -1468,7 +1468,7 @@ function TrackingOrderScreen({
         ) : task.claimNumber ? (
           <DriverSettlementBox task={task} />
         ) : (
-          <div className="text-14 mt-auto rounded-2xl bg-[#EAF7EE] p-4 text-center font-semibold text-[#237A3A]">
+          <div className="text-14 mt-auto rounded-2xl bg-[#131c24] p-4 text-center font-semibold text-[#6ae78b]">
             Tugas drop-off selesai
           </div>
         )}
@@ -1512,14 +1512,14 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
   const disabled = code.trim().length === 0 || scan.isPending || settle.isPending;
 
   return (
-    <div className="mt-auto flex flex-col gap-3 rounded-2xl bg-[#F3F6FC] p-4">
+    <div className="mt-auto flex flex-col gap-3 rounded-2xl bg-[#131c24] p-4">
       <div>
         <p className="text-12 font-semibold text-neutral-900">Kode tiket klaim</p>
         <p className="text-11 mt-1 text-neutral-600">
           Input kode dari tiket user setelah drop-off selesai.
         </p>
       </div>
-      <label className="flex h-12 items-center rounded-xl border border-neutral-300 bg-white px-4">
+      <label className="drive-card flex h-12 items-center rounded-xl border border-neutral-300 px-4">
         <input
           value={code}
           onChange={(event) => setCode(event.target.value.toUpperCase())}
@@ -1589,7 +1589,7 @@ function BiodataScreen({
   return (
     <PageContainer className={PAGE_BG}>
       <AppHeader showLogo onBack={onBack} />
-      <main className="flex flex-1 flex-col gap-7 bg-white px-4 pt-7 pb-8">
+      <main className="flex flex-1 flex-col gap-7 bg-neutral-200 px-4 pt-7 pb-8">
         <section className="flex flex-col items-center text-center">
           <div className="relative">
             {profile?.photoUrl ? (
@@ -1599,38 +1599,38 @@ function BiodataScreen({
                 className="size-26 rounded-xl object-cover shadow-sm"
               />
             ) : (
-              <div className="grid size-22 place-items-center rounded-xl bg-[#3F5FA8] text-3xl font-semibold text-white shadow-sm">
+              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-3xl font-semibold text-white shadow-sm">
                 {driverInitial(displayName)}
               </div>
             )}
-            <span className="text-12 absolute -right-3 -bottom-2 rounded-full bg-[#FF725E] px-2.5 py-1 font-bold text-white shadow-sm">
+            <span className="text-12 absolute -right-3 -bottom-2 rounded-full bg-[#df4e3a] px-2.5 py-1 font-bold text-white shadow-sm">
               ★ {rating}
             </span>
           </div>
           <h1 className="mt-5 text-[22px] leading-tight font-medium text-neutral-900">
             {displayName}
           </h1>
-          <p className="text-12 mt-1 text-[#747C8B]">
+          <p className="text-12 mt-1 text-[#aebbc4]">
             Driver ID: {profile ? driverCodeLabel(profile.id) : '-'}
           </p>
           <span
             className={cn(
               'text-12 mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-semibold',
               profile?.status === 'OFFLINE'
-                ? 'border-[#AAB1C0]/50 text-[#747C8B]'
+                ? 'border-[#223039]/50 text-[#aebbc4]'
                 : profile?.status === 'BUSY'
-                  ? 'border-[#F5B942]/40 text-[#B5730B]'
-                  : 'border-[#2F9B54]/30 text-[#2F9B54]',
+                  ? 'border-[#dda22c]/40 text-[#e7b66a]'
+                  : 'border-[#2cdd69]/30 text-[#6ae795]',
             )}
           >
             <span
               className={cn(
                 'size-2 rounded-full',
                 profile?.status === 'OFFLINE'
-                  ? 'bg-[#AAB1C0]'
+                  ? 'bg-[#223039]'
                   : profile?.status === 'BUSY'
-                    ? 'bg-[#F5B942]'
-                    : 'bg-[#2F9B54]',
+                    ? 'bg-[#dfa73a]'
+                    : 'bg-[#3adf72]',
               )}
             />
             {profile?.status === 'OFFLINE'
@@ -1666,12 +1666,12 @@ function BiodataScreen({
               <StatusTile label="Total Perjalanan" value={String(finishedCount)} />
               <StatusTile label="KM Total" value={`${kmEstimate(tasks)}`} />
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-[#C1C7D2]/40 bg-[#EDF4FA] p-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#123A6D] text-white">
+            <div className="flex items-center gap-3 rounded-xl border border-[#223039]/40 bg-[#131c24] p-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-white">
                 <Truck className="size-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-11 font-medium text-[#747C8B]">Armada Bertugas</p>
+                <p className="text-11 font-medium text-[#aebbc4]">Armada Bertugas</p>
                 <p className="text-13 truncate font-medium text-neutral-900">{vehicleLabel}</p>
               </div>
             </div>
@@ -1679,7 +1679,7 @@ function BiodataScreen({
         </Card>
 
         <Button
-          className="h-12 rounded-lg bg-[#4B61A1] font-medium"
+          className="h-12 rounded-lg bg-[#aded1f] font-medium"
           leftIcon={<UserPen className="size-5" />}
           onClick={onEdit}
         >
@@ -1718,8 +1718,8 @@ function ProfileUploadTile({
     if (file) onPick(file);
   };
   return (
-    <div className="rounded-xl border border-[#C1C7D2]/40 bg-white p-3">
-      <p className="text-11 font-medium text-[#747C8B]">{label}</p>
+    <div className="drive-card rounded-xl border border-[#223039]/40 p-3">
+      <p className="text-11 font-medium text-[#aebbc4]">{label}</p>
       <input
         ref={inputRef}
         type="file"
@@ -1734,7 +1734,7 @@ function ProfileUploadTile({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="text-12 font-semibold text-[#3F5FA8] disabled:opacity-60"
+            className="text-12 font-semibold text-[#c2f347] disabled:opacity-60"
           >
             {uploading ? 'Mengunggah…' : 'Ganti'}
           </button>
@@ -1744,7 +1744,7 @@ function ProfileUploadTile({
           type="button"
           disabled={uploading}
           onClick={() => inputRef.current?.click()}
-          className="text-12 mt-2 flex h-14 w-full items-center justify-center rounded-lg border-2 border-dashed border-[#C1C7D2] font-medium text-[#747C8B] disabled:opacity-60"
+          className="text-12 mt-2 flex h-14 w-full items-center justify-center rounded-lg border-2 border-dashed border-[#223039] font-medium text-[#aebbc4] disabled:opacity-60"
         >
           {uploading ? 'Mengunggah…' : 'Pilih foto'}
         </button>
@@ -1899,7 +1899,7 @@ function EditProfileScreen({
         </Card>
 
         <Button
-          className="h-12 rounded-lg bg-[#4B61A1] font-medium"
+          className="h-12 rounded-lg bg-[#aded1f] font-medium"
           isLoading={saving}
           onClick={() => void handleSave()}
         >
@@ -1947,7 +1947,7 @@ function ChangePasswordScreen({ onBack }: { onBack: () => void }) {
       <AppHeader title="Ganti Kata Sandi" onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-4 py-5">
         <Card className={DRIVER_CARD}>
-          <p className="text-12 text-[#747C8B]">
+          <p className="text-12 text-[#aebbc4]">
             Lupa kata sandi lama? Hubungi admin mitra Anda untuk disetel ulang, lalu ganti lagi di
             sini.
           </p>
@@ -1978,7 +1978,7 @@ function ChangePasswordScreen({ onBack }: { onBack: () => void }) {
           </div>
         </Card>
         <Button
-          className="h-12 rounded-lg bg-[#4B61A1] font-medium"
+          className="h-12 rounded-lg bg-[#aded1f] font-medium"
           isLoading={saving}
           onClick={() => void handleSubmit()}
         >
@@ -1990,11 +1990,13 @@ function ChangePasswordScreen({ onBack }: { onBack: () => void }) {
 }
 
 function HomeMenuCard({
-  image,
+  icon: Icon,
+  tint,
   label,
   onClick,
 }: {
-  image: string;
+  icon: LucideIcon;
+  tint: string;
   label: string;
   onClick: () => void;
 }) {
@@ -2002,17 +2004,19 @@ function HomeMenuCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[108px] flex-col items-center justify-center gap-2.5 rounded-[18px] bg-white px-2 py-4 text-center shadow-[0_14px_28px_rgb(31_48_91_/_0.10)]"
+      className="flex min-h-[108px] flex-col items-center justify-center gap-2.5 rounded-[18px] bg-neutral-200 px-2 py-4 text-center shadow-[0_14px_28px_rgb(0_0_0_/_0.35)]"
     >
-      <img src={image} alt="" className="h-11 w-12 object-contain" />
-      <span className="text-12 leading-tight font-normal text-[#6B7280]">{label}</span>
+      <span className={cn('grid size-12 place-items-center rounded-xl', tint)}>
+        <Icon className="size-6" />
+      </span>
+      <span className="text-12 leading-tight font-normal text-[#aebbc4]">{label}</span>
     </button>
   );
 }
 
 function HomeOrderRow({ task, onOpen }: { task: DriverTask; onOpen: () => void }) {
   return (
-    <div className="flex min-h-[68px] items-center gap-3 border-b border-[#C1C7D2]/40 py-2.5 last:border-0">
+    <div className="flex min-h-[68px] items-center gap-3 border-b border-[#223039]/40 py-2.5 last:border-0">
       <img
         src="/assets/driver/row-truck.png"
         alt=""
@@ -2022,12 +2026,12 @@ function HomeOrderRow({ task, onOpen }: { task: DriverTask; onOpen: () => void }
         <h3 className="text-13 truncate font-semibold text-neutral-900">
           {taskVehicleTitle(task)}
         </h3>
-        <p className="text-11 mt-1 truncate text-[#4B5563]">{task.pickupAddress || '-'}</p>
+        <p className="text-11 mt-1 truncate text-[#eef4f8]">{task.pickupAddress || '-'}</p>
       </div>
       <button
         type="button"
         onClick={onOpen}
-        className="text-11 h-9 w-[104px] shrink-0 rounded-[10px] bg-[#FF725E] px-0 font-semibold text-white"
+        className="text-11 h-9 w-[104px] shrink-0 rounded-[10px] bg-[#df4e3a] px-0 font-semibold text-white"
       >
         Terima orderan
       </button>
@@ -2041,7 +2045,7 @@ function OrderKindBadge({ task }: { task: DriverTask }) {
     <span
       className={cn(
         'inline-flex rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide',
-        isClaim ? 'bg-[#E3F2FE] text-[#3F5FA8]' : 'bg-[#EEF0F5] text-neutral-600',
+        isClaim ? 'bg-[#131c24] text-[#c2f347]' : 'bg-[#131c24] text-neutral-600',
       )}
     >
       {orderKindLabel(task)}
@@ -2067,13 +2071,13 @@ function OrderInfoRow({
       <div className="flex min-w-0 items-start gap-3">
         <span className="mt-0.5 shrink-0 text-neutral-400">{icon}</span>
         <div className="min-w-0">
-          <p className="text-11 text-[#747C8B]">{label}</p>
+          <p className="text-11 text-[#aebbc4]">{label}</p>
           <p className="text-12 mt-0.5 truncate font-medium text-neutral-900">{value || '-'}</p>
         </div>
       </div>
       <div className="shrink-0 text-right">
-        <p className="text-11 text-[#4B5563]">{sideLabel}</p>
-        <p className="text-12 mt-0.5 font-semibold text-[#00508A]">{sideValue}</p>
+        <p className="text-11 text-[#eef4f8]">{sideLabel}</p>
+        <p className="text-12 mt-0.5 font-semibold text-[#c2f347]">{sideValue}</p>
       </div>
     </div>
   );
@@ -2118,17 +2122,17 @@ function DetailRoutePoint({
       <span
         className={cn(
           'grid size-9 shrink-0 place-items-center rounded-full text-white',
-          tone === 'red' ? 'bg-[#FF725E]' : 'bg-[#3F5FA8]',
+          tone === 'red' ? 'bg-[#df4e3a]' : 'bg-[#aded1f]',
         )}
       >
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-11 text-[#747C8B]">{title}</p>
+        <p className="text-11 text-[#aebbc4]">{title}</p>
         <p className="text-13 mt-0.5 font-medium text-neutral-900">{text || '-'}</p>
         {/* Baris detail tambahan hanya bila memang berbeda dari teks utama. */}
         {subText && subText !== text && (
-          <p className="text-11 mt-1 truncate text-[#747C8B]">{subText}</p>
+          <p className="text-11 mt-1 truncate text-[#aebbc4]">{subText}</p>
         )}
       </div>
     </div>
@@ -2152,13 +2156,13 @@ function TimelinePoint({
         <span
           className={cn(
             'mt-1 size-4 rounded-full border-2',
-            tone === 'indigo' ? 'border-[#3F5FA8] bg-[#3F5FA8]' : 'border-[#3F5FA8] bg-white',
+            tone === 'indigo' ? 'border-[#aded1f] bg-[#aded1f]' : 'border-[#aded1f] bg-neutral-200',
           )}
         />
         {showLine && <span className="h-9 border-l border-dashed border-neutral-300" />}
       </div>
       <div className={cn(showLine && 'pb-3')}>
-        <p className="text-[12px] font-medium text-[#747C8B] uppercase">{title}</p>
+        <p className="text-[12px] font-medium text-[#aebbc4] uppercase">{title}</p>
         <p className="text-13 mt-1 font-medium text-neutral-900">{text || '-'}</p>
       </div>
     </div>
@@ -2168,7 +2172,7 @@ function TimelinePoint({
 function SectionIconTitle({ icon, title }: { icon: ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[#3F5FA8]">{icon}</span>
+      <span className="text-[#c2f347]">{icon}</span>
       <h2 className="text-[16px] font-medium text-neutral-900">{title}</h2>
     </div>
   );
@@ -2176,8 +2180,8 @@ function SectionIconTitle({ icon, title }: { icon: ReactNode; title: string }) {
 
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[#C1C7D2]/60 bg-white p-3 text-center">
-      <p className="text-[12px] text-[#4B5563] uppercase">{label}</p>
+    <div className="rounded-lg border border-[#223039]/60 bg-neutral-200 p-3 text-center">
+      <p className="text-[12px] text-[#eef4f8] uppercase">{label}</p>
       <p className="text-18 mt-1 font-semibold text-neutral-900">{value}</p>
     </div>
   );
@@ -2187,19 +2191,19 @@ function DocumentCard({ title, url }: { title: string; url: string }) {
   const uploaded = url.trim().length > 0;
   const body = (
     <>
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#E3F2FE] text-[#3F5FA8]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#131c24] text-[#c2f347]">
         <FileText className="size-5" />
       </span>
       <div className="min-w-0 flex-1 text-left">
         <p className="text-14 font-medium text-neutral-900">{title}</p>
-        <p className={cn('text-[12px]', uploaded ? 'text-[#2F9B54]' : 'text-[#747C8B]')}>
+        <p className={cn('text-[12px]', uploaded ? 'text-[#6ae795]' : 'text-[#aebbc4]')}>
           {uploaded ? 'Terunggah — ketuk untuk lihat' : 'Belum diunggah'}
         </p>
       </div>
       {uploaded && <ChevronRight className="size-5 shrink-0 text-neutral-400" />}
     </>
   );
-  const className = 'flex items-center gap-3 rounded-xl border border-[#C1C7D2]/30 bg-white p-4';
+  const className = 'drive-card flex items-center gap-3 rounded-xl border border-[#223039]/30 p-4';
   return uploaded ? (
     <a href={url} target="_blank" rel="noreferrer" className={className}>
       {body}
@@ -2224,20 +2228,20 @@ function IncomingOrderCard({
     <Card className={DRIVER_CARD}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#E3F2FE] text-[#3F5FA8]">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#131c24] text-[#c2f347]">
             <CarFront className="size-5" />
           </span>
           <div className="min-w-0">
-            <h3 className="text-16 truncate font-medium text-[#00508A]">
+            <h3 className="text-16 truncate font-medium text-[#c2f347]">
               {taskVehicleTitle(task)}
             </h3>
-            <p className="text-11 mt-0.5 truncate text-[#4B5563]">{driverTaskProblem(task)}</p>
+            <p className="text-11 mt-0.5 truncate text-[#eef4f8]">{driverTaskProblem(task)}</p>
           </div>
         </div>
         <OrderKindBadge task={task} />
       </div>
 
-      <div className="my-4 h-px bg-[#C1C7D2]/40" />
+      <div className="my-4 h-px bg-[#223039]/40" />
 
       <div className="flex flex-col gap-3">
         <OrderInfoRow
@@ -2259,14 +2263,14 @@ function IncomingOrderCard({
       <div className="mt-4 grid grid-cols-[40%_1fr] gap-3">
         <Button
           variant="outline"
-          className="h-10 rounded-lg border-[#9EB8D7] text-[#00508A]"
+          className="h-10 rounded-lg border-[#2e4a13] text-[#c2f347]"
           disabled={isUpdating}
           onClick={onDetail}
         >
           Detail
         </Button>
         <Button
-          className="h-10 rounded-lg bg-[#4B61A1] font-medium"
+          className="h-10 rounded-lg bg-[#aded1f] font-medium"
           isLoading={isUpdating}
           onClick={onAccept}
         >
@@ -2285,7 +2289,7 @@ function OngoingOrderCard({ task, onTrack }: { task: DriverTask; onTrack: () => 
           <h3 className="text-14 truncate font-medium text-neutral-900">
             {taskVehicleTitle(task)}
           </h3>
-          <p className="text-11 mt-1 truncate text-[#747C8B]">{driverDestinationLabel(task)}</p>
+          <p className="text-11 mt-1 truncate text-[#aebbc4]">{driverDestinationLabel(task)}</p>
           <Badge tone={statusTone(task.status)} className="mt-2">
             {driverStatusLabel(task.status)}
           </Badge>
@@ -2293,7 +2297,7 @@ function OngoingOrderCard({ task, onTrack }: { task: DriverTask; onTrack: () => 
         <Button
           size="sm"
           fullWidth={false}
-          className="shrink-0 rounded-xl bg-[#3F5FA8]"
+          className="shrink-0 rounded-xl bg-[#aded1f]"
           onClick={onTrack}
         >
           {driverNeedsInspection(task.status) ? 'Cek Armada' : 'Tracking'}
@@ -2308,7 +2312,7 @@ function HistoryCard({ task }: { task: DriverTask }) {
   return (
     <Card className={DRIVER_CARD}>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-12 text-[#747C8B]">{formatDateTime(taskTime(task))}</p>
+        <p className="text-12 text-[#aebbc4]">{formatDateTime(taskTime(task))}</p>
         <HistoryStatusBadge status={task.status} />
       </div>
       <h3 className="text-13 mt-3 truncate font-medium text-neutral-900">{historyTitle(task)}</h3>
@@ -2318,9 +2322,9 @@ function HistoryCard({ task }: { task: DriverTask }) {
       </div>
       <div className="my-4 h-px bg-neutral-200" />
       <div className="flex items-center justify-between">
-        <p className="text-14 text-[#747C8B]">Pendapatan:</p>
+        <p className="text-14 text-[#aebbc4]">Pendapatan:</p>
         <p
-          className={cn('text-14 font-semibold', canceled ? 'text-neutral-400' : 'text-[#00508A]')}
+          className={cn('text-14 font-semibold', canceled ? 'text-neutral-400' : 'text-[#c2f347]')}
         >
           {canceled ? 'Rp 0' : formatCurrency(driverTaskRevenue(task))}
         </p>
@@ -2339,9 +2343,9 @@ function HistoryStatusBadge({ status }: { status: string }) {
     <span
       className={cn(
         'rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap',
-        finished && 'bg-[#E8F5EC] text-[12px] text-[#2F9B54]',
-        canceled && 'bg-[#FBE7E5] text-[12px] text-[#CE4136]',
-        !finished && !canceled && 'bg-[#E3F2FE] text-[12px] text-[#3F5FA8]',
+        finished && 'bg-[#131c24] text-[12px] text-[#6ae795]',
+        canceled && 'bg-[#131c24] text-[12px] text-[#e7736a]',
+        !finished && !canceled && 'bg-[#131c24] text-[12px] text-[#c2f347]',
       )}
     >
       {label}
@@ -2355,7 +2359,7 @@ function MiniRoutePoint({ tone, text }: { tone: 'blue' | 'orange'; text: string 
       <span
         className={cn(
           'mt-1 size-3 shrink-0 rounded-full border-2',
-          tone === 'blue' ? 'border-[#3F5FA8] bg-white' : 'border-[#FF725E] bg-[#FF725E]',
+          tone === 'blue' ? 'border-[#aded1f] bg-neutral-200' : 'border-[#dd422c] bg-[#df4e3a]',
         )}
       />
       <p className="text-12 min-w-0 flex-1 text-neutral-700">{text || '-'}</p>
@@ -2376,27 +2380,27 @@ function DriverProgress({ status }: { status: string }) {
               <span
                 className={cn(
                   'grid size-6 shrink-0 place-items-center rounded-full border-2',
-                  active && 'border-[#FF725E] bg-[#FF725E] text-white',
-                  done && 'border-[#3F5FA8] bg-[#3F5FA8] text-white',
-                  !active && !done && 'border-neutral-300 bg-white text-neutral-400',
+                  active && 'border-[#dd422c] bg-[#df4e3a] text-white',
+                  done && 'border-[#aded1f] bg-[#aded1f] text-white',
+                  !active && !done && 'border-neutral-300 bg-neutral-200 text-neutral-400',
                 )}
               >
                 {active ? <Truck className="size-3" /> : done ? <Check className="size-3" /> : null}
               </span>
               {index < TRACKING_STEPS.length - 1 && (
-                <span className="h-10 border-l-2 border-[#C1C7D2]" />
+                <span className="h-10 border-l-2 border-[#223039]" />
               )}
             </div>
             <div className="pb-4">
               <p
                 className={cn(
                   'text-14 font-medium',
-                  active ? 'text-[#00508A]' : done ? 'text-neutral-900' : 'text-[#747C8B]',
+                  active ? 'text-[#c2f347]' : done ? 'text-neutral-900' : 'text-[#aebbc4]',
                 )}
               >
                 {step.label}
               </p>
-              <p className="text-11 mt-1 text-[#AAB1C0]">{step.caption}</p>
+              <p className="text-11 mt-1 text-[#94a3ae]">{step.caption}</p>
             </div>
           </div>
         );
@@ -2427,17 +2431,17 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function OrderStat({ value, label }: { value: string; label: string }) {
   return (
     <div className="px-2">
-      <p className="text-[18px] font-semibold text-[#00508A]">{value}</p>
-      <p className="mt-1 text-[12px] font-medium text-[#4B5563] uppercase">{label}</p>
+      <p className="text-[18px] font-semibold text-[#c2f347]">{value}</p>
+      <p className="mt-1 text-[12px] font-medium text-[#eef4f8] uppercase">{label}</p>
     </div>
   );
 }
 
 function ProfileStat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="min-w-0 rounded-xl border border-[#C1C7D2]/40 bg-transparent p-3 text-center">
-      <p className="text-14 truncate font-medium text-[#00508A]">{value}</p>
-      <p className="text-12 mt-1 text-[#4B5563]">{label}</p>
+    <div className="min-w-0 rounded-xl border border-[#223039]/40 bg-transparent p-3 text-center">
+      <p className="text-14 truncate font-medium text-[#c2f347]">{value}</p>
+      <p className="text-12 mt-1 text-[#eef4f8]">{label}</p>
     </div>
   );
 }
@@ -2457,7 +2461,7 @@ function HistoryFilter({
       onClick={onClick}
       className={cn(
         'text-12 h-8 rounded-full px-3 font-normal whitespace-nowrap transition',
-        active ? 'bg-[#00508A] text-white' : 'bg-[#EDEEF2] text-[#4B5563]',
+        active ? 'bg-[#aded1f] text-white' : 'bg-[#131c24] text-[#eef4f8]',
       )}
     >
       {label}
@@ -2479,7 +2483,7 @@ function AccountMenuItem({
   onClick?: () => void;
 }) {
   const className = cn(
-    'flex min-h-14 w-full items-center justify-between border-b border-[#C1C7D2]/40 px-4 text-left last:border-0',
+    'flex min-h-14 w-full items-center justify-between border-b border-[#223039]/40 px-4 text-left last:border-0',
     tone === 'danger' ? 'text-danger' : 'text-neutral-900',
   );
   const content = (
@@ -2488,14 +2492,14 @@ function AccountMenuItem({
         <span
           className={cn(
             'grid size-6 shrink-0 place-items-center',
-            tone === 'danger' ? 'text-danger' : 'text-[#00508A]',
+            tone === 'danger' ? 'text-danger' : 'text-[#c2f347]',
           )}
         >
           {icon}
         </span>
         <span className="text-14 truncate font-normal">{label}</span>
       </span>
-      {tone !== 'danger' && <ChevronRight className="size-5 shrink-0 text-[#4B5563]" />}
+      {tone !== 'danger' && <ChevronRight className="size-5 shrink-0 text-[#eef4f8]" />}
     </>
   );
 
@@ -2523,20 +2527,20 @@ function EmptyDriverPanel({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-[#C1C7D2]/30 bg-white px-6 py-10 text-center">
-      <div className="grid size-14 place-items-center rounded-full bg-[#EAF0FF] text-[#3F5FA8]">
+    <div className="drive-card flex flex-col items-center justify-center rounded-xl border border-[#223039]/30 px-6 py-10 text-center">
+      <div className="grid size-14 place-items-center rounded-full bg-[#131c24] text-[#c2f347]">
         {icon}
       </div>
       <p className="text-16 mt-4 font-semibold text-neutral-900">{title}</p>
-      <p className="text-12 mt-1 text-[#747C8B]">{description}</p>
+      <p className="text-12 mt-1 text-[#aebbc4]">{description}</p>
     </div>
   );
 }
 
 function SafetyTip() {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-[#68C7F5]/60 bg-[#E3F2FE] p-4 text-[#00508A]">
-      <Lightbulb className="mt-0.5 size-5 shrink-0 text-[#3F5FA8]" />
+    <div className="flex items-start gap-3 rounded-xl border border-[#2e4a13]/60 bg-[#131c24] p-4 text-[#c2f347]">
+      <Lightbulb className="mt-0.5 size-5 shrink-0 text-[#c2f347]" />
       <p className="text-12">
         Tetap gunakan sabuk pengaman dan periksa kondisi derek sebelum berangkat.
       </p>
@@ -2550,7 +2554,7 @@ function FloatingSupport() {
       <button
         type="button"
         onClick={() => toast.info('Nomor bantuan belum tersedia')}
-        className="pointer-events-auto absolute right-6 bottom-0 grid size-14 place-items-center rounded-full bg-[#004F7C] text-white shadow-lg"
+        className="pointer-events-auto absolute right-6 bottom-0 grid size-14 place-items-center rounded-full bg-[#aded1f] text-white shadow-lg"
         aria-label="Bantuan operasional"
       >
         <Headphones className="size-6" />
@@ -2574,7 +2578,7 @@ function DriverBottomNav({
   ];
 
   return (
-    <nav className="pb-safe fixed bottom-0 left-1/2 z-50 grid w-full max-w-md -translate-x-1/2 grid-cols-4 border-t border-[#C1C7D2]/40 bg-[#F7F8FB]/95 px-2 py-1 backdrop-blur">
+    <nav className="pb-safe fixed bottom-0 left-1/2 z-50 grid w-full max-w-md -translate-x-1/2 grid-cols-4 border-t border-[#223039]/40 bg-[#131c24]/95 px-2 py-1 backdrop-blur">
       {items.map((item) => {
         const selected = item.tab === active;
         return (
@@ -2584,7 +2588,7 @@ function DriverBottomNav({
             onClick={() => onChange(item.tab)}
             className={cn(
               'flex h-11 flex-col items-center justify-center gap-1 text-[10px] font-normal transition',
-              selected ? 'text-[#2F55A0]' : 'text-[#8A8F98]',
+              selected ? 'text-[#c2f347]' : 'text-[#aebbc4]',
             )}
           >
             {item.icon}

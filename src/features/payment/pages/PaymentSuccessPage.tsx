@@ -97,19 +97,19 @@ export function PaymentSuccessPage() {
   const total = ctx?.amount ?? 0;
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-[#FAFBFC] px-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 bg-[#131c24] px-6">
         <div className="mb-4 flex flex-col items-center justify-center gap-2">
-          <h1 className="text-20 bg-linear-to-r from-[#FD910D] to-[#FFDF7E] bg-clip-text font-semibold text-transparent">
+          <h1 className="text-20 bg-linear-to-r from-[#df953a] to-[#dfb63a] bg-clip-text font-semibold text-transparent">
             Pembayaran Berhasil
           </h1>
-          <p className="text-16 text-[#BBBBBB]">Order Number: #{orderNumber}</p>
-          <p className="text-20 font-[600] text-[#4B5563]">{formatCurrency(total)}</p>
+          <p className="text-16 text-[#94a3ae]">Order Number: #{orderNumber}</p>
+          <p className="text-20 font-[600] text-[#eef4f8]">{formatCurrency(total)}</p>
         </div>
         <div className="flex w-full flex-col gap-4">
-          <h1 className="text-15 font-[600] text-[#4B5563]">Rincian Transaksi</h1>
-          <div className="flex h-auto w-full flex-col items-center justify-center gap-3 rounded-md bg-[#FFFFFF] px-2 py-4 text-left text-[14px]">
+          <h1 className="text-15 font-[600] text-[#eef4f8]">Rincian Transaksi</h1>
+          <div className="flex h-auto w-full flex-col items-center justify-center gap-3 rounded-md bg-[#131c24] px-2 py-4 text-left text-[14px]">
             <TransactionRow label="Status" value={paymentStatus} />
             <TransactionRow label="Metode Pembayaran" value={paymentMethod} />
             <TransactionRow label="Waktu" value={paymentTime} />
@@ -139,12 +139,12 @@ function TransactionRow({
   return (
     <div className="flex h-auto w-full flex-row justify-between gap-3">
       <div className="flex h-auto min-w-0 flex-1 items-center justify-start">
-        <p className={strong ? 'font-[600] text-[#6B7280]' : ''}>{label}</p>
+        <p className={strong ? 'font-[600] text-[#aebbc4]' : ''}>{label}</p>
       </div>
       <div className="flex h-auto min-w-0 flex-1 items-center justify-end">
         <p
           className={
-            strong ? 'truncate text-right font-[600] text-[#6B7280]' : 'truncate text-right'
+            strong ? 'truncate text-right font-[600] text-[#aebbc4]' : 'truncate text-right'
           }
         >
           {value}

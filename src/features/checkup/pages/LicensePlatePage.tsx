@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Camera, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Camera, Lightbulb, ShieldCheck } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +15,7 @@ import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { normalizePlate } from '@/features/vehicle-scan/utils/plate';
 import { useDamageStore } from '@/features/damage/store/damageStore';
 import type { CapturedImage } from '@/features/vehicle-scan/types';
+import { PlateCaptureArt } from '@/components/brand/PlateCaptureArt';
 
 const PLATE_TIPS = [
   'Pastikan plat nomor terlihat jelas dan tidak terpotong',
@@ -143,15 +144,11 @@ export function LicensePlatePage() {
           </div>
         )}
 
-        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-neutral-100">
+        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-neutral-200">
           {plate.image ? (
             <img src={plate.image.url} alt="Foto plat" className="size-full object-cover" />
           ) : (
-            <img
-              src="/assets/checkup_vehicle/bg_licenseplate.png"
-              alt=""
-              className="size-full object-contain"
-            />
+            <PlateCaptureArt className="size-full" />
           )}
         </div>
 
@@ -217,14 +214,14 @@ export function LicensePlatePage() {
         )}
 
         <div className="mt-6 flex items-center justify-center gap-1.5">
-          <img src="/assets/checkup_vehicle/lamp.png" alt="" className="size-3" />
+          <Lightbulb className="text-deep-blue-500 size-4" aria-hidden />
           <p className="text-sm">Tips foto plat kendaraan</p>
         </div>
         <ul className="mt-4 list-inside list-decimal space-y-2 text-start text-sm text-neutral-700">
           {(plate.image
             ? PLATE_TIPS
             : [
-                'Ikuti contoh foto di atas agar hasil deteksi optimal',
+                'Ikuti contoh di atas agar hasil deteksi optimal',
                 'Pastikan plat nomor terlihat jelas',
                 'Pastikan cahaya cukup',
               ]

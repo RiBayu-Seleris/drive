@@ -62,7 +62,7 @@ export function WorkshopReviewPage() {
     : [];
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
       {hasCoord && (
         <div className="h-44 w-full shrink-0">

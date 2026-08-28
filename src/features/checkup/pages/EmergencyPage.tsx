@@ -1,86 +1,138 @@
 import { useNavigate } from 'react-router-dom';
+import { Hospital, PhoneCall, Siren, Truck, type LucideIcon } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Logo } from '@/components/brand/Logo';
 import { ROUTES } from '@/app/routes';
+import { cn } from '@/lib/utils/cn';
 
-const OPTIONS = [
+/**
+ * Ikon tiap layanan kini vektor, bukan stiker PNG.
+ *
+ * call.png / hospital.png / derek.png adalah klipart penuh warna (ungu, biru,
+ * kuning) yang tidak punya hubungan dengan palet mana pun, dan `emergency_bg.png`
+ * adalah ilustrasi berlatar PUTIH — di tema gelap ia jadi bidang menyilaukan
+ * setinggi separuh layar. Semuanya dibuang.
+ *
+ * Warna dipakai untuk MEMBEDAKAN tingkat urgensi, bukan sekadar hiasan:
+ * merah hanya untuk panggilan darurat 112, sisanya hijau merek.
+ */
+type Option = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  tone: 'danger' | 'brand';
+} & ({ href: string } | { to: string });
+
+const PRIMARY: Option = {
+  icon: PhoneCall,
+  title: 'Telepon 112',
+  desc: 'Polisi dan medis, tersambung langsung',
+  tone: 'danger',
+  href: 'tel:112',
+};
+
+const SECONDARY: Option[] = [
   {
-    image: '/assets/checkup_vehicle/call.png',
-    title: 'Hubungi Darurat',
-    desc: 'Terhubung dengan polisi/ medis (112)',
-    border: 'border-orange-200',
-    titleClass: 'text-orange-600',
-    href: 'tel:112',
-  },
-  {
-    image: '/assets/checkup_vehicle/hospital.png',
-    title: 'Rumah Sakit Terdekat',
-    desc: 'Temukan rumah sakit & buka navigasi',
-    border: 'border-[#8695C0]',
-    titleClass: 'text-[#4B61A1]',
+    icon: Hospital,
+    title: 'Rumah sakit terdekat',
+    desc: 'Kami tunjukkan yang paling dekat, sekalian arahnya',
+    tone: 'brand',
     to: ROUTES.emergencyHospitals,
   },
   {
-    image: '/assets/checkup_vehicle/derek.png',
-    title: 'Layanan Derek',
-    desc: 'Panggil derek resmi mitra asuransi',
-    border: 'border-[#059669]',
-    titleClass: 'text-[#059669]',
+    icon: Truck,
+    title: 'Panggil derek',
+    desc: 'Mitra resmi, bukan derek sembarangan',
+    tone: 'brand',
     to: ROUTES.emergencyTowing,
   },
-] as const;
+];
+
+function OptionCard({ item, wide = false }: { item: Option; wide?: boolean }) {
+  const Icon = item.icon;
+  const danger = item.tone === 'danger';
+  const navigate = useNavigate();
+
+  const content = (
+    <div
+      className={cn(
+        'relative flex h-full p-4 text-left',
+        // Kurung bidik hanya pada kartu lebar. Di kartu sempit ia jatuh tepat
+        // di atas ikon, karena keduanya sama-sama mulai dari sudut kiri atas.
+        wide && 'hud-frame',
+        wide ? 'items-center gap-4' : 'flex-col gap-3',
+        danger ? 'drive-card border-danger/45' : 'drive-card-accent',
+      )}
+    >
+      <span
+        className={cn(
+          'flex size-11 shrink-0 items-center justify-center rounded-xl',
+          danger ? 'drive-chip-danger' : 'drive-chip',
+        )}
+      >
+        <Icon className={cn('size-6', danger ? 'text-danger' : 'text-deep-blue-500')} aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span
+          className={cn(
+            'block text-[13px] font-semibold',
+            danger ? 'text-danger' : 'text-deep-blue-600',
+          )}
+        >
+          {item.title}
+        </span>
+        <span className="mt-0.5 block text-[11px] leading-relaxed text-neutral-600">
+          {item.desc}
+        </span>
+      </span>
+    </div>
+  );
+
+  if ('href' in item) {
+    return (
+      <a href={item.href} className="block">
+        {content}
+      </a>
+    );
+  }
+  return (
+    <button type="button" onClick={() => navigate(item.to)} className="block h-full text-left">
+      {content}
+    </button>
+  );
+}
 
 export function EmergencyPage() {
   const navigate = useNavigate();
 
   return (
     <PageContainer>
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex flex-col justify-center p-6 text-start">
-          <button type="button" onClick={() => navigate(ROUTES.home)}>
-            <Logo className="mx-auto [&_img]:h-[30px]" />
-          </button>
+      <div className="min-h-dvh bg-neutral-200 px-gutter pt-8 pb-10">
+        <button type="button" onClick={() => navigate(ROUTES.home)} className="block w-full">
+          <Logo className="mx-auto [&_img]:h-[30px]" />
+        </button>
 
-          <img src="/assets/checkup_vehicle/emergency_bg.png" alt="Background Ambulance" />
+        {/* Penanda darurat: lingkaran berpendar, bukan ilustrasi berlatar putih. */}
+        <div className="mt-9 flex justify-center">
+          <span className="border-danger/35 bg-danger/10 relative flex size-28 items-center justify-center rounded-full border">
+            <span className="bg-danger/12 absolute inset-3 rounded-full" />
+            <Siren className="text-danger relative size-12" aria-hidden />
+          </span>
+        </div>
 
-          <h1 className="mt-10 text-2xl font-bold text-neutral-900">Butuh Bantuan Darurat?</h1>
-          <p className="mb-12 leading-relaxed text-neutral-800">
-            Kami siap membantu Anda dengan cepat. Pilih layanan yang Anda butuhkan:
-          </p>
+        <h1 className="drive-title mt-7 text-center text-[25px] text-neutral-900">
+          Butuh bantuan sekarang?
+        </h1>
+        <p className="mt-2 text-center text-[13px] leading-relaxed text-neutral-600">
+          Tenang dulu. Pilih yang Anda perlukan di bawah ini.
+        </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            {OPTIONS.map((item) => {
-              const content = (
-                <div
-                  className={`rounded-2xl border bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md ${item.border}`}
-                >
-                  <div className="flex flex-col items-start gap-1">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl">
-                      <img src={item.image} alt="" className="size-8 object-contain" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className={`mb-1 text-xs font-semibold ${item.titleClass}`}>
-                        {item.title}
-                      </h3>
-                      <p className="text-[10px] text-gray-600">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-
-              if ('href' in item) {
-                return (
-                  <a key={item.title} href={item.href}>
-                    {content}
-                  </a>
-                );
-              }
-              return (
-                <button key={item.title} type="button" onClick={() => navigate(item.to)}>
-                  {content}
-                </button>
-              );
-            })}
+        <div className="mt-8 flex flex-col gap-3">
+          <OptionCard item={PRIMARY} wide />
+          <div className="grid grid-cols-2 gap-3">
+            {SECONDARY.map((item) => (
+              <OptionCard key={item.title} item={item} />
+            ))}
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ import { ROUTES } from '@/app/routes';
 import { useMitraStore } from '@/features/auth/store/mitraStore';
 import { extractErrorMessage } from '@/lib/api/client';
 import { toast } from '@/components/feedback/toast';
+import { Logo } from '@/components/brand/Logo';
+import { TowingHero } from '@/components/brand/MitraArt';
 import { MitraShell } from '../../components/MitraShell';
 import { BalanceCard } from '../../components/BalanceCard';
 import { QuickActionGrid } from '../../components/QuickActionGrid';
@@ -85,20 +87,16 @@ export function TowingHomePage() {
   );
 
   return (
-    <MitraShell className="bg-neutral-100">
-      {/* HERO biru — ilustrasi diekstrak dari desain Figma (Home.svg) */}
-      <header className="relative z-0 overflow-hidden bg-[#4B61A1] px-5 pt-12 pb-32 text-white">
-        <img
-          src="/assets/mitra/towing/hero-towing.svg"
-          alt=""
+    <MitraShell>
+      {/* HERO gelap dengan pendar hijau — sumber cahaya yang sama dengan
+          seluruh aplikasi. Sebelumnya blok hijau terang dengan teks putih di
+          atasnya; kontrasnya cuma 3,2:1 dan warnanya menyendiri dari tema. */}
+      <header className="drive-header relative z-0 overflow-hidden px-5 pt-12 pb-32 text-white">
+        <TowingHero
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 z-0 w-full"
         />
-        <img
-          src="/assets/auth/logo-autoclaim.png"
-          alt="AutoClaim"
-          className="relative z-10 mx-auto h-7 w-auto brightness-0 invert"
-        />
+        <Logo className="relative z-10 mx-auto flex justify-center [&_img]:h-7" />
         <div className="relative z-10 mt-5 flex items-start justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-full bg-white/20 text-sm font-semibold ring-2 ring-white/60">
@@ -107,7 +105,7 @@ export function TowingHomePage() {
             <div className="min-w-0">
               <p className="text-14 truncate font-semibold">{name || 'Mitra Towing'}</p>
               <p className="truncate text-[11px] text-white/70">
-                {email || 'Mitra Towing AutoClaim'}
+                {email || 'Mitra Towing DRIVE'}
               </p>
             </div>
           </div>
@@ -118,7 +116,7 @@ export function TowingHomePage() {
           >
             <Bell className="size-6" fill="currentColor" strokeWidth={1.5} />
             {offeredCount > 0 && (
-              <span className="absolute top-0 right-0 grid size-4.5 place-items-center rounded-full bg-[#FB4E4E] text-[9px] font-bold text-white ring-2 ring-white/40">
+              <span className="absolute top-0 right-0 grid size-4.5 place-items-center rounded-full bg-[#df3a3a] text-[9px] font-bold text-white ring-2 ring-white/40">
                 {offeredCount > 9 ? '9+' : offeredCount}
               </span>
             )}

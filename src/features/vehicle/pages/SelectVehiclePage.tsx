@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/Spinner';
 import { ErrorState } from '@/components/feedback/StateViews';
 import { ROUTES } from '@/app/routes';
-import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { hasCheckupPermissionsGranted } from '@/features/checkup/permissions';
 import { getVehicles } from '../api';
-import type { SavedVehicle } from '../types';
+import { hasPolis, type SavedVehicle } from '../types';
 
 export function SelectVehiclePage() {
   const navigate = useNavigate();
@@ -59,7 +58,7 @@ export function SelectVehiclePage() {
   };
 
   return (
-    <PageContainer className="bg-[#F9FAFB]">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Pilih Kendaraan" />
 
       <div className="flex min-h-0 flex-1 flex-col">
@@ -77,7 +76,7 @@ export function SelectVehiclePage() {
           )}
         </div>
 
-        <div className="bg-[#F9FAFB] px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+        <div className="bg-[#131c24] px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
           <Button size="lg" leftIcon={<Camera className="size-5" />} onClick={useNewVehicle}>
             Cek Kendaraan Baru
           </Button>
@@ -85,10 +84,6 @@ export function SelectVehiclePage() {
       </div>
     </PageContainer>
   );
-}
-
-function hasCachedPlateImage(vehicle: SavedVehicle): boolean {
-  return vehicle.plateImage.trim().length > 0;
 }
 
 function GuestNotice() {
@@ -162,48 +157,76 @@ function SelectableVehicleTile({
   vehicle: SavedVehicle;
   onClick: () => void;
 }) {
-  const hasPlateImage = hasCachedPlateImage(vehicle);
-
   return (
     <button
       type="button"
       onClick={onClick}
       className="focus-visible:ring-deep-blue-300 w-full rounded-xl text-left focus-visible:ring-2 focus-visible:outline-none"
     >
-      <div className="flex items-center gap-3 rounded-xl border border-neutral-300 bg-white p-3">
-        <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-neutral-300">
-          <VehiclePlaceholder />
-          {hasPlateImage && (
+      {/*
+        Susunannya disamakan dengan kartu di halaman "Kendaraan Saya" supaya
+        satu kendaraan terlihat sama di mana pun ia muncul. Bedanya cuma di
+        bagian bawah: di sini tidak ada tombol aksi, melainkan tanda panah —
+        seluruh kartunya sendiri yang bisa ditekan.
+
+        Foto plat SENGAJA tidak dipakai lagi sebagai gambar kecil di kiri:
+        diambil dari jarak dekat sebagai bukti, dan di ukuran itu cuma terbaca
+        sebagai kotak buram.
+      */}
+      <div className="drive-card relative flex flex-col gap-0 overflow-hidden p-0">
+        {hasPolis(vehicle) && (
+          <span className="text-10 border-deep-blue-500/40 text-deep-blue-500 absolute top-3 right-3 z-10 inline-flex items-center rounded-full border bg-[#0b1218]/85 px-2.5 py-1 font-medium">
+            Berpolis
+          </span>
+        )}
+
+        {vehicle.vehicleImage ? (
+          <div className="relative h-32 w-full">
             <img
-              src={vehicle.plateImage}
+              src={vehicle.vehicleImage}
               alt=""
+              loading="lazy"
               className="absolute inset-0 size-full object-cover"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none';
-              }}
             />
-          )}
-        </div>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,17,0.15)_0%,rgba(7,12,17,0.55)_55%,var(--color-neutral-100)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 px-4 pb-3">
+              <p className="text-16 truncate font-semibold text-neutral-900">
+                {vehicle.vehicleName || '-'}
+              </p>
+              <p className="hud-readout text-deep-blue-500 mt-0.5 text-[12px] tracking-wide">
+                {vehicle.vehiclePlate}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-3 px-4 pt-4">
+            <div className="drive-chip flex size-12 shrink-0 items-center justify-center rounded-xl">
+              <Car className="text-deep-blue-500 size-6" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1 pr-16">
+              <p className="text-14 truncate font-semibold text-neutral-900">
+                {vehicle.vehicleName || '-'}
+              </p>
+              <p className="hud-readout text-deep-blue-500 mt-0.5 text-[12px] tracking-wide">
+                {vehicle.vehiclePlate}
+              </p>
+            </div>
+          </div>
+        )}
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-semibold text-neutral-900">
-            {vehicle.vehicleName || '-'}
+        <div className="flex items-center gap-3 px-4 pt-2 pb-4">
+          <p className="text-11 min-w-0 flex-1 truncate text-neutral-600">
+            {[
+              vehicle.vehicleType,
+              vehicle.vehicleColor,
+              vehicle.vehicleYear > 0 ? vehicle.vehicleYear : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
-          <p className="text-deep-blue-500 mt-1 text-[12px] font-semibold">
-            {vehicle.vehiclePlate}
-          </p>
+          <ChevronRight className="text-deep-blue-500 size-5 shrink-0" aria-hidden />
         </div>
-
-        <ChevronRight className="size-5 shrink-0 text-neutral-600" />
       </div>
     </button>
-  );
-}
-
-function VehiclePlaceholder({ className }: { className?: string }) {
-  return (
-    <div className={cn('flex size-full items-center justify-center bg-neutral-300', className)}>
-      <Car className="size-7 text-neutral-600" />
-    </div>
   );
 }

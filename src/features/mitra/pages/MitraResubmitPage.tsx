@@ -123,7 +123,7 @@ function ResubmitSignIn({
     if (outcome.rejectionCount >= PARTNER_MAX_REJECTIONS) {
       onInfo({
         icon: 'lock',
-        message: 'Anda telah mencapai batas pengajuan ulang. Silakan hubungi CS AutoClaim.',
+        message: 'Anda telah mencapai batas pengajuan ulang. Silakan hubungi CS DRIVE.',
       });
       return;
     }
@@ -160,7 +160,7 @@ function ResubmitSignIn({
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Perbaiki Data Mitra" showLogo />
       <div className="flex flex-1 flex-col px-6 py-8">
         <h1 className="text-deep-blue-500 text-2xl font-bold">Masuk untuk Perbaiki Data</h1>
@@ -220,11 +220,11 @@ function ResubmitInfo({
     icon === 'check'
       ? 'text-success'
       : icon === 'lock' || icon === 'warn'
-        ? 'text-[#E35151]'
+        ? 'text-[#e76a6a]'
         : 'text-deep-blue-500';
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Perbaiki Data Mitra" showLogo />
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <Icon className={`size-12 ${tone}`} />
@@ -303,7 +303,7 @@ function ResubmitForm({ session }: { session: ResubmitSession }) {
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Perbaiki Data Mitra" showLogo onBack={handleBack} />
       <form
         className="flex min-h-[calc(100dvh-60px)] flex-1 flex-col"
@@ -355,7 +355,7 @@ function ResubmitForm({ session }: { session: ResubmitSession }) {
           )}
         </div>
 
-        <div className="border-t border-neutral-300 bg-white px-5 pt-3 pb-4">
+        <div className="border-t border-neutral-300 bg-neutral-100 px-5 pt-3 pb-4">
           <Button
             type="button"
             size="lg"

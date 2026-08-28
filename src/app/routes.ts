@@ -40,6 +40,8 @@ export const ROUTES = {
   licensePlate: '/check-condition/license-plate',
   vehicleSides: '/check-condition/vehicle-all-sides',
   previewVehicle: '/check-condition/vehicle-all/preview',
+  /** Layar tunggu saat foto dikirim & dianalisis; pindah sendiri saat selesai. */
+  analyzing: '/check-condition/analyzing',
 
   // Hasil kerusakan & biaya
   damageAnalysis: '/damage-analysis',

@@ -34,7 +34,7 @@ export function AppHeader({
         'pt-safe sticky top-0 z-30 flex h-[60px] items-center justify-between px-4',
         transparent
           ? 'bg-transparent'
-          : 'border-b border-neutral-300 bg-white shadow-[0_4px_14px_rgb(32_41_68_/_0.04)]',
+          : 'border-b border-neutral-300 bg-neutral-100 shadow-[0_4px_14px_rgb(32_41_68_/_0.04)]',
         className,
       )}
     >

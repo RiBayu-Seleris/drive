@@ -24,6 +24,7 @@ import {
   uploadPartnerOnboardingImage,
 } from '@/features/auth/api/authApi';
 import { confirm } from '@/components/feedback/confirm';
+import { PartnerHero } from '@/components/brand/MitraArt';
 import {
   PARTNER_TYPES,
   ALLOWED_PARTNER_TYPES,
@@ -116,14 +117,10 @@ function MitraTypeChooser({ initialNoticeFor = '' }: { initialNoticeFor?: string
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Pendaftaran Mitra" showLogo />
       <div className="flex flex-1 flex-col px-6 py-6">
-        <img
-          src="/assets/mitra/logo-register-mitra.png"
-          alt=""
-          className="mx-auto mb-6 h-[172px] w-auto object-contain"
-        />
+<PartnerHero className="mx-auto mb-6 h-[172px] w-auto" />
         <h1 className="text-deep-blue-500 text-center text-[27px] leading-[1.18] font-bold">
           Pilih Jenis Mitra
         </h1>
@@ -140,12 +137,12 @@ function MitraTypeChooser({ initialNoticeFor = '' }: { initialNoticeFor?: string
                 type="button"
                 onClick={() => setSelected(value)}
                 className={`flex items-center gap-3 rounded-lg border p-4 text-left transition ${
-                  active ? 'border-deep-blue-500 bg-deep-blue-50' : 'border-neutral-400 bg-white'
+                  active ? 'border-deep-blue-500 bg-deep-blue-50' : 'border-neutral-400 bg-neutral-100'
                 }`}
               >
                 <span
                   className={`flex size-11 items-center justify-center rounded-lg ${
-                    active ? 'bg-deep-blue-500 text-white' : 'bg-neutral-200 text-neutral-600'
+                    active ? 'bg-deep-blue-500 text-[#10200a]' : 'bg-neutral-200 text-neutral-600'
                   }`}
                 >
                   <Icon className="size-6" />
@@ -224,7 +221,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
       // mengarahkannya ke halaman masuk mitra akan berujung penolakan.
       if (partnerType === 'insurance') {
         toast.success(
-          'Pendaftaran terkirim. Setelah disetujui admin, masuk lewat Backoffice AutoClaim.',
+          'Pendaftaran terkirim. Setelah disetujui admin, masuk lewat Backoffice DRIVE.',
         );
         if (env.backofficeUrl) {
           window.location.href = `${env.backofficeUrl}/login`;
@@ -302,7 +299,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
   const profileSetValue = setValue as unknown as UseFormSetValue<PartnerProfileValues>;
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo onBack={handleBack} />
       <form
         className="flex min-h-[calc(100dvh-60px)] flex-1 flex-col"
@@ -351,7 +348,7 @@ function MitraRegisterForm({ partnerType }: { partnerType: string }) {
           )}
         </div>
 
-        <div className="border-t border-neutral-300 bg-white px-5 pt-3 pb-4">
+        <div className="border-t border-neutral-300 bg-neutral-100 px-5 pt-3 pb-4">
           <Button
             type="button"
             size="lg"
@@ -380,16 +377,12 @@ function StepAccount({
 }) {
   return (
     <div className="pb-5">
-      <img
-        src="/assets/mitra/logo-register-mitra.png"
-        alt=""
-        className="mx-auto h-[230px] w-auto object-contain"
-      />
+<PartnerHero className="mx-auto h-[230px] w-auto" />
       <div className="text-center">
         <h1 className="text-deep-blue-500 text-[26px] leading-[1.18] font-bold">
           Registrasi Mitra {typeLabel}
           <br />
-          AutoClaim
+          DRIVE
         </h1>
         <p className="mt-3 text-[15px] text-neutral-700">
           Silakan isi data yang diperlukan untuk bergabung

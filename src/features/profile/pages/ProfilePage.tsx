@@ -212,7 +212,7 @@ export function ProfilePage() {
   const handleLogout = async () => {
     const ok = await confirm({
       title: 'Keluar',
-      message: 'Anda yakin ingin keluar dari akun AutoClaim?',
+      message: 'Anda yakin ingin keluar dari akun DRIVE?',
       confirmText: 'Keluar',
       cancelText: 'Batal',
       tone: 'danger',
@@ -236,33 +236,53 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="relative w-full bg-gray-50 pb-10">
-      <div className="bg-deep-blue-500 absolute top-0 z-0 flex h-[248px] w-full justify-center">
-        <img src="/assets/home/bg-header.png" alt="" className="mt-12 object-contain" />
+    <div className="relative w-full bg-neutral-200 pb-10">
+      {/*
+        Pita berfoto yang DIAM saat digulir.
+
+        `sticky`, bukan `fixed`: elemen fixed keluar dari alur dan melebar
+        seukuran layar, sehingga di layar lebar fotonya menyembur keluar dari
+        wadah aplikasi yang lebarnya terbatas. Sticky tetap terikat wadahnya.
+
+        Kartu di bawahnya diberi z-index lebih tinggi dan latar pekat, jadi ia
+        naik MENUTUPI foto saat digulir — bukan fotonya yang ikut naik. Itu yang
+        memberi kesan berlapis.
+
+        Sebelumnya di sini ada grafis ScanHero ukuran 112px yang menggantung di
+        tengah ruang kosong — ia mengulang pesan yang sama dengan halaman masuk,
+        dan di halaman profil tidak menjelaskan apa pun. Foto memberi kedalaman
+        sekaligus menyamakan halaman ini dengan beranda dan halaman masuk, yang
+        keduanya sudah memakai foto yang sama (jadi sudah ada di cache).
+      */}
+      <div className="sticky top-0 z-0 h-72 w-full overflow-hidden">
+        <img
+          src="/assets/home/home.webp"
+          alt=""
+          className="absolute inset-0 size-full object-cover object-[64%_62%]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,17,0.55)_0%,rgba(7,12,17,0.35)_35%,rgba(15,23,32,0.9)_78%,var(--color-neutral-200)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(100%_70%_at_18%_6%,rgba(173,237,31,0.26),transparent_58%)]" />
+        <div className="drive-header drive-fade-b absolute inset-0 opacity-30" />
       </div>
 
-      <div className="bg-deep-blue-500 flex h-40 items-center justify-center">
-        <img src="/assets/auth/icon-login.png" alt="AutoClaim" className="h-28 object-contain" />
-      </div>
-
-      <div className="relative mt-12 w-full rounded-t-3xl bg-white pb-12 shadow-lg">
+      <div className="relative z-10 -mt-16 w-full rounded-t-3xl bg-neutral-100 pb-12 shadow-lg">
         <div className="relative flex flex-col items-center px-6">
           <img
             src={resolveAvatarSrc(activeUser?.imageName)}
-            className="-mt-20 size-[160px] rounded-full border-4 border-white object-cover shadow-lg"
+            className="border-deep-blue-500/50 -mt-20 size-[160px] rounded-full border-4 bg-neutral-200 object-cover shadow-lg"
             alt="Foto profil"
           />
           <div className="mt-3 flex max-w-[90%] items-center gap-2">
-            <h1 className="truncate text-lg font-semibold text-gray-900">
-              {activeUser?.fullname || 'Pengguna AutoClaim'}
+            <h1 className="truncate text-lg font-semibold text-neutral-900">
+              {activeUser?.fullname || 'Pengguna DRIVE'}
             </h1>
             <BadgeCheck className="text-deep-blue-500 size-5 shrink-0" aria-hidden />
           </div>
-          <p className="text-sm text-gray-500">{statusLabel(activeUser?.accountStatus)}</p>
+          <p className="text-sm text-neutral-500">{statusLabel(activeUser?.accountStatus)}</p>
           <button
             type="button"
             onClick={openEditProfile}
-            className="mt-4 rounded-lg bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-600 transition hover:bg-indigo-200"
+            className="mt-4 rounded-lg bg-deep-blue-500/20 px-4 py-2 text-sm font-medium text-deep-blue-500 transition hover:bg-deep-blue-500"
           >
             Edit Profil
           </button>
@@ -316,17 +336,17 @@ export function ProfilePage() {
               label="Panduan Penggunaan"
               onClick={() => setInfoDialog('guide')}
             />
-            <MenuRow icon={Star} label="Rating AutoClaim" onClick={() => navigate(ROUTES.rating)} />
-            <MenuRow icon={Info} label="Tentang AutoClaim" onClick={() => setInfoDialog('about')} />
+            <MenuRow icon={Star} label="Rating DRIVE" onClick={() => navigate(ROUTES.rating)} />
+            <MenuRow icon={Info} label="Tentang DRIVE" onClick={() => setInfoDialog('about')} />
           </MenuSection>
 
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-xs font-medium text-red-600 shadow-sm"
+            className="drive-card flex w-full items-center justify-between rounded-2xl p-4 text-xs font-medium text-danger"
           >
             <span>Keluar</span>
-            <LogOut className="size-5 text-red-500" />
+            <LogOut className="size-5 text-danger" />
           </button>
         </div>
       </div>
@@ -448,7 +468,7 @@ export function ProfilePage() {
 }
 
 function MenuSection({ children }: { children: ReactNode }) {
-  return <div className="overflow-hidden rounded-2xl bg-white shadow-sm">{children}</div>;
+  return <div className="drive-card overflow-hidden rounded-2xl">{children}</div>;
 }
 
 function MenuRow({
@@ -466,15 +486,15 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between border-b border-gray-100 p-4 text-left text-xs last:border-b-0"
+      className="flex w-full items-center justify-between border-b border-neutral-200 p-4 text-left text-xs last:border-b-0"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <Icon className="size-5 shrink-0 text-gray-600" />
-        <span className="truncate text-xs text-gray-800">{label}</span>
+        <Icon className="size-5 shrink-0 text-neutral-600" />
+        <span className="truncate text-xs text-neutral-800">{label}</span>
       </div>
       <div className="flex max-w-[45%] shrink-0 items-center gap-2">
-        {value && <span className="truncate text-sm text-gray-500">{value}</span>}
-        <ChevronRight className="size-5 text-gray-400" />
+        {value && <span className="truncate text-sm text-neutral-500">{value}</span>}
+        <ChevronRight className="size-5 text-neutral-500" />
       </div>
     </button>
   );
@@ -482,9 +502,9 @@ function MenuRow({
 
 function InfoPill({ icon: Icon, value }: { icon: LucideIcon; value: string }) {
   return (
-    <div className="flex items-center space-x-2 rounded-xl bg-white p-3 shadow-sm">
-      <Icon className="size-5 shrink-0 text-gray-500" />
-      <span className="truncate text-xs text-gray-700">{value}</span>
+    <div className="drive-card flex items-center space-x-2 rounded-xl p-3">
+      <Icon className="size-5 shrink-0 text-neutral-500" />
+      <span className="truncate text-xs text-neutral-700">{value}</span>
     </div>
   );
 }
@@ -512,7 +532,7 @@ function ProfileInfoDialog({
     country: 'Negara',
     language: 'Bahasa',
     guide: 'Panduan Penggunaan',
-    about: 'Tentang AutoClaim',
+    about: 'Tentang DRIVE',
   }[type];
 
   return (
@@ -525,8 +545,8 @@ function ProfileInfoDialog({
           >
             Indonesia
           </ChoiceButton>
-          <p className="text-xs leading-5 text-gray-500">
-            Layanan AutoClaim saat ini tersedia untuk Indonesia.
+          <p className="text-xs leading-5 text-neutral-500">
+            Layanan DRIVE saat ini tersedia untuk Indonesia.
           </p>
         </div>
       )}
@@ -539,14 +559,14 @@ function ProfileInfoDialog({
           >
             Bahasa Indonesia
           </ChoiceButton>
-          <p className="text-xs leading-5 text-gray-500">
+          <p className="text-xs leading-5 text-neutral-500">
             Bahasa Indonesia digunakan sebagai bahasa utama aplikasi.
           </p>
         </div>
       )}
 
       {type === 'guide' && (
-        <div className="space-y-3 text-sm leading-6 text-gray-700">
+        <div className="space-y-3 text-sm leading-6 text-neutral-700">
           <GuideItem
             number="1"
             text="Pilih cek kondisi kendaraan, foto plat, lalu ambil foto empat sisi mobil."
@@ -567,13 +587,13 @@ function ProfileInfoDialog({
       )}
 
       {type === 'about' && (
-        <div className="space-y-4 text-sm leading-6 text-gray-700">
+        <div className="space-y-4 text-sm leading-6 text-neutral-700">
           <div>
-            <p className="font-semibold text-gray-900">{APP_INFO.name}</p>
+            <p className="font-semibold text-neutral-900">{APP_INFO.name}</p>
             <p>{APP_INFO.tagline}</p>
           </div>
-          <div className="rounded-xl bg-gray-50 p-4">
-            <p className="text-xs font-medium text-gray-500">Bantuan</p>
+          <div className="rounded-xl bg-neutral-200 p-4">
+            <p className="text-xs font-medium text-neutral-500">Bantuan</p>
             <p className="mt-1">{APP_INFO.supportEmail}</p>
             <p>{APP_INFO.supportWhatsapp}</p>
           </div>
@@ -596,7 +616,7 @@ function ChoiceButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800"
+      className="flex w-full items-center justify-between rounded-xl border border-neutral-300 px-4 py-3 text-sm font-medium text-neutral-800"
     >
       <span>{children}</span>
       {selected && <BadgeCheck className="text-deep-blue-500 size-5" />}

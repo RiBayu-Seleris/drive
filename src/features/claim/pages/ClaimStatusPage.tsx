@@ -153,7 +153,7 @@ export function ClaimStatusPage() {
                         : done
                           ? 'bg-success text-white'
                           : current
-                            ? 'bg-deep-blue-500 text-white'
+                            ? 'bg-deep-blue-500 text-[#10200a]'
                             : 'bg-neutral-400 text-neutral-700'
                     }`}
                   >
@@ -210,7 +210,7 @@ export function ClaimStatusPage() {
         {!isApproved && !isRejected && !isCanceled && (
           <Card className="border-deep-blue-200 bg-deep-blue-50/60 mt-4">
             <div className="flex items-start gap-3">
-              <span className="bg-deep-blue-500 grid size-9 shrink-0 place-items-center rounded-full text-white">
+              <span className="bg-deep-blue-500 grid size-9 shrink-0 place-items-center rounded-full text-[#10200a]">
                 <Truck className="size-5" />
               </span>
               <div className="min-w-0">

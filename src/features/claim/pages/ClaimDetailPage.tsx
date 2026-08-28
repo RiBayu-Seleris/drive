@@ -296,7 +296,7 @@ export function ClaimDetailPage() {
               type="button"
               onClick={recording ? stopRecording : () => void startRecording()}
               disabled={processing}
-              className={`flex size-12 items-center justify-center rounded-full text-white ${recording ? 'bg-danger' : 'bg-deep-blue-500'}`}
+              className={`flex size-12 items-center justify-center rounded-full text-[#10200a] ${recording ? 'bg-danger' : 'bg-deep-blue-500'}`}
               aria-label={recording ? 'Hentikan rekaman' : 'Mulai rekaman'}
             >
               {recording ? <Square className="size-5" /> : <Mic className="size-5" />}

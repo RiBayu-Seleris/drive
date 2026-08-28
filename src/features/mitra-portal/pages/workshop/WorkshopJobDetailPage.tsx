@@ -124,7 +124,7 @@ export function WorkshopJobDetailPage() {
       <AppHeader title="Detail Pekerjaan" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card rounded-2xl p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-16 font-semibold text-neutral-900">
@@ -142,14 +142,14 @@ export function WorkshopJobDetailPage() {
             </span>
           </div>
 
-          <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
+          <div className="mt-3 space-y-2 border-t border-neutral-300 pt-3">
             <Row icon={<User className="size-4" />} text={job.userFullname || 'Pelanggan'} />
             {job.userPhone && <Row icon={<Phone className="size-4" />} text={job.userPhone} />}
             <Row icon={<ShieldCheck className="size-4" />} text={`Klaim ${job.claimNumber}`} />
           </div>
         </div>
 
-        <div className="flex flex-col gap-y-3 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="drive-card flex flex-col gap-y-3 rounded-2xl p-4">
           <p className="text-14 flex items-center gap-2 font-semibold text-neutral-900">
             <Wallet className="text-deep-blue-500 size-4" />
             Rincian Biaya
@@ -173,7 +173,7 @@ export function WorkshopJobDetailPage() {
         </div>
 
         {job.notes && (
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="drive-card rounded-2xl p-4">
             <p className="text-12 font-semibold text-neutral-900">Catatan pelanggan</p>
             <p className="text-12 mt-1 text-neutral-600">{job.notes}</p>
           </div>

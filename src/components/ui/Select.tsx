@@ -226,12 +226,12 @@ export function Select({
         onClick={() => (open ? setOpen(false) : openPanel())}
         onKeyDown={onKeyDown}
         className={cn(
-          'h-10 w-full rounded-lg border bg-white pr-3 pl-4 text-left text-sm shadow-sm transition',
+          'h-10 w-full rounded-lg border bg-neutral-100 pr-3 pl-4 text-left text-sm shadow-sm transition',
           'focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-700',
           selected ? 'text-neutral-900' : 'text-neutral-600',
           error
             ? 'border-danger focus:ring-danger/30'
-            : 'focus:border-deep-blue-500 focus:ring-deep-blue-200 border-gray-300',
+            : 'focus:border-deep-blue-500 focus:ring-deep-blue-200 border-neutral-300',
           className,
           // Ditaruh SETELAH className: kelas kontrol milik pemanggil kerap
           // membawa `block` (gaya `<input>`), yang akan mematahkan tata letak
@@ -257,7 +257,7 @@ export function Select({
             role="listbox"
             aria-labelledby={fieldId}
             style={{ left: panelStyle.left, top: panelStyle.top, width: panelStyle.width }}
-            className="fixed z-50 max-h-60 overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-lg"
+            className="fixed z-50 max-h-60 overflow-y-auto rounded-lg border border-neutral-300 bg-neutral-100 p-1 shadow-lg"
           >
             {options.length === 0 ? (
               <li className="px-3 py-2.5 text-sm text-neutral-600">Tidak ada pilihan</li>

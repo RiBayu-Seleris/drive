@@ -28,7 +28,7 @@ export function MitraBottomNav() {
   const pendingInvites = usePendingPartnershipCount();
 
   return (
-    <nav className="pb-safe fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-300 bg-white px-4 py-2 text-xs text-neutral-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <nav className="pb-safe fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-300 bg-neutral-100 px-4 py-2 text-xs text-neutral-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex justify-between">
         {tabs.map(({ to, label, icon: Icon }) => (
           <NavLink

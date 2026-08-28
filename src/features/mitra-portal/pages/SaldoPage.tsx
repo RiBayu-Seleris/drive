@@ -63,7 +63,7 @@ export function SaldoPage() {
       ) : (
         <div className="px-5 py-4">
           {/* Kartu total saldo (navy, sesuai desain) */}
-          <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#1B6BA8] to-[#0A4A83] p-5 text-white shadow-lg">
+          <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-5 text-white shadow-lg">
             <p className="text-12 text-white/70">Total Saldo</p>
             <p className="mt-1 flex items-baseline gap-1.5">
               <span className="text-14 font-semibold text-white/80">Rp</span>
@@ -79,7 +79,7 @@ export function SaldoPage() {
 
           {/* Porsi asuransi yang menunggu pencairan (belum bisa ditarik) */}
           {(saldo?.pendingInsurance ?? 0) > 0 && (
-            <div className="mt-3 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
+            <div className="mt-3 flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/15 p-3.5">
               <span className="bg-warning/15 text-warning grid size-9 shrink-0 place-items-center rounded-full">
                 <Clock className="size-5" />
               </span>
@@ -147,7 +147,7 @@ function SaldoTile({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center gap-2 rounded-2xl bg-white py-4 shadow-sm transition active:scale-95"
+      className="drive-card flex flex-col items-center gap-2 rounded-2xl py-4 transition active:scale-95"
     >
       <span className="bg-deep-blue-50 text-deep-blue-600 grid size-11 place-items-center rounded-full">
         <Icon className="size-5" />
@@ -166,8 +166,8 @@ function TxCard({ tx }: { tx: SaldoTx }) {
   const income = tx.amount >= 0;
   const Icon = txIcon(tx);
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
-      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-neutral-100 text-neutral-600">
+    <div className="drive-card flex items-center gap-3 rounded-2xl p-4">
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-neutral-200 text-neutral-600">
         <Icon className="size-5" />
       </span>
       <div className="min-w-0 flex-1">

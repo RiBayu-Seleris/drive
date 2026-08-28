@@ -194,6 +194,10 @@ function mapBackendResult(raw: Record<string, unknown>): DamageResult {
     ticket: ticket || undefined,
     plateNumber: plateNumber || undefined,
     reportUnlocked,
+    // Hasil normal tidak membawa field ini sama sekali, jadi labelnya cuma
+    // muncul saat backend memang sedang mengarang angka.
+    isMock: damageResult.is_mock === true,
+    mockNote: asString(damageResult.note, '') || undefined,
   };
 }
 

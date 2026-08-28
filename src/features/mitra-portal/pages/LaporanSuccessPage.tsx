@@ -43,7 +43,7 @@ export function LaporanSuccessPage() {
         </p>
 
         {/* Ringkasan */}
-        <div className="mt-6 rounded-2xl bg-neutral-100/70 p-4">
+        <div className="drive-card mt-6 rounded-2xl/70 p-4">
           <p className="text-[11px] font-semibold tracking-wide text-neutral-400">RINGKASAN LAPORAN</p>
           <div className="mt-3 space-y-3">
             <div className="flex items-center justify-between">
@@ -65,7 +65,7 @@ export function LaporanSuccessPage() {
 
         <p className="text-deep-blue-500 text-13 mt-4 flex items-center justify-center gap-2 font-semibold">
           <BadgeCheck className="size-4" />
-          Sistem AutoClaim Terverifikasi
+          Sistem DRIVE Terverifikasi
         </p>
 
         <Button

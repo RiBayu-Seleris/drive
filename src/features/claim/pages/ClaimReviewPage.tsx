@@ -10,6 +10,7 @@ import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES } from '@/app/routes';
 import { useDamageStore } from '@/features/damage/store/damageStore';
+import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { createClaim } from '../api';
 import { claimDocumentsList, useClaimDraftStore } from '../store/claimDraftStore';
 
@@ -30,13 +31,24 @@ export function ClaimReviewPage() {
   const draft = useClaimDraftStore();
   const documents = claimDocumentsList(draft.documents);
   const policy = draft.policy;
+  /*
+   * Klaim atas mobil yang polisnya masih atas nama orang lain.
+   *
+   * Tanpa polis, mesin tidak punya benefit untuk dicocokkan, jadi backend
+   * melemparnya ke telaah manual — bukan menolaknya. Plat diambil dari hasil
+   * pindai, karena tidak ada polis yang bisa jadi sumbernya.
+   */
+  const withoutOwnPolicy = !policy && draft.policyOwnedByOther;
+  const scannedPlate = useScanStore((state) => state.plate.number);
+  const claimPlate = policy?.vehiclePlate ?? scannedPlate ?? '';
   const inferenceTicket = damage?.ticket ?? draft.inferenceTicket;
   const engineEvidenceComplete =
     draft.engineNumber.trim().length >= 5 && Boolean(draft.engineNumberImageUrl);
   const chassisEvidenceComplete =
     draft.chassisNumber.trim().length >= 5 && Boolean(draft.chassisNumberImageUrl);
   const missingReasons = [
-    !policy ? 'Polis belum dipilih.' : '',
+    !policy && !draft.policyOwnedByOther ? 'Polis belum dipilih.' : '',
+    withoutOwnPolicy && !claimPlate.trim() ? 'Plat kendaraan belum terbaca dari hasil pindai.' : '',
     !damage ? 'Hasil estimasi biaya belum tersedia.' : '',
     !inferenceTicket ? 'Tiket hasil analisis kerusakan belum tersedia.' : '',
     documents.length !== 3 ? 'Dokumen KTP, SIM, dan STNK belum lengkap.' : '',
@@ -47,7 +59,7 @@ export function ClaimReviewPage() {
     !draft.audioUrl ? 'Rekaman kronologi belum tersedia.' : '',
     draft.transcript.trim().length < 10 ? 'Transkripsi kronologi belum lengkap.' : '',
   ].filter(Boolean);
-  const completionRoute = !policy
+  const completionRoute = !policy && !draft.policyOwnedByOther
     ? ROUTES.claimSelectPolicy
     : !damage
       ? ROUTES.estimatedCost
@@ -60,10 +72,10 @@ export function ClaimReviewPage() {
   const mutation = useMutation({
     mutationFn: () =>
       createClaim({
-        policyNumber: policy!.policyNumber,
+        policyNumber: policy?.policyNumber ?? '',
         inferenceTicket,
         claimType: draft.claimType,
-        vehiclePlate: policy!.vehiclePlate,
+        vehiclePlate: claimPlate,
         vehicleEngineNumber: draft.engineNumber,
         vehicleEngineNumberImageUrl: draft.engineNumberImageUrl,
         vehicleChassisNumber: draft.chassisNumber,
@@ -87,7 +99,7 @@ export function ClaimReviewPage() {
     onError: (error) => toast.error(extractErrorMessage(error, 'Klaim gagal diajukan.')),
   });
 
-  if (!policy || !damage || missingReasons.length > 0) {
+  if ((!policy && !draft.policyOwnedByOther) || !damage || missingReasons.length > 0) {
     return (
       <PageContainer>
         <AppHeader title="Review Klaim" />
@@ -101,13 +113,14 @@ export function ClaimReviewPage() {
   }
 
   const estimate = parseAmount(damage.estimation.totalPrice);
-  const covered = Math.min(estimate, policy.coverageAmount);
+  // Tanpa polis, tidak ada limit yang bisa dipakai menghitung tanggungan.
+  const covered = policy ? Math.min(estimate, policy.coverageAmount) : null;
 
   return (
     <PageContainer>
       <AppHeader title="Review Klaim" />
       <div className="flex flex-1 flex-col gap-5 px-5 py-5">
-        <div className="bg-deep-blue-500 -mx-5 flex items-center gap-3 px-5 py-4 text-white">
+        <div className="bg-deep-blue-500 -mx-5 flex items-center gap-3 px-5 py-4 text-[#10200a]">
           <ShieldCheck className="size-6" />
           <strong>Pengajuan Klaim Asuransi</strong>
         </div>
@@ -116,11 +129,14 @@ export function ClaimReviewPage() {
           <SectionHeading title="Ringkasan Klaim" onEdit={() => navigate(ROUTES.claimDetail)} />
           <Card className="text-12 space-y-2 text-neutral-800">
             <Row label="Tanggal Kejadian" value={draft.incidentDate} />
-            <Row label="Estimasi Ditanggung" value={rupiah(covered)} />
-            <Row label="Plat Nomor" value={policy.vehiclePlate} />
+            {covered !== null && <Row label="Estimasi Ditanggung" value={rupiah(covered)} />}
+            <Row label="Plat Nomor" value={claimPlate} />
             <Row label="Nomor Mesin" value={draft.engineNumber} />
             <Row label="Nomor Rangka/VIN" value={draft.chassisNumber} />
-            <Row label="Nomor Polis" value={policy.policyNumber} />
+            <Row
+              label="Nomor Polis"
+              value={policy ? policy.policyNumber : 'Atas nama orang lain'}
+            />
             <Row label="Pembayaran" value="Langsung ke bengkel" />
           </Card>
         </section>

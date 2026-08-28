@@ -20,7 +20,7 @@ export function DriverLoginPage() {
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader title="Masuk Sopir Towing" />
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col px-6 py-8">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">

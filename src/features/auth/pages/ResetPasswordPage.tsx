@@ -96,7 +96,7 @@ export function ResetPasswordPage() {
       });
       toast.success(
         target === 'backoffice'
-          ? 'Kata sandi berhasil diubah. Silakan masuk lewat Backoffice AutoClaim.'
+          ? 'Kata sandi berhasil diubah. Silakan masuk lewat Backoffice DRIVE.'
           : 'Kata sandi berhasil diubah. Silakan masuk.',
       );
       goToLogin();
@@ -144,7 +144,7 @@ export function ResetPasswordPage() {
         <p className="text-12 text-center leading-5 text-neutral-500">
           Setelah kata sandi diubah, semua perangkat yang masih masuk akan dikeluarkan.
           {isPartner && ' Penarikan saldo juga ditahan 24 jam demi keamanan.'}
-          {target === 'backoffice' && ' Akun asuransi masuk lewat Backoffice AutoClaim.'}
+          {target === 'backoffice' && ' Akun asuransi masuk lewat Backoffice DRIVE.'}
         </p>
       </form>
     </AuthLayout>

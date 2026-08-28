@@ -64,7 +64,7 @@ export function WorkshopQueuePage() {
       <AppHeader title="Antrian Bengkel" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="bg-deep-blue-500 rounded-2xl p-4 text-white">
+        <div className="bg-deep-blue-500 rounded-2xl p-4 text-[#10200a]">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
               <Wrench className="size-5" />
@@ -103,7 +103,7 @@ export function WorkshopQueuePage() {
               key={job.id}
               type="button"
               onClick={() => navigate(buildPath.mitraWorkshopJobDetail(job.jobCode))}
-              className="block w-full rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
+              className="drive-card block w-full rounded-2xl p-4 text-left transition active:scale-[0.99]"
             >
               <div className="flex items-start gap-3">
                 <div className="bg-deep-blue-50 text-deep-blue-600 grid size-11 shrink-0 place-items-center rounded-full">
@@ -127,7 +127,7 @@ export function WorkshopQueuePage() {
                 </span>
               </div>
 
-              <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
+              <div className="mt-3 flex items-center justify-between border-t border-neutral-300 pt-3">
                 <span className="text-12 text-neutral-600">Estimasi biaya</span>
                 <span className="text-14 font-semibold text-neutral-900">
                   {formatCurrency(job.estimatedCost)}

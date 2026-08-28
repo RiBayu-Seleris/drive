@@ -19,7 +19,18 @@ interface ClaimDraftState {
   incidentLocation: string;
   claimType: string;
   submittedClaim: Claim | null;
+  /**
+   * Klaim atas mobil yang polisnya masih atas nama orang lain — biasanya
+   * pemilik sebelumnya, saat mobil sudah berpindah tangan tapi polisnya belum.
+   *
+   * Klaim seperti ini TIDAK bisa disetujui otomatis (mesin butuh polis untuk
+   * mencocokkan benefit), jadi backend melemparnya ke telaah manual dengan
+   * alasan POLICY_REQUIRED. Penanda ini yang membedakannya dari "polis belum
+   * dipilih" — keduanya sama-sama tanpa polis, tapi yang satu disengaja.
+   */
+  policyOwnedByOther: boolean;
   setPolicy: (policy: InsurancePolicy) => void;
+  setPolicyOwnedByOther: (value: boolean) => void;
   setDocument: (document: ClaimDocument) => void;
   setEngineEvidence: (values: {
     engineNumber?: string;
@@ -48,6 +59,7 @@ interface ClaimDraftState {
 
 const initialState = {
   policy: null,
+  policyOwnedByOther: false,
   documents: {},
   engineNumber: '',
   engineNumberImageUrl: '',
@@ -67,7 +79,8 @@ const initialState = {
 
 export const useClaimDraftStore = create<ClaimDraftState>((set) => ({
   ...initialState,
-  setPolicy: (policy) => set({ policy }),
+  setPolicy: (policy) => set({ policy, policyOwnedByOther: false }),
+  setPolicyOwnedByOther: (policyOwnedByOther) => set({ policyOwnedByOther, policy: null }),
   setDocument: (document) =>
     set((state) => ({
       documents: { ...state.documents, [document.documentType]: document },

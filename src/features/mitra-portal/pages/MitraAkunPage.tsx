@@ -33,7 +33,7 @@ export function MitraAkunPage() {
     <MitraShell>
       <AppHeader title="Akun" />
       <div className="px-5 py-6">
-        <div className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
+        <div className="drive-card flex items-center gap-4 rounded-2xl p-5">
           <div className="bg-deep-blue-50 text-deep-blue-600 grid size-14 place-items-center rounded-full">
             <User className="size-7" />
           </div>
@@ -52,7 +52,7 @@ export function MitraAkunPage() {
                 partnerType === 'workshop' ? ROUTES.mitraBengkelKemitraan : ROUTES.mitraKemitraan,
               )
             }
-            className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-sm transition active:scale-[0.99]"
+            className="drive-card mt-4 flex w-full items-center gap-3 rounded-2xl p-4 text-left transition active:scale-[0.99]"
           >
             <span className="bg-deep-blue-50 text-deep-blue-600 grid size-10 shrink-0 place-items-center rounded-full">
               <Handshake className="size-5" />

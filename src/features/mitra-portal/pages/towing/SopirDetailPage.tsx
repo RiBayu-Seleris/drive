@@ -280,7 +280,7 @@ export function SopirDetailPage() {
               <InfoRow label="Email Login" value={sopir.email || 'Belum tersedia'} />
               <InfoRow label="Status Akun" value="Aktif untuk portal driver" />
               {resetOpen ? (
-                <div className="space-y-3 border-t border-neutral-100 pt-3">
+                <div className="space-y-3 border-t border-neutral-300 pt-3">
                   <p className="text-11 text-neutral-600">
                     Kata sandi lama tidak bisa dilihat (tersimpan terenkripsi). Buat kata sandi
                     baru, lalu sampaikan ke sopir.

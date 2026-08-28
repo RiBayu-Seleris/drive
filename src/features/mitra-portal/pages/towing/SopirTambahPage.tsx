@@ -204,11 +204,11 @@ export function SopirTambahPage() {
           <Input type="date" />
         </Field>
 
-        <div className="border-deep-blue-100 space-y-4 rounded-xl border bg-white p-4">
+        <div className="drive-card border-deep-blue-100 space-y-4 rounded-xl border p-4">
           <div>
             <p className="text-14 font-semibold text-neutral-900">Akun Login Sopir</p>
             <p className="text-12 mt-1 text-neutral-600">
-              Akun ini dipakai sopir untuk masuk ke portal driver AutoClaim.
+              Akun ini dipakai sopir untuk masuk ke portal driver DRIVE.
             </p>
           </div>
           <Input

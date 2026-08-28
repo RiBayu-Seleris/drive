@@ -23,6 +23,7 @@ import { useDamageStore } from '../store/damageStore';
 import { claimInferenceTicket, fetchDamageDetail } from '../api/damageApi';
 import { RadialProgress } from '../components/RadialProgress';
 import type { DamageItem, DamageResult, DamageSide } from '../types';
+import { MockDataBadge } from '../components/MockDataBadge';
 import Lock from '/assets/damage_analysis/red-lock.svg';
 
 const SIDE_LABELS: Record<DamageSide, string> = {
@@ -53,14 +54,14 @@ function hasDamageBreakdown(result: DamageResult) {
 }
 
 function barClass(v: number): string {
-  if (v <= 33) return 'bg-green-500';
-  if (v <= 66) return 'bg-yellow-500';
-  return 'bg-red-500';
+  if (v <= 33) return 'bg-success';
+  if (v <= 66) return 'bg-warning';
+  return 'bg-danger';
 }
 function textClass(v: number): string {
-  if (v <= 33) return 'text-green-500';
-  if (v <= 66) return 'text-yellow-500';
-  return 'text-red-500';
+  if (v <= 33) return 'text-success';
+  if (v <= 66) return 'text-warning';
+  return 'text-danger';
 }
 
 export function DamageAnalysisPage() {
@@ -280,11 +281,15 @@ export function DamageAnalysisPage() {
           </div>
         </div>
 
+        {/* Angka karangan harus mengaku sebelum dibaca, bukan sesudah. Sengaja
+            di LUAR pembungkus blur guest supaya tetap terbaca. */}
+        {result.isMock && <MockDataBadge note={result.mockNote} className="mx-4 mb-3" />}
+
         {/* Konten hasil — di-blur untuk guest */}
         <div className={isAuthenticated ? '' : 'pointer-events-none blur-[3px] select-none'}>
           {/* Gauge */}
           <div className="flex justify-center py-2">
-            <div className="flex size-[300px] items-center justify-center rounded-full bg-white p-[30px] shadow-[0_4px_30px_0_#0000000d]">
+            <div className="flex size-[300px] items-center justify-center rounded-full bg-neutral-100 p-[30px] shadow-[0_4px_30px_0_#0000000d]">
               <RadialProgress value={percentage} className="relative size-full" />
             </div>
           </div>
@@ -387,7 +392,7 @@ export function DamageAnalysisPage() {
                             state: isHistoryView ? { ...item, source: 'recent_activity' } : item,
                           })
                         }
-                        className="flex w-full items-center gap-4 rounded-lg border border-neutral-300 bg-white p-4 text-left"
+                        className="flex w-full items-center gap-4 rounded-lg border border-neutral-300 bg-neutral-100 p-4 text-left"
                       >
                         <img
                           src={item.damage_image}
@@ -461,8 +466,8 @@ export function DamageAnalysisPage() {
         {/* Overlay login untuk guest */}
         {!isAuthenticated && (
           <div className="absolute inset-x-0 top-[36%] z-50 px-5">
-            <div className="flex flex-row gap-x-3 rounded-2xl bg-white px-4 py-5 shadow-[0_14px_35px_0_rgba(15,23,42,0.14)]">
-              <div className="mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#4DCAFF] to-[#4EA3E0] p-2 text-white">
+            <div className="drive-card flex flex-row gap-x-3 rounded-2xl px-4 py-5 shadow-[0_14px_35px_0_rgba(15,23,42,0.14)]">
+              <div className="mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#aded1f] to-[#aded1f] p-2 text-white">
                 <Info className="h-full w-full" />
               </div>
               <div className="flex min-w-0 flex-col items-start justify-center gap-y-3">
@@ -511,7 +516,7 @@ function SideSeverityCards({
             key={side}
             type="button"
             onClick={() => onSelect(side)}
-            className={`rounded-lg border bg-white p-3 text-left shadow-sm ${
+            className={`rounded-lg border bg-neutral-100 p-3 text-left shadow-sm ${
               grid ? 'min-w-0' : 'w-56 flex-shrink-0'
             } ${selectedSide === side ? 'border-deep-blue-500' : 'border-neutral-300'}`}
           >
@@ -569,7 +574,7 @@ function ReportUnlockPrompt({
     <div className={`px-5 pb-4 ${className}`}>
       <div className="flex flex-row gap-4 p-2">
         <div className="flex h-auto w-auto shrink-0 items-center justify-center">
-          <div className="flex size-[38px] items-center justify-center rounded-full bg-[#FFF2F4] text-[#E50032]">
+          <div className="flex size-[38px] items-center justify-center rounded-full bg-[#131c24] text-[#e76a85]">
             <img src={Lock} alt="" srcSet="" />
           </div>
         </div>
@@ -583,7 +588,7 @@ function ReportUnlockPrompt({
       <button
         type="button"
         onClick={onClick}
-        className="bg-deep-blue-500 mt-5 flex h-[42px] w-full items-center justify-between rounded-md px-5 text-[12px] font-bold text-white"
+        className="bg-deep-blue-500 mt-5 flex h-[42px] w-full items-center justify-between rounded-md px-5 text-[12px] font-bold text-[#10200a]"
       >
         <span>Buka Detail Analisis</span>
         <span>{AI_REPORT_PRICE}</span>
@@ -597,7 +602,7 @@ function ZeroDamageInsuranceOffer({ onBuyInsurance }: { onBuyInsurance: () => vo
     <div className="mx-5 mt-6 pb-24">
       <img
         src="/assets/damage_analysis/insurance-banner.png"
-        alt="AutoClaim klaim mudah, aman, dan terlindungi"
+        alt="DRIVE klaim mudah, aman, dan terlindungi"
         className="w-full rounded-lg object-cover shadow-sm"
       />
       <Button size="lg" className="mt-5" onClick={onBuyInsurance}>

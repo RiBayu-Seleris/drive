@@ -123,7 +123,7 @@ export function OrderListPage() {
             type="button"
             onClick={() => void load()}
             aria-label="Muat ulang order"
-            className="text-deep-blue-500 grid size-9 place-items-center rounded-full bg-white"
+            className="text-deep-blue-500 grid size-9 place-items-center rounded-full bg-neutral-200"
           >
             <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
           </button>
@@ -134,9 +134,9 @@ export function OrderListPage() {
       <div className="flex items-center gap-3 px-5 pt-4">
         <TabPill
           active={tab === 'order'}
-          activeClass="bg-[#4B5FA6] text-white"
-          idleClass="bg-[#4B5FA6]/10 text-[#4B5FA6]"
-          iconClass={tab === 'order' ? 'bg-white text-[#FF725E]' : 'bg-[#4B5FA6] text-white'}
+          activeClass="bg-[#aded1f] text-[#10200a]"
+          idleClass="bg-[#aded1f]/10 text-[#c2f347]"
+          iconClass={tab === 'order' ? 'bg-neutral-200 text-[#e7796a]' : 'bg-[#aded1f] text-[#10200a]'}
           count={incoming.length + reassignNeeded.length}
           onClick={() => setTab('order')}
         >
@@ -144,9 +144,9 @@ export function OrderListPage() {
         </TabPill>
         <TabPill
           active={tab === 'history'}
-          activeClass="bg-[#FF725E] text-white"
-          idleClass="bg-[#FF725E]/10 text-[#FF725E]"
-          iconClass={tab === 'history' ? 'bg-white text-[#FF725E]' : 'bg-[#FF725E] text-white'}
+          activeClass="bg-[#df4e3a] text-white"
+          idleClass="bg-[#df4e3a]/10 text-[#e7796a]"
+          iconClass={tab === 'history' ? 'bg-neutral-200 text-[#e7796a]' : 'bg-[#df4e3a] text-white'}
           count={history.length}
           onClick={() => setTab('history')}
         >
@@ -196,7 +196,7 @@ export function OrderListPage() {
         <EmptyState title="Belum ada riwayat" body="Order yang sudah ditangani tampil di sini." />
       ) : (
         <div className="mt-4 px-5">
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="drive-card rounded-2xl p-4">
             <h2 className="text-16 font-bold text-neutral-900">Aktifitas Terkini</h2>
             <div className="mt-2">
               {history.map((order) => (
@@ -204,7 +204,7 @@ export function OrderListPage() {
                   key={order.id}
                   type="button"
                   onClick={() => navigate(ROUTES.mitraOrderTracking, { state: { order } })}
-                  className="flex w-full items-center gap-3 border-b border-neutral-100 py-3 text-left last:border-0"
+                  className="flex w-full items-center gap-3 border-b border-neutral-300 py-3 text-left last:border-0"
                 >
                   <span className="bg-green-cust/12 text-green-cust grid size-9 shrink-0 place-items-center rounded-full">
                     <ChevronDown className="size-5" />
@@ -256,7 +256,7 @@ function TabPill({
       <span className={cn('relative grid size-9 shrink-0 place-items-center rounded-full', iconClass)}>
         <PackageGlyph className="size-5" />
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-[#FB4E4E] text-[9px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-[#df3a3a] text-[9px] font-bold text-white">
             {count > 9 ? '9+' : count}
           </span>
         )}
@@ -275,7 +275,7 @@ function ReassignCard({
   onReassign: () => void;
 }) {
   return (
-    <div className="border-danger/30 rounded-2xl border bg-white p-4 shadow-sm">
+    <div className="drive-card border-danger/30 rounded-2xl border p-4">
       <div className="flex items-start justify-between gap-3">
         <span className="bg-danger/10 text-danger text-10 rounded-md px-2.5 py-1 font-bold tracking-wide uppercase">
           {reassignReasonLabel(order.reassignReason)}
@@ -341,9 +341,9 @@ function OrderCard({
     : '';
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="drive-card rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
-        <span className="text-10 rounded-md bg-neutral-100 px-2.5 py-1 font-bold tracking-wide text-neutral-600 uppercase">
+        <span className="text-10 rounded-md bg-neutral-200 px-2.5 py-1 font-bold tracking-wide text-neutral-600 uppercase">
           {typeLabel}
         </span>
         <div className="text-right">

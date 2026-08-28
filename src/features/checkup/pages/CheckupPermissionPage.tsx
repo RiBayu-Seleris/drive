@@ -59,7 +59,7 @@ export function CheckupPermissionPage() {
   };
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <div className="flex flex-1 flex-col px-6 pt-14 pb-8">
         <button type="button" onClick={() => navigate(ROUTES.home)} className="mx-auto">
           <Logo className="[&_img]:h-11" />
@@ -69,14 +69,14 @@ export function CheckupPermissionPage() {
           Aktifkan Izin Aplikasi
         </h1>
         <p className="mt-3 text-center text-sm leading-relaxed text-neutral-700">
-          Sebelum mulai cek kondisi kendaraan, AutoClaim membutuhkan izin berikut:
+          Sebelum mulai cek kondisi kendaraan, DRIVE membutuhkan izin berikut:
         </p>
 
         <div className="mt-8 flex flex-col gap-3">
           {PERMISSION_ITEMS.map(({ icon: Icon, title, description }) => (
             <div
               key={title}
-              className="flex items-center gap-3 rounded-xl border border-neutral-400 bg-white px-4 py-3"
+              className="drive-card flex items-center gap-3 rounded-xl border border-neutral-400 px-4 py-3"
             >
               <span className="bg-deep-blue-50 text-deep-blue-500 flex size-11 shrink-0 items-center justify-center rounded-lg">
                 <Icon className="size-6" />

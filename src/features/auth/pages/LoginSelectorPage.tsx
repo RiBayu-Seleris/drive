@@ -136,17 +136,17 @@ export function LoginSelectorPage() {
   };
 
   return (
-    <PageContainer className="bg-[#FAFAFA]">
+    <PageContainer className="bg-neutral-200">
       <div className="flex min-h-dvh flex-col px-4 pt-6 pb-6">
         <div className="flex justify-center">
           <Logo className="[&_img]:h-12" />
         </div>
 
         <div className="mt-4 flex flex-col items-center justify-center gap-y-2 text-center">
-          <p className="text-[24px] leading-tight font-[600] text-[#4B61A1]">Pilih Aplikasi Anda</p>
+          <p className="text-[24px] leading-tight font-[600] text-[#c2f347]">Pilih Aplikasi Anda</p>
           <div className="flex h-auto w-full items-center justify-center">
-            <p className="text-[14px] leading-normal font-[400] text-[#6B7280]">
-              Masuk sesuai akses akun yang sudah Anda miliki di AutoClaim.
+            <p className="text-[14px] leading-normal font-[400] text-[#aebbc4]">
+              Masuk sesuai akses akun yang sudah Anda miliki di DRIVE.
             </p>
           </div>
         </div>
@@ -166,7 +166,7 @@ export function LoginSelectorPage() {
                   // type="button"
                   onClick={() => scrollToSlide(slideIndex)}
                   className={cn(
-                    'relative aspect-[380/454] min-w-[315px] snap-center overflow-hidden rounded-[20px] bg-white p-0 transition',
+                    'relative aspect-[380/454] min-w-[315px] snap-center overflow-hidden rounded-[20px] bg-neutral-100 p-0 transition',
                     isSelected ? '' : 'opacity-50',
                   )}
                   aria-label={`Masuk sebagai ${option.title}`}
@@ -176,12 +176,12 @@ export function LoginSelectorPage() {
                   <img
                     src={option.cardImage}
                     alt={`Login ${option.title}`}
-                    className="h-full w-full rounded-[20px] bg-red-500 object-cover"
+                    className="h-full w-full rounded-[20px] object-cover"
                     draggable={false}
                   />
                   <div className="absolute bottom-0 left-0 flex h-auto w-full flex-col gap-y-3 px-4 pb-6">
                     <div className="flex h-auto w-full flex-col gap-y-1">
-                      <p className="text-md font-medium text-white">Autoclaim</p>
+                      <p className="text-md font-medium text-white">DRIVE</p>
                       <p className="text-4xl font-medium text-white">{option.title}</p>
                     </div>
                     <p className="text-[12px] font-medium text-white">{option.desc}</p>
@@ -195,7 +195,7 @@ export function LoginSelectorPage() {
             {/* <button
               type="button"
               onClick={() => scrollBySlide(-1)}
-              className="border-deep-blue-100 text-deep-blue-500 flex size-7 items-center justify-center rounded-full border bg-white"
+              className="border-deep-blue-100 text-deep-blue-500 flex size-7 items-center justify-center rounded-full border bg-neutral-100"
               aria-label="Pilihan sebelumnya"
             >
               <ChevronLeft className="size-5" aria-hidden />
@@ -206,7 +206,7 @@ export function LoginSelectorPage() {
                   key={option.path}
                   className={cn(
                     'h-3 rounded-full transition-all',
-                    index === selectedIndex ? 'w-14 bg-[#4B61A1]' : 'w-3 bg-[#D9D9D9]',
+                    index === selectedIndex ? 'w-14 bg-[#aded1f]' : 'w-3 bg-[#0f1720]',
                   )}
                 />
               ))}
@@ -214,15 +214,15 @@ export function LoginSelectorPage() {
             {/* <button
               type="button"
               onClick={() => scrollBySlide(1)}
-              className="border-deep-blue-100 text-deep-blue-500 flex size-7 items-center justify-center rounded-full border bg-white"
+              className="border-deep-blue-100 text-deep-blue-500 flex size-7 items-center justify-center rounded-full border bg-neutral-100"
               aria-label="Pilihan berikutnya"
             >
               <ChevronRight className="size-5" aria-hidden />
             </button> */}
           </div>
           <div className="mt-5 flex h-auto w-full flex-col items-center justify-center gap-y-1.5 text-center">
-            <p className="text-[20px] font-[500] text-[#374151]">AutoClaim {selected.title}</p>
-            <p className="text-[14px] font-[400] text-[#374151]">AutoClaim {selected.desc}</p>
+            <p className="text-[20px] font-[500] text-[#eef4f8]">DRIVE {selected.title}</p>
+            <p className="text-[14px] font-[400] text-[#eef4f8]">DRIVE {selected.desc}</p>
           </div>
         </div>
 

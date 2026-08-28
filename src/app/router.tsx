@@ -98,6 +98,11 @@ const PreviewVehiclePage = lazy(() =>
     default: m.PreviewVehiclePage,
   })),
 );
+const AnalyzingPage = lazy(() =>
+  import('@/features/checkup/pages/AnalyzingPage').then((m) => ({
+    default: m.AnalyzingPage,
+  })),
+);
 const DamageAnalysisPage = lazy(() =>
   import('@/features/damage/pages/DamageAnalysisPage').then((m) => ({
     default: m.DamageAnalysisPage,
@@ -425,6 +430,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.licensePlate, element: <LicensePlatePage /> },
       { path: ROUTES.vehicleSides, element: <VehicleSidesPage /> },
       { path: ROUTES.previewVehicle, element: <PreviewVehiclePage /> },
+      { path: ROUTES.analyzing, element: <AnalyzingPage /> },
       // Hasil kerusakan: PUBLIK agar guest melihat hasil ter-blur + prompt login.
       { path: ROUTES.damageAnalysis, element: <DamageAnalysisPage /> },
 

@@ -194,7 +194,7 @@ export function PaymentPage() {
     <PageContainer>
       <AppHeader title="Pembayaran" />
       <div className="flex flex-1 flex-col gap-5 px-5 py-5">
-        <section className="rounded-xl border border-neutral-300 bg-white p-4">
+        <section className="drive-card rounded-xl border border-neutral-300 p-4">
           <p className="text-14 font-bold text-neutral-900">Detail Pembayaran</p>
           <div className="mt-3 flex flex-col gap-2.5">
             <PaymentRow label="Produk" value={pricing.itemName} />
@@ -210,18 +210,18 @@ export function PaymentPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-orange-100 bg-white">
+        <section className="drive-card overflow-hidden rounded-xl border border-orange">
           <button
             type="button"
             className="flex w-full items-center gap-3 p-4 text-left"
             aria-expanded={instructionsOpen}
             onClick={() => setInstructionsOpen((open) => !open)}
           >
-            <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-[#F97316]">
+            <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-orange/15 text-[#e79d6a]">
               <CircleHelp className="size-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-bold text-[#F97316]">
+              <span className="block text-[14px] font-bold text-[#e79d6a]">
                 {getInstructionTitle(selected)}
               </span>
               <span className="text-12 block text-neutral-600">
@@ -245,12 +245,12 @@ export function PaymentPage() {
                   instructionsOpen ? 'translate-y-0' : '-translate-y-2'
                 }`}
               >
-                <div className="relative rounded-lg bg-orange-50/70 p-4">
-                  <span className="absolute top-4 bottom-4 left-[27px] w-px bg-orange-200" />
+                <div className="relative rounded-lg bg-orange/15/70 p-4">
+                  <span className="absolute top-4 bottom-4 left-[27px] w-px bg-orange" />
                   <div className="relative flex flex-col gap-3">
                     {instructionSteps.map((step, index) => (
                       <div key={index} className="flex gap-3">
-                        <span className="z-10 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#F97316] text-[11px] font-bold text-white shadow-[0_4px_12px_rgba(249,115,22,0.28)]">
+                        <span className="z-10 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#df7d3a] text-[11px] font-bold text-white shadow-[0_4px_12px_rgba(249,115,22,0.28)]">
                           {index + 1}
                         </span>
                         <p className="text-12 pt-0.5 leading-relaxed text-neutral-700">{step}</p>
@@ -268,7 +268,7 @@ export function PaymentPage() {
           <div className="relative">
             <button
               type="button"
-              className={`flex w-full items-center gap-3 rounded-xl border bg-white p-3.5 text-left transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-xl border bg-neutral-100 p-3.5 text-left transition-colors ${
                 methodOpen ? 'border-deep-blue-500 border-2' : 'border-neutral-300'
               }`}
               aria-expanded={methodOpen}
@@ -297,7 +297,7 @@ export function PaymentPage() {
             >
               <div className="min-h-0 overflow-hidden">
                 <div
-                  className={`mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)] transition-transform duration-300 ${
+                  className={`mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 shadow-[0_12px_30px_rgba(15,23,42,0.08)] transition-transform duration-300 ${
                     methodOpen ? 'translate-y-0' : '-translate-y-2'
                   }`}
                 >
@@ -311,8 +311,8 @@ export function PaymentPage() {
                           setSelectedKey(method.key);
                           setMethodOpen(false);
                         }}
-                        className={`flex w-full items-center gap-3 border-b border-neutral-100 p-3.5 text-left last:border-b-0 ${
-                          active ? 'bg-deep-blue-50/70' : 'bg-white active:bg-neutral-100'
+                        className={`flex w-full items-center gap-3 border-b border-neutral-300 p-3.5 text-left last:border-b-0 ${
+                          active ? 'bg-deep-blue-50/70' : 'bg-neutral-100 active:bg-neutral-100'
                         }`}
                       >
                         <PaymentMethodLogo method={method} />
@@ -335,7 +335,7 @@ export function PaymentPage() {
         </section>
       </div>
 
-      <div className="sticky bottom-0 border-t border-neutral-300 bg-white px-5 py-4">
+      <div className="sticky bottom-0 border-t border-neutral-300 bg-neutral-100 px-5 py-4">
         <Button
           fullWidth={false}
           className="w-full"
@@ -357,7 +357,7 @@ function PaymentMethodLogo({ method }: { method: PaymentMethodOption }) {
 
   if (logo) {
     return (
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white p-2">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-100 p-2">
         <img src={logo} alt={method.label} className="max-h-full max-w-full object-contain" />
       </span>
     );

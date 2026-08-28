@@ -38,3 +38,27 @@ export async function updateVehicle(input: VehicleFormInput): Promise<SavedVehic
 export async function deleteVehicle(plate: string): Promise<void> {
   await userApi.delete(`/v1/vehicle/?plate=${encodeURIComponent(plate)}`);
 }
+
+/**
+ * Meminta pemilik terdaftar sebuah plat untuk melepasnya.
+ *
+ * Dipakai saat penambahan kendaraan ditolak karena platnya masih tercatat di
+ * akun lain — biasanya pemilik sebelumnya, pada mobil yang sudah berpindah
+ * tangan. Tidak memindahkan apa pun; hanya mengirim pemberitahuan. Yang
+ * melepas tetap pemilik lama, lewat tombol "sudah terjual" di aplikasinya.
+ */
+export async function requestVehicleTransfer(plate: string): Promise<void> {
+  await userApi.post('/v1/vehicle/transfer-request', { vehicle_plate: plate });
+}
+
+/**
+ * Melepas kendaraan dari daftar karena sudah dijual.
+ *
+ * Terpisah dari `deleteVehicle`: penghapusan biasa ditolak backend kalau
+ * kendaraan masih berpolis, padahal justru itu keadaan yang paling sering saat
+ * mobil dijual. Endpoint ini juga mengabari orang yang pernah meminta platnya
+ * dilepas.
+ */
+export async function markVehicleSold(plate: string): Promise<void> {
+  await userApi.post('/v1/vehicle/mark-sold', { vehicle_plate: plate });
+}

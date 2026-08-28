@@ -19,9 +19,10 @@ import {
 import { useDamageStore } from '../store/damageStore';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { useClaimDraftStore } from '@/features/claim/store/claimDraftStore';
+import { MockDataBadge } from '../components/MockDataBadge';
 import FrameModal from '/assets/Estimated_repair_cost/modals-frame.png';
 import Cars from '/assets/Estimated_repair_cost/cars.png';
-import AutoWhiteLogo from '/assets/auth/logo_auto.png';
+import DriveWhiteLogo from '/assets/brand/Drive-Compact-white.svg';
 import CloseIcon from '/assets/Estimated_repair_cost/close.svg';
 
 export function EstimatedCostPage() {
@@ -201,21 +202,25 @@ export function EstimatedCostPage() {
       <AppHeader showLogo />
       <div className="space-y-6 p-4 pb-32">
         <div className="text-center">
-          <h2 className="text-16 font-semibold text-gray-800">
+          <h2 className="text-16 font-semibold text-neutral-800">
             Estimasi Biaya Perbaikan Kendaraan Anda
           </h2>
-          <p className="text-12 mt-1 text-gray-500">
+          <p className="text-12 mt-1 text-neutral-500">
             Berikut adalah estimasi biaya perbaikan untuk bagian yang terdeteksi mengalami kerusakan
           </p>
         </div>
 
+        {/* Harga karangan paling gampang disalahartikan sebagai penawaran
+            sungguhan — labelnya berdiri sebelum rincian, bukan sesudah. */}
+        {result.isMock && <MockDataBadge note={result.mockNote} className="text-left" />}
+
         <section>
-          <h3 className="text-14 mb-2 font-semibold text-gray-700">Rincian Kerusakan</h3>
+          <h3 className="text-14 mb-2 font-semibold text-neutral-700">Rincian Kerusakan</h3>
           <div className="flex w-full flex-col gap-y-3">
             {items.map((item, index) => (
               <div
                 key={`${item.part_name}-${index}`}
-                className="flex items-center justify-between rounded-xl border border-gray-300 p-3"
+                className="flex items-center justify-between rounded-xl border border-neutral-300 p-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <img
@@ -227,15 +232,15 @@ export function EstimatedCostPage() {
                     <p className="text-14 text-deep-blue-500 truncate font-semibold">
                       {item.part_name}
                     </p>
-                    <p className="text-12 text-gray-500">Estimasi Biaya</p>
+                    <p className="text-12 text-neutral-500">Estimasi Biaya</p>
                   </div>
                 </div>
                 <div className="flex min-w-0 shrink-0 flex-col justify-between gap-y-1 text-right">
-                  <p className="flex items-center justify-end gap-1 text-xs text-red-500">
-                    <span className="size-2 rounded-full bg-red-500" />
+                  <p className="flex items-center justify-end gap-1 text-xs text-danger">
+                    <span className="size-2 rounded-full bg-danger" />
                     {item.change_severity === 'replaced' ? 'Wajib diganti' : 'Bisa diperbaiki'}
                   </p>
-                  <p className="text-12 font-semibold text-gray-800">
+                  <p className="text-12 font-semibold text-neutral-800">
                     {normalizeIDRLabel(item.price_estimation)}
                   </p>
                 </div>
@@ -244,26 +249,26 @@ export function EstimatedCostPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-gray-300">
+        <section className="overflow-hidden rounded-xl border border-neutral-300">
           <div className="bg-green-cust text-14 px-4 py-2 font-semibold text-white">
             Total Estimasi Biaya Perbaikan
           </div>
           <div className="space-y-2 p-4 text-xs">
             <div className="flex justify-between">
-              <span className="text-gray-600">Sparepart wajib diganti</span>
+              <span className="text-neutral-600">Sparepart wajib diganti</span>
               <span className="text-14 font-medium">{replaced.length} item</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Sparepart bisa diperbaiki</span>
+              <span className="text-neutral-600">Sparepart bisa diperbaiki</span>
               <span className="text-14 font-medium">{repaired.length} item</span>
             </div>
             <div className="my-4 flex h-px w-full flex-row gap-x-2">
               {Array.from({ length: 16 }).map((_, index) => (
-                <div key={index} className="h-full w-full bg-[#E5E7EB]" />
+                <div key={index} className="h-full w-full bg-[#0f1720]" />
               ))}
             </div>
             <div className="text-16 flex items-baseline justify-between gap-3">
-              <span className="font-medium text-[#374151]">
+              <span className="font-medium text-[#eef4f8]">
                 {coveredByClaim ? 'Anda bayar' : 'Total'}
               </span>
               {/* Klaim disetujui: harga penuh dicoret, diganti sisa yang benar-benar
@@ -273,12 +278,12 @@ export function EstimatedCostPage() {
                   <span className="text-12 text-neutral-500 line-through">
                     {normalizeIDRLabel(totalPrice)}
                   </span>
-                  <span className="font-[600] text-[#37AB87]">
+                  <span className="font-[600] text-[#6ae7c0]">
                     {formatCurrency(claimCustomerPayable)}
                   </span>
                 </span>
               ) : (
-                <span className="font-[600] text-[#37AB87]">{normalizeIDRLabel(totalPrice)}</span>
+                <span className="font-[600] text-[#6ae7c0]">{normalizeIDRLabel(totalPrice)}</span>
               )}
             </div>
             {coveredByClaim && (
@@ -293,7 +298,7 @@ export function EstimatedCostPage() {
 
         <div className="flex items-center justify-center">
           <img src="/assets/Estimated_repair_cost/seru.png" className="mr-2 w-6" alt="" />
-          <p className="text-12 font-semibold text-[#374151]">
+          <p className="text-12 font-semibold text-[#eef4f8]">
             Estimasi dapat berbeda sesuai hasil pengecekan di bengkel resmi
           </p>
         </div>
@@ -302,7 +307,7 @@ export function EstimatedCostPage() {
           <button
             type="button"
             onClick={() => setShowInsuranceDecision(true)}
-            className="w-full rounded-xl border border-[#D8E0F2] bg-white px-4 py-3 text-left shadow-sm"
+            className="drive-card w-full rounded-xl border border-[#223039] px-4 py-3 text-left"
           >
             <p className="text-[12px] font-semibold text-neutral-900">
               Mobil Anda terdeteksi memiliki coverage aktif dari{' '}
@@ -361,7 +366,7 @@ export function EstimatedCostPage() {
             <div className="absolute inset-0 z-30 flex flex-col p-5">
               <div className="relative flex items-start justify-between">
                 <div className="flex w-full justify-center">
-                  <img src={AutoWhiteLogo} alt="" className="w-[40%] object-contain" />
+                  <img src={DriveWhiteLogo} alt="DRIVE" className="w-[46%] object-contain" />
                 </div>
 
                 <button
@@ -374,36 +379,36 @@ export function EstimatedCostPage() {
                 </button>
               </div>
 
-              <p className="text-16 mt-6 bg-linear-to-b from-[#FFF6E3] to-[#FFBC81] bg-clip-text text-center leading-relaxed font-semibold text-transparent">
+              <p className="text-16 mt-6 bg-linear-to-b from-[#131c24] to-[#df873a] bg-clip-text text-center leading-relaxed font-semibold text-transparent">
                 Biaya Perbaikan Terlalu Besar?
                 <br />
                 Lindungi Mobil Anda dengan
                 <br />
-                AutoClaim
+                DRIVE
               </p>
 
-              <div className="absolute inset-0 z-20 h-full w-full rounded-lg bg-linear-to-b from-[#2F569B] from-[55%] to-[#2F569B] opacity-5"></div>
+              <div className="absolute inset-0 z-20 h-full w-full rounded-lg bg-linear-to-b from-[#aded1f] from-[55%] to-[#aded1f] opacity-5"></div>
               <div className="relative z-20 mt-10 flex h-[130px] w-full justify-center rounded-lg bg-white/20 pt-3">
-                <p className="text-16 bg-linear-to-b from-[#FFFFFF] to-[#ADFCDD] bg-clip-text text-center font-[500] text-transparent">
+                <p className="text-16 bg-linear-to-b from-[#131c24] to-[#3adf9e] bg-clip-text text-center font-[500] text-transparent">
                   Ingin klaim asuransi?
                 </p>
               </div>
 
               <div className="relative z-30 mt-auto grid grid-cols-2 gap-3">
                 <button
-                  className="rounded-md bg-linear-to-b from-white to-[#CCCCCC] py-2"
+                  className="rounded-md bg-linear-to-b from-white to-[#0f1720] py-2"
                   onClick={handleUseInsurance}
                 >
-                  <p className="bg-linear-to-b from-[#5A7CBB] to-[#2B3D5E] bg-clip-text text-center font-[500] text-transparent">
+                  <p className="bg-linear-to-b from-[#aded1f] to-[#aded1f] bg-clip-text text-center font-[500] text-transparent">
                     Iya
                   </p>
                 </button>
 
                 <button
-                  className="rounded-md bg-linear-to-b from-white to-[#CCCCCC] py-2"
+                  className="rounded-md bg-linear-to-b from-white to-[#0f1720] py-2"
                   onClick={handleSkipInsurance}
                 >
-                  <p className="bg-linear-to-b from-[#5A7CBB] to-[#2B3D5E] bg-clip-text text-center font-[500] text-transparent">
+                  <p className="bg-linear-to-b from-[#aded1f] to-[#aded1f] bg-clip-text text-center font-[500] text-transparent">
                     Tidak
                   </p>
                 </button>

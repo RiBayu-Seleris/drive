@@ -5,7 +5,7 @@ import type { QuickAction } from '../types';
 const TINT_BLUE = 'bg-deep-blue-50 text-deep-blue-600';
 const TINT_GREEN = 'bg-green-cust/15 text-green-cust';
 const TINT_AMBER = 'bg-warning/15 text-warning';
-const TINT_RED = 'bg-[#E11D48]/10 text-[#E11D48]';
+const TINT_RED = 'bg-[#df3a5e]/10 text-[#e76a85]';
 
 export const WORKSHOP_QUICK_ACTIONS: QuickAction[] = [
   { key: 'jobs', label: 'Antrian Pekerjaan', icon: ClipboardList, tint: TINT_BLUE, to: ROUTES.mitraWorkshopJobs },

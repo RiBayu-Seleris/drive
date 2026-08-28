@@ -227,7 +227,7 @@ export function KemitraanPage() {
       <AppHeader title="Kemitraan Asuransi" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="bg-deep-blue-500 rounded-2xl p-4 text-white">
+        <div className="bg-deep-blue-500 rounded-2xl p-4 text-[#10200a]">
           <div className="flex items-center gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
               <Handshake className="size-5" />
@@ -482,7 +482,7 @@ function PartnershipCard({
   const stamp = row.terminatedAt || row.respondedAt || row.invitedAt;
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="drive-card rounded-2xl p-4">
       {/* Header dapat diketuk agar profil asuransi tetap terjangkau pada semua
           status, bukan hanya saat undangan menunggu jawaban. */}
       <div className="flex items-start gap-3">
@@ -530,7 +530,7 @@ function PartnershipCard({
 
       {/* Undangan hanya bisa dijawab oleh pihak yang diundang. */}
       {row.status === 'PENDING' && row.canRespond && (
-        <div className="mt-3 flex gap-2 border-t border-neutral-100 pt-3">
+        <div className="mt-3 flex gap-2 border-t border-neutral-300 pt-3">
           <Button size="sm" isLoading={busy} onClick={onAccept}>
             Terima
           </Button>
@@ -544,7 +544,7 @@ function PartnershipCard({
       )}
 
       {row.status === 'PENDING' && !row.canRespond && (
-        <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-300 pt-3">
           <span className="text-12 text-neutral-500">Menunggu jawaban asuransi</span>
           <button
             type="button"
@@ -558,7 +558,7 @@ function PartnershipCard({
       )}
 
       {row.status === 'ACTIVE' && (
-        <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-300 pt-3">
           <span className="text-12 text-green-cust font-medium">
             {row.relationType === 'OWNERSHIP'
               ? 'Armada eksklusif — tidak dapat bermitra dengan asuransi lain'
@@ -686,7 +686,7 @@ function InsurerDetailSheet({
             <p className="text-14 font-semibold text-neutral-900">{name}</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {insurer.code && (
-                <span className="text-11 rounded-full bg-neutral-100 px-2 py-0.5 font-medium text-neutral-600">
+                <span className="text-11 rounded-full bg-neutral-200 px-2 py-0.5 font-medium text-neutral-600">
                   {insurer.code}
                 </span>
               )}
@@ -830,7 +830,7 @@ function InviteSheet({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Cari nama asuransi…"
-          className="focus:border-deep-blue-500 focus:ring-deep-blue-200 h-11 w-full rounded-lg border border-gray-300 bg-white pr-4 pl-9 text-sm text-neutral-900 shadow-sm transition placeholder:font-light placeholder:text-neutral-600 focus:ring-2 focus:outline-none"
+          className="focus:border-deep-blue-500 focus:ring-deep-blue-200 h-11 w-full rounded-lg border border-neutral-300 bg-neutral-200 pr-4 pl-9 text-sm text-neutral-900 shadow-sm transition placeholder:font-light placeholder:text-neutral-600 focus:ring-2 focus:outline-none"
         />
       </div>
 
@@ -848,7 +848,7 @@ function InviteSheet({
           candidates.map((candidate) => (
             <div
               key={candidate.id}
-              className="flex items-center gap-3 rounded-xl border border-neutral-100 p-3"
+              className="flex items-center gap-3 rounded-xl border border-neutral-300 p-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-14 truncate font-medium text-neutral-900">{candidate.name}</p>
@@ -860,7 +860,7 @@ function InviteSheet({
                 type="button"
                 disabled={sendingId !== null}
                 onClick={() => handleInvite(candidate)}
-                className="bg-deep-blue-500 text-12 inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 font-medium text-white transition active:scale-95 disabled:opacity-50"
+                className="bg-deep-blue-500 text-12 inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 font-medium text-[#10200a] transition active:scale-95 disabled:opacity-50"
               >
                 <Send className="size-3.5" />
                 {sendingId === candidate.id ? 'Mengirim…' : 'Ajukan'}

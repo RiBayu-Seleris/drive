@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/feedback/StateViews';
 import { toast } from '@/components/feedback/toast';
 import { useMitraStore } from '@/features/auth/store/mitraStore';
 import { extractErrorMessage } from '@/lib/api/client';
+import { Logo } from '@/components/brand/Logo';
 import { MitraShell } from '../../components/MitraShell';
 import { BalanceCard } from '../../components/BalanceCard';
 import { QuickActionGrid } from '../../components/QuickActionGrid';
@@ -38,21 +39,17 @@ export function WorkshopHomePage() {
   }, []);
 
   return (
-    <MitraShell className="bg-neutral-100">
-      <header className="relative z-0 overflow-hidden bg-gradient-to-b from-[#125E6A] to-[#0F3F4A] px-5 pt-12 pb-28 text-white">
-        <img
-          src="/assets/auth/logo-autoclaim.png"
-          alt="AutoClaim"
-          className="mx-auto h-7 w-auto brightness-0 invert"
-        />
+    <MitraShell>
+      <header className="drive-header relative z-0 overflow-hidden px-5 pt-12 pb-28 text-white">
+        <Logo className="mx-auto flex justify-center [&_img]:h-7" />
         <div className="relative z-10 mt-5 flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-full bg-white/20 text-sm font-semibold ring-2 ring-white/30">
               {initials(name)}
             </div>
             <div className="min-w-0">
-              <p className="text-14 truncate font-semibold">{name || 'Bengkel Mitra AutoClaim'}</p>
-              <p className="truncate text-[11px] text-white/70">Mitra Bengkel AutoClaim</p>
+              <p className="text-14 truncate font-semibold">{name || 'Bengkel Mitra DRIVE'}</p>
+              <p className="truncate text-[11px] text-white/70">Mitra Bengkel DRIVE</p>
             </div>
           </div>
           <button

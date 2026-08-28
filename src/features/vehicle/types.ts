@@ -9,6 +9,8 @@ export interface SavedVehicle {
   polisNumber: string;
   polisEnd: string;
   plateImage: string;
+  /** Opsional. Kosong berarti kartu kendaraan jatuh ke ikon mobil. */
+  vehicleImage: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +28,7 @@ export function parseSavedVehicle(json: Record<string, unknown>): SavedVehicle {
     polisNumber: s(json.polis_number),
     polisEnd: s(json.polis_end),
     plateImage: s(json.plate_image),
+    vehicleImage: s(json.vehicle_image),
     createdAt: s(json.created_at),
     updatedAt: s(json.updated_at),
   };
@@ -47,6 +50,7 @@ export interface VehicleFormInput {
   polisNumber?: string;
   polisEnd?: string;
   plateImage?: string;
+  vehicleImage?: string;
 }
 
 export function toCreatePayload(input: VehicleFormInput): Record<string, unknown> {
@@ -60,6 +64,7 @@ export function toCreatePayload(input: VehicleFormInput): Record<string, unknown
     polis_number: input.polisNumber || '-',
     polis_end: input.polisEnd || '-',
     plate_image: input.plateImage ?? '',
+    vehicle_image: input.vehicleImage ?? '',
   };
 }
 
@@ -70,6 +75,7 @@ export function toUpdatePayload(input: VehicleFormInput): Record<string, unknown
     vehicle_color: input.vehicleColor,
     vehicle_year: Number(input.vehicleYear) || 0,
     plate_image: input.plateImage ?? '',
+    vehicle_image: input.vehicleImage ?? '',
   };
 }
 

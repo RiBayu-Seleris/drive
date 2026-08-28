@@ -35,11 +35,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
         aria-required={requiredMark || undefined}
         aria-invalid={Boolean(error)}
         className={cn(
-          'w-full rounded-lg border bg-white px-4 py-3 text-sm text-neutral-900 shadow-sm transition',
+          'w-full rounded-lg border bg-neutral-100 px-4 py-3 text-sm text-neutral-900 shadow-sm transition',
           'placeholder:text-sm placeholder:font-light placeholder:text-neutral-600 focus:ring-2 focus:outline-none disabled:bg-neutral-300 disabled:text-neutral-700',
           error
             ? 'border-danger focus:ring-danger/30'
-            : 'focus:border-deep-blue-500 focus:ring-deep-blue-200 border-gray-300',
+            : 'focus:border-deep-blue-500 focus:ring-deep-blue-200 border-neutral-300',
           className,
         )}
         {...rest}

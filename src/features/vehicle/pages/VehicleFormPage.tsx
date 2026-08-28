@@ -6,6 +6,7 @@ import {
   Camera,
   CheckCircle2,
   ImagePlus,
+  Trash2,
   Loader2,
   ShieldCheck,
   ShieldX,
@@ -18,14 +19,17 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from '@/components/feedback/toast';
+import { AxiosError } from 'axios';
 import { extractErrorMessage } from '@/lib/api/client';
+import { confirm } from '@/components/feedback/confirm';
+import { downscaleImage } from '@/lib/image/downscale';
 import { ROUTES } from '@/app/routes';
 import { CameraCapture } from '@/features/vehicle-scan/components/CameraCapture';
 import { useScanServices } from '@/features/vehicle-scan/services/scanServicesContext';
 import { MAX_PLATE_ATTEMPTS, type InsuranceCoverage } from '@/features/vehicle-scan/services/types';
 import type { CapturedImage } from '@/features/vehicle-scan/types';
 import { normalizePlate, isValidPlate } from '@/features/vehicle-scan/utils/plate';
-import { createVehicle, updateVehicle } from '../api';
+import { createVehicle, requestVehicleTransfer, updateVehicle } from '../api';
 import { VEHICLE_TYPES, hasPolis, type SavedVehicle, type VehicleFormInput } from '../types';
 
 const currentYear = new Date().getFullYear();
@@ -51,6 +55,15 @@ export function VehicleFormPage() {
   const [plateError, setPlateError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  /*
+   * Foto kendaraan — OPSIONAL, dan berbeda dari foto plat.
+   *
+   * Foto plat itu bukti (diambil dari dekat, cuma platnya). Yang ini pengenal:
+   * dipakai sebagai latar kartu di daftar kendaraan, supaya satu mobil bisa
+   * dibedakan dari lainnya sekilas. Karena opsional, kartunya harus tetap
+   * wajar tanpa foto — dan memang begitu, jatuh ke ikon mobil.
+   */
+  const [vehiclePhoto, setVehiclePhoto] = useState<{ file: File; url: string } | null>(null);
   const [plateScanStatus, setPlateScanStatus] = useState<PlateScanStatus>('idle');
   const [recognizedPlate, setRecognizedPlate] = useState(initial?.vehiclePlate ?? '');
   const [confirmedPlateValue, setConfirmedPlateValue] = useState(initial?.vehiclePlate ?? '');
@@ -88,6 +101,12 @@ export function VehicleFormPage() {
       if (proofPhoto) URL.revokeObjectURL(proofPhoto.url);
     };
   }, [proofPhoto]);
+
+  useEffect(() => {
+    return () => {
+      if (vehiclePhoto) URL.revokeObjectURL(vehiclePhoto.url);
+    };
+  }, [vehiclePhoto]);
 
   const checkInsuranceCoverage = async (
     rawPlate: string,
@@ -256,6 +275,9 @@ export function VehicleFormPage() {
       }
 
       let uploadedProof = initial?.plateImage ?? '';
+      // Kosong berarti "tidak diubah" di backend, jadi aman dibiarkan kosong
+      // saat pengguna tidak menambahkan foto.
+      let uploadedVehiclePhoto = '';
       if (proofPhoto) {
         try {
           uploadedProof = await services.upload.upload(
@@ -271,6 +293,23 @@ export function VehicleFormPage() {
           );
         }
       }
+      if (vehiclePhoto) {
+        try {
+          uploadedVehiclePhoto = await services.upload.upload(
+            vehiclePhoto.file,
+            `vehicle_photo_${vehiclePlate}`,
+          );
+        } catch (error) {
+          // Foto kendaraan sifatnya pelengkap. Kegagalan mengunggahnya tidak
+          // boleh menggagalkan penyimpanan kendaraannya.
+          toast.warning(
+            extractErrorMessage(
+              error,
+              'Foto kendaraan belum bisa diunggah. Data kendaraan tetap disimpan.',
+            ),
+          );
+        }
+      }
 
       await mutation.mutateAsync({
         vehiclePlate,
@@ -282,9 +321,47 @@ export function VehicleFormPage() {
         polisNumber: resolvedCoverage?.insured ? resolvedCoverage.policyNumber : '-',
         polisEnd: resolvedCoverage?.insured ? resolvedCoverage.validUntil : '-',
         plateImage: uploadedProof,
+        vehicleImage: uploadedVehiclePhoto,
       });
     } catch (error) {
       setIsUploading(false);
+
+      /*
+       * 409 = plat sudah tercatat di akun lain.
+       *
+       * Sebelumnya ini berhenti sebagai pesan merah biasa, dan user tidak
+       * punya langkah berikutnya — plat unik secara global, dan dia tidak bisa
+       * menghapus data dari akun orang. Paling sering ini terjadi pada mobil
+       * bekas: platnya masih tertinggal di akun pemilik sebelumnya.
+       *
+       * Sekarang penolakannya sekalian menawarkan jalan keluar. Nama dan email
+       * pemohon ikut terkirim, jadi izinnya diminta lebih dulu — bukan
+       * dibocorkan diam-diam.
+       */
+      const status = error instanceof AxiosError ? error.response?.status : undefined;
+      if (status === 409 && !isEdit) {
+        const normalizedPlate = normalizePlate(plate);
+        const ok = await confirm({
+          title: 'Plat terdaftar di akun lain',
+          message:
+            `Plat ${normalizedPlate} masih tercatat di akun pengguna lain. ` +
+            `Kalau Anda baru saja membeli kendaraan ini, kami bisa mengirim permintaan ` +
+            `agar pemiliknya melepas.\n\n` +
+            `Nama dan email Anda akan ikut dikirim, supaya dia tahu siapa yang meminta.`,
+          confirmText: 'Kirim Permintaan',
+        });
+        if (!ok) return;
+        try {
+          await requestVehicleTransfer(normalizedPlate);
+          toast.success(
+            'Permintaan terkirim. Anda bisa menambahkan kendaraan ini setelah pemiliknya melepas.',
+          );
+        } catch (requestError) {
+          toast.error(extractErrorMessage(requestError, 'Permintaan gagal terkirim.'));
+        }
+        return;
+      }
+
       toast.error(extractErrorMessage(error, 'Gagal menyimpan kendaraan.'));
     }
   };
@@ -434,6 +511,78 @@ export function VehicleFormPage() {
           error={yearError || undefined}
         />
 
+        {/*
+          Foto kendaraan — opsional, dipakai sebagai latar kartu di daftar.
+          Panduannya menyebut sudut pengambilan, karena foto dari depan lurus
+          atau dari samping rata membuat mobilnya sulit dibedakan; menyerong
+          menampilkan wajah dan bodi sekaligus.
+        */}
+        <div>
+          <label className="hud-readout mb-2 block text-[10.5px] tracking-[0.14em] text-neutral-600 uppercase">
+            Foto Kendaraan
+          </label>
+          {/*
+            Saat mengubah, foto yang sudah tersimpan ikut ditampilkan. Tanpa
+            ini pengguna mengira fotonya hilang, lalu mengunggah ulang yang
+            sama — padahal kolom kosong di backend berarti "jangan ubah".
+          */}
+          {!vehiclePhoto && isEdit && initial?.vehicleImage ? (
+            <div className="relative overflow-hidden rounded-xl border border-[#22313c]">
+              <img src={initial.vehicleImage} alt="" className="h-40 w-full object-cover" />
+              <label className="absolute right-2 bottom-2 cursor-pointer rounded-lg bg-[#0b1218]/85 px-3 py-1.5 text-[12px] font-medium text-neutral-900">
+                Ganti foto
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const picked = event.target.files?.[0];
+                    event.target.value = '';
+                    if (!picked) return;
+                    const file = await downscaleImage(picked);
+                    setVehiclePhoto({ file, url: URL.createObjectURL(file) });
+                  }}
+                />
+              </label>
+            </div>
+          ) : vehiclePhoto ? (
+            <div className="relative overflow-hidden rounded-xl border border-[#22313c]">
+              <img src={vehiclePhoto.url} alt="" className="h-40 w-full object-cover" />
+              <button
+                type="button"
+                aria-label="Hapus foto kendaraan"
+                onClick={() => {
+                  URL.revokeObjectURL(vehiclePhoto.url);
+                  setVehiclePhoto(null);
+                }}
+                className="bg-danger/90 absolute top-2 right-2 flex size-8 items-center justify-center rounded-full text-[#1e0606]"
+              >
+                <Trash2 className="size-4" aria-hidden />
+              </button>
+            </div>
+          ) : (
+            <label className="flex h-28 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#2f3f4a] bg-neutral-200 text-center">
+              <ImagePlus className="text-deep-blue-500 size-6" aria-hidden />
+              <span className="text-12 font-medium text-neutral-700">Tambah foto (opsional)</span>
+              <span className="text-11 px-6 text-neutral-600">
+                Ambil dari depan agak menyerong, supaya bodi samping ikut terlihat
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (event) => {
+                  const picked = event.target.files?.[0];
+                  event.target.value = '';
+                  if (!picked) return;
+                  const file = await downscaleImage(picked);
+                  setVehiclePhoto({ file, url: URL.createObjectURL(file) });
+                }}
+              />
+            </label>
+          )}
+        </div>
+
         {isEdit ? (
           <VehicleProofPhotoField
             required={false}
@@ -492,7 +641,7 @@ function InsuranceDetectionPanel({
   let icon = <ShieldX className="size-5 text-neutral-500" />;
   let title = 'Status Asuransi Plat';
   let description = 'Ambil foto plat untuk membaca nomor kendaraan dan status asuransi.';
-  let toneClass = 'border-neutral-300 bg-white';
+  let toneClass = 'border-neutral-300 bg-neutral-100';
 
   if (plateScanStatus === 'reading') {
     icon = <Loader2 className="text-deep-blue-500 size-5 animate-spin" />;
@@ -507,33 +656,33 @@ function InsuranceDetectionPanel({
       : 'Sistem sedang mencocokkan plat dengan data polis aktif.';
     toneClass = 'border-deep-blue-100 bg-deep-blue-50';
   } else if (insuranceStatus === 'insured') {
-    icon = <ShieldCheck className="size-5 text-emerald-600" />;
+    icon = <ShieldCheck className="size-5 text-success" />;
     title = 'Asuransi Terdeteksi';
     description = `${recognizedPlate ? `Output OCR: ${recognizedPlate}. ` : ''}${coverage?.policyNumber ?? 'Polis aktif'}${
       coverage?.validUntil ? ` · Berlaku sampai ${formatVehicleDate(coverage.validUntil)}` : ''
     }`;
-    toneClass = 'border-emerald-100 bg-emerald-50';
+    toneClass = 'border-success/30 bg-success/15';
   } else if (insuranceStatus === 'uninsured') {
-    icon = <ShieldX className="size-5 text-orange-500" />;
+    icon = <ShieldX className="size-5 text-orange" />;
     title = 'Belum Ada Asuransi Aktif';
     description = `${recognizedPlate ? `Output OCR: ${recognizedPlate}. ` : ''}Kendaraan tetap dapat disimpan tanpa data polis.`;
-    toneClass = 'border-orange-100 bg-orange-50';
+    toneClass = 'border-orange/30 bg-orange/15';
   } else if (insuranceStatus === 'error') {
     icon = <ShieldX className="text-danger size-5" />;
     title = 'Cek Asuransi Gagal';
     description = 'Coba cek ulang setelah memastikan plat sudah benar.';
     toneClass = 'border-danger/20 bg-danger/5';
   } else if (plateScanStatus === 'success') {
-    icon = <CheckCircle2 className="size-5 text-emerald-600" />;
+    icon = <CheckCircle2 className="size-5 text-success" />;
     title = 'Plat Berhasil Dibaca';
     description = recognizedPlate
       ? `Output OCR: ${recognizedPlate}. Anda masih bisa mengoreksi sebelum menyimpan.`
       : 'Plat sudah terisi otomatis. Anda masih bisa mengoreksi sebelum menyimpan.';
-    toneClass = 'border-emerald-100 bg-emerald-50';
+    toneClass = 'border-success/30 bg-success/15';
   } else if (plateScanStatus === 'failed') {
     title = 'Plat Belum Terbaca';
     description = 'Isi nomor plat manual, lalu cek asuransi.';
-    toneClass = 'border-orange-100 bg-orange-50';
+    toneClass = 'border-orange/30 bg-orange/15';
   }
 
   return (
@@ -732,7 +881,7 @@ function VehicleProofPhotoField({
               type="button"
               aria-label="Hapus foto"
               onClick={onClear}
-              className="text-danger flex size-9 items-center justify-center rounded-full bg-white shadow"
+              className="text-danger flex size-9 items-center justify-center rounded-full bg-neutral-100 shadow"
             >
               <X className="size-5" />
             </button>
@@ -741,7 +890,7 @@ function VehicleProofPhotoField({
             type="button"
             aria-label={hasPhoto ? 'Ganti foto' : 'Ambil foto'}
             onClick={onOpenCamera}
-            className="bg-deep-blue-500 flex size-9 items-center justify-center rounded-full text-white shadow"
+            className="bg-deep-blue-500 flex size-9 items-center justify-center rounded-full text-[#10200a] shadow"
           >
             <Camera className="size-5" />
           </button>

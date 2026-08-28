@@ -23,11 +23,11 @@ interface MoodConfig {
 
 // Skor 1..5 → label + warna (merah → hijau), sesuai mockup 7.x.
 const MOODS: Record<number, MoodConfig> = {
-  1: { label: 'Very bad', color: '#E35151' },
-  2: { label: 'Bad', color: '#EE793D' },
-  3: { label: 'Okay', color: '#F59E0B' },
-  4: { label: 'Very good', color: '#37AB87' },
-  5: { label: 'Excellent', color: '#059669' },
+  1: { label: 'Very bad', color: '#e76a6a' },
+  2: { label: 'Bad', color: '#e7946a' },
+  3: { label: 'Okay', color: '#e7b86a' },
+  4: { label: 'Very good', color: '#6ae7c0' },
+  5: { label: 'Excellent', color: '#6ae7c0' },
 };
 
 /** Wajah yang berubah dari murung (skor rendah) ke senyum (skor tinggi). */
@@ -51,7 +51,7 @@ export function RatingPage() {
   const [comment, setComment] = useState('');
 
   const mood = score > 0 ? MOODS[score] : null;
-  const faceColor = mood?.color ?? '#9CA3AF';
+  const faceColor = mood?.color ?? '#223039';
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -69,7 +69,7 @@ export function RatingPage() {
   });
 
   return (
-    <PageContainer className="bg-white">
+    <PageContainer className="bg-neutral-200">
       <AppHeader showLogo />
       <div className="flex flex-1 flex-col px-6 pt-6">
         <h1 className="text-center text-20 font-semibold text-neutral-900">
@@ -99,7 +99,7 @@ export function RatingPage() {
                     'flex items-center justify-center rounded-full border-2 border-white transition',
                     active ? 'size-9 shadow-md' : 'size-4',
                   )}
-                  style={{ backgroundColor: active ? faceColor : '#9CA3AF' }}
+                  style={{ backgroundColor: active ? faceColor : '#223039' }}
                 >
                   {active && (
                     <svg viewBox="0 0 100 100" className="size-5" aria-hidden>

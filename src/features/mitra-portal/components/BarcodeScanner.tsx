@@ -90,7 +90,7 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
 
   if (error) {
     return (
-      <div className="text-12 rounded-xl bg-neutral-100 px-4 py-6 text-center text-neutral-700">
+      <div className="drive-card text-12 rounded-xl px-4 py-6 text-center text-neutral-700">
         {error}
       </div>
     );

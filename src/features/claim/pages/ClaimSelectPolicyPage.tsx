@@ -5,6 +5,7 @@ import { Camera, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/Spinner';
 import { ErrorState, EmptyState } from '@/components/feedback/StateViews';
 import { formatCurrency } from '@/lib/utils/format';
@@ -126,6 +127,7 @@ function providerName(policy: InsurancePolicy): string {
 export function ClaimSelectPolicyPage() {
   const navigate = useNavigate();
   const setPolicy = useClaimDraftStore((state) => state.setPolicy);
+  const setPolicyOwnedByOther = useClaimDraftStore((state) => state.setPolicyOwnedByOther);
   const vehiclePlate = useScanStore((state) => state.plate.number);
   const vehicleInfo = useScanStore((state) => state.vehicleInfo);
   const damageResult = useDamageStore((state) => state.result);
@@ -144,6 +146,18 @@ export function ClaimSelectPolicyPage() {
         .sort((a, b) => policyRank(a) - policyRank(b)),
     [data, vehiclePlate],
   );
+  /*
+   * Dua angka, dua arti — dan selama ini cuma yang kedua dipakai.
+   *
+   * `data`             = seluruh polis milik akun ini
+   * `matchingPolicies` = yang plat nomornya cocok dengan mobil yang dipindai
+   *
+   * Keduanya bisa kosong karena sebab yang sangat berbeda. User yang punya
+   * tiga polis lalu memindai mobil keempat sebelumnya dibilang "Belum ada
+   * polis" — pernyataan tentang AKUN, padahal masalahnya ada pada MOBIL.
+   * Reaksi wajarnya mengira polisnya hilang.
+   */
+  const hasAnyPolicy = (data ?? []).length > 0;
   const displayPlate = formatPlate(vehiclePlate || matchingPolicies[0]?.vehiclePlate);
   const damagePercent = clampPercent(damageResult?.repair.percentage ?? 0);
   const hasScanResult = Boolean(damageResult);
@@ -170,7 +184,7 @@ export function ClaimSelectPolicyPage() {
       <AppHeader showLogo className="h-[86px] shadow-[0_8px_24px_rgb(32_41_68_/_0.08)]" />
 
       <div className="flex flex-1 flex-col px-5 pt-5 pb-8">
-        <section className="relative h-[184px] overflow-hidden rounded-lg bg-[#47586f] shadow-[0_14px_28px_rgb(32_41_68_/_0.12)]">
+        <section className="relative h-[184px] overflow-hidden rounded-lg bg-[#aded1f] shadow-[0_14px_28px_rgb(32_41_68_/_0.12)]">
           <div className="absolute inset-0 bg-[linear-gradient(135deg,#eef2f7_0%,#8795a8_44%,#263143_100%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.64))]" />
           <img
@@ -192,7 +206,7 @@ export function ClaimSelectPolicyPage() {
           */}
           <button
             type="button"
-            className="absolute top-4 right-4 inline-flex h-11 items-center gap-2 rounded-full bg-[#f6a300] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgb(246_163_0_/_0.28)]"
+            className="absolute top-4 right-4 inline-flex h-11 items-center gap-2 rounded-full bg-[#dfa73a] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgb(246_163_0_/_0.28)]"
             onClick={() => {
               if (scanAvailable) {
                 navigate(ROUTES.damageAnalysis);
@@ -247,14 +261,49 @@ export function ClaimSelectPolicyPage() {
             <div className="mt-5">
               <EmptyState
                 icon={<ShieldCheck className="size-7" />}
-                title="Belum ada polis"
-                description="Tidak ada polis yang sesuai dengan plat kendaraan hasil scan."
+                title={hasAnyPolicy ? 'Mobil ini belum diasuransikan' : 'Belum ada polis'}
+                description={
+                  hasAnyPolicy
+                    ? 'Polis Anda yang lain tidak terdaftar untuk plat ini. Klaim hanya bisa diajukan lewat polis mobil yang bersangkutan.'
+                    : 'Anda belum punya polis sama sekali. Beli dulu supaya bisa mengajukan klaim.'
+                }
                 action={
                   <Button fullWidth={false} onClick={() => navigate(ROUTES.insuranceSearch)}>
                     Beli Asuransi
                   </Button>
                 }
               />
+
+              {/*
+                Jalan keluar untuk mobil yang sudah berpindah tangan: polisnya
+                masih atas nama pemilik lama, tapi yang mengajukan pemilik baru.
+                Backend menerima klaim tanpa nomor polis — bukan ditolak,
+                melainkan dilempar ke telaah manual (POLICY_REQUIRED). Sebelum
+                ini alurnya buntu: satu-satunya tombol adalah "Beli Asuransi".
+
+                Kalimatnya sengaja menyebut syarat DAN konsekuensinya, supaya
+                tidak jadi pintu belakang yang dicoba sembarang orang lalu
+                membanjiri antrean telaah.
+              */}
+              <Card className="mt-5 space-y-2">
+                <p className="text-13 font-semibold text-neutral-900">
+                  Mobil ini polisnya atas nama orang lain?
+                </p>
+                <p className="text-12 leading-relaxed text-neutral-600">
+                  Ajukan klaim dengan melampirkan dokumen pemilik polis. Klaim akan ditinjau
+                  petugas, tidak diproses otomatis.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-1"
+                  onClick={() => {
+                    setPolicyOwnedByOther(true);
+                    navigate(ROUTES.claimDocuments);
+                  }}
+                >
+                  Ajukan Tanpa Polis Saya
+                </Button>
+              </Card>
             </div>
           ) : (
             <div className="mt-5 flex flex-col gap-5">
@@ -285,7 +334,7 @@ function AiScanSummary({
   hasResult: boolean;
 }) {
   return (
-    <div className="mt-5 rounded-lg border border-neutral-300 bg-white px-5 py-4 shadow-[0_12px_24px_rgb(32_41_68_/_0.06)]">
+    <div className="mt-5 rounded-lg border border-neutral-300 bg-neutral-100 px-5 py-4 shadow-[0_12px_24px_rgb(32_41_68_/_0.06)]">
       <div className="flex items-center justify-between gap-3">
         <div className="text-deep-blue-500 flex items-center gap-2">
           <Zap className="size-5" />
@@ -294,11 +343,11 @@ function AiScanSummary({
         <div
           className={cn(
             'flex items-center gap-2 text-[12px] font-semibold',
-            hasResult ? 'text-[#2fbd84]' : 'text-neutral-600',
+            hasResult ? 'text-[#6ae7b5]' : 'text-neutral-600',
           )}
         >
           <span
-            className={cn('size-2.5 rounded-full', hasResult ? 'bg-[#2fbd84]' : 'bg-neutral-500')}
+            className={cn('size-2.5 rounded-full', hasResult ? 'bg-[#3adf9d]' : 'bg-neutral-500')}
           />
           {hasResult ? 'SELESAI' : 'BELUM ADA'}
         </div>
@@ -336,7 +385,7 @@ function PolicyCard({
   return (
     <article
       className={cn(
-        'rounded-lg border bg-white px-5 py-6 shadow-[0_16px_28px_rgb(32_41_68_/_0.07)]',
+        'rounded-lg border bg-neutral-100 px-5 py-6 shadow-[0_16px_28px_rgb(32_41_68_/_0.07)]',
         claimable ? 'border-transparent' : 'border-neutral-300 bg-neutral-200/45 shadow-none',
       )}
     >
@@ -422,11 +471,11 @@ function policyBadge(state: PolicyViewState): { label: string; className: string
   const base = 'inline-flex h-9 shrink-0 items-center rounded-full px-4 text-[11px] font-semibold';
   switch (state) {
     case 'soon':
-      return { label: 'SEGERA BERAKHIR', className: cn(base, 'bg-[#fff5df] text-[#f6a300]') };
+      return { label: 'SEGERA BERAKHIR', className: cn(base, 'bg-[#131c24] text-[#e7bd6a]') };
     case 'active':
-      return { label: 'AKTIF', className: cn(base, 'bg-[#e9fbf2] text-[#35bf78]') };
+      return { label: 'AKTIF', className: cn(base, 'bg-[#131c24] text-[#6ae7a6]') };
     case 'scheduled':
-      return { label: 'BELUM MULAI', className: cn(base, 'bg-[#eaf1fb] text-[#4b61a1]') };
+      return { label: 'BELUM MULAI', className: cn(base, 'bg-[#131c24] text-[#c2f347]') };
     case 'expired':
       return { label: 'PROTEKSI BERAKHIR', className: cn(base, 'bg-neutral-400 text-neutral-800') };
     case 'inactive':
@@ -438,8 +487,8 @@ function ProviderMark({ label, muted }: { label: string; muted: boolean }) {
   return (
     <div
       className={cn(
-        'inline-flex h-11 min-w-[86px] items-center gap-1.5 bg-white px-0 text-[16px] font-bold',
-        muted ? 'text-neutral-800 opacity-80' : 'text-[#00539b]',
+        'inline-flex h-11 min-w-[86px] items-center gap-1.5 bg-neutral-100 px-0 text-[16px] font-bold',
+        muted ? 'text-neutral-800 opacity-80' : 'text-[#c2f347]',
       )}
     >
       <span className="truncate">{label}</span>

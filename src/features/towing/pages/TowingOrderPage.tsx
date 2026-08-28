@@ -118,7 +118,7 @@ export function TowingOrderPage() {
 
         {dropoffType === 'WORKSHOP' &&
           (selectedWorkshop ? (
-            <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="drive-card rounded-xl border border-neutral-200 p-4">
               <div className="flex items-start gap-3">
                 <span className="bg-deep-blue-50 text-deep-blue-500 grid size-10 shrink-0 place-items-center rounded-lg">
                   <Wrench className="size-5" />
@@ -145,7 +145,7 @@ export function TowingOrderPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-4 text-center">
+            <div className="drive-card rounded-xl border border-dashed border-neutral-300 p-4 text-center">
               <p className="text-13 font-semibold text-neutral-900">Pilih bengkel tujuan dulu</p>
               <p className="text-12 mt-1 text-neutral-600">
                 Detail bengkel akan dipakai sebagai tujuan towing.

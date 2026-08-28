@@ -44,7 +44,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className={cn('w-full', containerClassName)}>
       {label && (
-        <label htmlFor={inputId} className="mb-2 block text-sm font-medium text-neutral-800">
+        <label
+          htmlFor={inputId}
+          className="hud-readout mb-2 block text-[10.5px] tracking-[0.14em] text-neutral-600 uppercase"
+        >
           {label}
           {requiredMark && (
             // aria-hidden karena status wajib sudah disampaikan lewat
@@ -69,13 +72,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${inputId}-error` : undefined}
           className={cn(
-            'block h-10 w-full rounded-lg border bg-white px-4 text-sm text-neutral-900 shadow-sm transition',
-            'placeholder:text-sm placeholder:font-light placeholder:text-neutral-600 focus:ring-2 focus:outline-none disabled:bg-neutral-300 disabled:text-neutral-700',
-            leftIcon && 'pl-10',
-            isPassword && 'pr-11',
+            'block h-12 w-full rounded-xl border bg-neutral-200 px-4 text-sm text-neutral-900 transition',
+            'shadow-[inset_0_1px_2px_rgba(0,0,0,0.45)]',
+            'placeholder:text-sm placeholder:font-light placeholder:text-neutral-500',
+            'focus:ring-2 focus:outline-none disabled:bg-neutral-300 disabled:text-neutral-700',
+            leftIcon && 'pl-11',
+            isPassword && 'pr-12',
             error
               ? 'border-danger focus:ring-danger/30'
-              : 'focus:border-deep-blue-500 focus:ring-deep-blue-200 border-gray-300',
+              : 'border-[#22313c] focus:border-deep-blue-500 focus:ring-deep-blue-500/25 focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.45),0_0_18px_-6px_rgba(173,237,31,0.6)]',
             className,
           )}
           {...rest}

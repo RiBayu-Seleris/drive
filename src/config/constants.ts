@@ -21,7 +21,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const APP_INFO = {
-  name: 'AutoClaim',
+  name: 'DRIVE',
   tagline: 'Klaim asuransi kendaraan dalam hitungan menit',
   supportWhatsapp: '6281234567890',
   supportEmail: 'support@autoclaim.id',

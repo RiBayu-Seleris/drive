@@ -150,7 +150,7 @@ export function TarikSaldoPage() {
 
       <div className="px-5 py-4 pb-32">
         {/* Hero saldo — navy sesuai desain "Tarik Saldo" */}
-        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#1B6BA8] to-[#0A4A83] p-5 text-white shadow-lg">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-5 text-white shadow-lg">
           <p className="text-12 text-white/70">Saldo Tersedia</p>
           <p className="mt-1 text-3xl font-bold">{rupiah(balance)}</p>
           <Wallet
@@ -171,7 +171,7 @@ export function TarikSaldoPage() {
           </button>
         </div>
         {addingBank && (
-          <div className="mt-3 space-y-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="drive-card mt-3 space-y-3 rounded-2xl border border-neutral-200 p-4">
             <div>
               <label className="text-14 mb-1.5 block font-medium text-neutral-900">
                 Bank
@@ -179,7 +179,7 @@ export function TarikSaldoPage() {
               <select
                 value={bankCode}
                 onChange={(event) => setBankCode(event.target.value)}
-                className="text-14 w-full rounded-lg border border-neutral-400 bg-white px-3 py-2.5 text-neutral-900"
+                className="text-14 w-full rounded-lg border border-neutral-400 bg-neutral-200 px-3 py-2.5 text-neutral-900"
               >
                 <option value="">
                   {bankOptions.length === 0 ? 'Memuat daftar bank…' : 'Pilih bank'}
@@ -234,7 +234,7 @@ export function TarikSaldoPage() {
         )}
         <div className="mt-3 space-y-3">
           {banks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-4 text-center">
+            <div className="drive-card rounded-2xl border border-dashed border-neutral-300 p-4 text-center">
               <p className="text-12 font-medium text-neutral-700">Belum ada rekening tujuan.</p>
               <p className="mt-1 text-[11px] text-neutral-500">
                 Tambahkan rekening sebelum mengajukan penarikan saldo.
@@ -249,8 +249,8 @@ export function TarikSaldoPage() {
                 type="button"
                 onClick={() => setBankId(bank.id)}
                 className={cn(
-                  'flex w-full items-center justify-between rounded-2xl border bg-white p-4 text-left transition',
-                  active ? 'border-deep-blue-500 ring-deep-blue-100 ring-2' : 'border-neutral-100',
+                  'drive-card flex w-full items-center justify-between rounded-2xl border p-4 text-left transition',
+                  active ? 'border-deep-blue-500 ring-deep-blue-100 ring-2' : 'border-neutral-300',
                 )}
               >
                 <div>
@@ -283,7 +283,7 @@ export function TarikSaldoPage() {
             Tarik Semua
           </button>
         </div>
-        <div className="mt-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="drive-card mt-3 rounded-2xl border border-neutral-200 p-4">
           <div className="flex items-center gap-2 border-b border-neutral-200 pb-3">
             <span className="text-2xl font-semibold text-neutral-400">Rp</span>
             <input
@@ -312,8 +312,8 @@ export function TarikSaldoPage() {
         </div>
 
         {/* Info biaya admin */}
-        <div className="text-12 mt-4 flex gap-2 rounded-xl bg-neutral-100 p-3 text-neutral-600">
-          <span className="bg-deep-blue-500 mt-0.5 grid size-4 shrink-0 place-items-center rounded-full text-[10px] font-bold text-white">
+        <div className="drive-card text-12 mt-4 flex gap-2 rounded-xl p-3 text-neutral-600">
+          <span className="bg-deep-blue-500 mt-0.5 grid size-4 shrink-0 place-items-center rounded-full text-[10px] font-bold text-[#10200a]">
             i
           </span>
           Biaya admin penarikan ke rekening Bank Lain akan dikenakan {rupiah(WITHDRAW_ADMIN_FEE)}.
@@ -321,7 +321,7 @@ export function TarikSaldoPage() {
       </div>
 
       {/* Bar aksi sticky */}
-      <div className="pb-safe fixed bottom-5 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-200 bg-white px-5 pt-3 pb-4 shadow-[0_-4px_14px_rgba(0,0,0,0.06)]">
+      <div className="pb-safe fixed bottom-5 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-neutral-200 bg-neutral-100 px-5 pt-3 pb-4 shadow-[0_-4px_14px_rgba(0,0,0,0.06)]">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-12 text-neutral-500">Total Penarikan</span>
           <span className="text-deep-blue-600 text-16 font-bold">{rupiah(amount)}</span>
