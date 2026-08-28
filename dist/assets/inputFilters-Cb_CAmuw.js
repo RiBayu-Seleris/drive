@@ -1,0 +1,1 @@
+function r(e){e.currentTarget.value=e.currentTarget.value.replace(/\D/g,"")}function a(e){e.currentTarget.value=e.currentTarget.value.replace(/[^0-9+]/g,"")}function u(e){e.currentTarget.value=e.currentTarget.value.toUpperCase().replace(/[^A-Z0-9]/g,"")}export{r as a,u as b,a as k};

@@ -1,0 +1,1 @@
+const a=/^[A-Z]{1,2}\s?\d{1,4}\s?[A-Z]{0,3}$/;function i(e){const n=e.toUpperCase().replace(/[^A-Z0-9]/g," ").replace(/\s+/g," ").trim(),t=/^([A-Z]{1,2})\s?(\d{1,4})\s?([A-Z]{0,3})$/.exec(n);if(!t)return n;const[,r,s,o]=t;return[r,s,o].filter(Boolean).join(" ")}function c(e){return a.test(i(e))}export{c as i,i as n};
