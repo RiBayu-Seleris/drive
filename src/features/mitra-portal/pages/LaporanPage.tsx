@@ -71,6 +71,26 @@ export function LaporanPage() {
   );
   const title = partnerType === 'workshop' ? 'Laporan Bengkel' : 'Laporan Sopir Towing';
 
+  /*
+   * `growthPercent` membandingkan 30 hari terakhir dengan 30 hari SEBELUMNYA
+   * (lihat mitraCompletionGrowth di gateway) — bukan target.
+   *
+   * Kalimat lama berbunyi "Kinerja Anda bulan ini melampaui target sebesar X%".
+   * Tidak ada target di sistem ini, dan X bisa negatif — mitra yang ordernya
+   * turun 40% tetap dipuji "melampaui target sebesar -40%". Saat belum ada
+   * laporan sama sekali, bunyinya "melampaui target sebesar 0%".
+   */
+  const completedReports = stats?.completed ?? 0;
+  const growth = stats?.growthPercent ?? 0;
+  const performanceLine =
+    completedReports === 0
+      ? 'Belum ada laporan yang selesai dalam 30 hari terakhir.'
+      : growth > 0
+        ? `Naik ${growth}% dibanding 30 hari sebelumnya.`
+        : growth < 0
+          ? `Turun ${Math.abs(growth)}% dibanding 30 hari sebelumnya.`
+          : 'Jumlahnya sama dengan 30 hari sebelumnya.';
+
   return (
     <MitraShell>
       <AppHeader title={title} />
@@ -80,15 +100,16 @@ export function LaporanPage() {
       ) : (
         <div className="px-5 py-4">
           {/* Hero kinerja */}
-          <div className="from-deep-blue-500 to-deep-blue-700 relative overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-white shadow-lg">
-            <p className="text-12 text-white/70">Total Laporan Selesai</p>
+          {/* Tinta GELAP di atas hijau merek. Sebelumnya `text-white` +
+              `text-white/70`: putih di atas #aded1f praktis tidak terbaca, dan
+              gradiennya (500 -> 700) hanya berpindah dari hijau terang ke hijau
+              lebih terang, jadi bidangnya rata dan menyilaukan. */}
+          <div className="text-on-brand relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#c2f347] to-[#83bd04] p-5 shadow-lg">
+            <p className="text-12 text-on-brand/70">Total Laporan Selesai</p>
             <p className="mt-1 text-4xl font-bold">{stats?.completed ?? 0}</p>
-            <p className="text-12 mt-2 max-w-[80%] text-white/70">
-              Kinerja Anda bulan ini melampaui target sebesar {stats?.growthPercent ?? 0}%.
-              Pertahankan profesionalitas Anda.
-            </p>
+            <p className="text-12 text-on-brand/75 mt-2 max-w-[80%]">{performanceLine}</p>
             <ClipboardCheck
-              className="absolute -right-3 -bottom-3 size-24 text-white/10"
+              className="text-on-brand/15 absolute -right-3 -bottom-3 size-24"
               strokeWidth={1}
             />
           </div>
@@ -129,12 +150,15 @@ export function LaporanPage() {
           </div>
 
           {/* CTA marketplace */}
-          <div className="mt-5 flex flex-col items-center rounded-2xl border border-dashed border-neutral-300 bg-white/50 px-5 py-6 text-center">
+          {/* `bg-white/50` dulu menghasilkan balok abu pekat di atas halaman
+              gelap, dan teks sekundernya nyaris tenggelam. Panel cekung yang
+              sama dengan kartu lain jauh lebih tenang. */}
+          <div className="mt-5 flex flex-col items-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-5 py-6 text-center">
             <span className="bg-deep-blue-50 text-deep-blue-500 grid size-12 place-items-center rounded-full">
               <Search className="size-5" />
             </span>
             <p className="text-14 mt-3 font-semibold text-neutral-900">Cari Penugasan Lain?</p>
-            <p className="text-12 mt-1 text-neutral-500">
+            <p className="text-12 mt-1 text-neutral-600">
               Gunakan fitur jelajah untuk menemukan laporan yang belum terdata di sistem Anda.
             </p>
             <button

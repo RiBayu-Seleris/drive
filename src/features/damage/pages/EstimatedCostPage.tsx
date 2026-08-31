@@ -388,7 +388,7 @@ export function EstimatedCostPage() {
               </p>
 
               <div className="absolute inset-0 z-20 h-full w-full rounded-lg bg-linear-to-b from-[#aded1f] from-[55%] to-[#aded1f] opacity-5"></div>
-              <div className="relative z-20 mt-10 flex h-[130px] w-full justify-center rounded-lg bg-white/20 pt-3">
+              <div className="relative z-20 mt-10 flex h-[130px] w-full justify-center rounded-lg bg-on-brand/15 pt-3">
                 <p className="text-16 bg-linear-to-b from-[#131c24] to-[#3adf9e] bg-clip-text text-center font-[500] text-transparent">
                   Ingin klaim asuransi?
                 </p>

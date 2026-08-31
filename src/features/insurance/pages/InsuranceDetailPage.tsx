@@ -74,7 +74,7 @@ export function InsuranceDetailPage() {
 
       <header className="bg-gradient-to-br from-[#131c24] to-[#16240a] px-4 pt-5 pb-7">
         <div className="flex items-start justify-between gap-3">
-          <span className="text-12 inline-flex items-center gap-1.5 rounded-full bg-[#aded1f] px-3.5 py-2 font-semibold text-white">
+          <span className="text-12 inline-flex items-center gap-1.5 rounded-full bg-[#aded1f] text-on-brand px-3.5 py-2 font-semibold">
             <ShieldCheck className="size-4" />
             {coverageLabel(product)}
           </span>

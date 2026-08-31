@@ -1229,10 +1229,10 @@ function VehicleCard({
         {photo ? (
           <img src={photo} alt={title} className="h-full w-full object-cover" />
         ) : (
-          <CarFront className="size-16 text-white/70" />
+          <CarFront className="text-on-brand/60 size-16" />
         )}
         {verified && (
-          <span className="text-12 absolute top-3 right-3 rounded-lg bg-[#aded1f] px-3 py-1.5 font-semibold text-white">
+          <span className="text-12 absolute top-3 right-3 rounded-lg bg-[#aded1f] text-on-brand px-3 py-1.5 font-semibold">
             Terverifikasi
           </span>
         )}

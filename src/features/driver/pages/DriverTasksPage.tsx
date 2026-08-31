@@ -53,7 +53,6 @@ import { keepDigits, keepPhone } from '@/lib/utils/inputFilters';
 import { uploadFilePublic } from '@/lib/upload/publicUpload';
 import { formatCurrency, formatDateTime } from '@/lib/utils/format';
 import { Logo } from '@/components/brand/Logo';
-import { TowingHero } from '@/components/brand/MitraArt';
 import {
   changeDriverPassword,
   getDriverProfile,
@@ -302,6 +301,13 @@ export function DriverTasksPage() {
   useEffect(() => {
     return subscribeDriverTowingOrderChanges({
       onChange: () => {
+        void queryClient.invalidateQueries({ queryKey: ['driver-tasks'] });
+      },
+      // Admin mengubah status atau menonaktifkan sopir dari papan dispatch.
+      // Tanpa ini layar sopir tetap menampilkan status lamanya sampai halaman
+      // dimuat ulang — dan dia baru sadar saat menekan tombol.
+      onSelfChange: () => {
+        void queryClient.invalidateQueries({ queryKey: ['driver-profile'] });
         void queryClient.invalidateQueries({ queryKey: ['driver-tasks'] });
       },
     });
@@ -681,17 +687,30 @@ function DriverHome({
 
   return (
     <main className="flex flex-1 flex-col bg-neutral-200 pb-20">
-      {/* Hero: ilustrasi sebagai lapisan dasar full-bleed, logo & profil
-          menumpang di atasnya. Latarnya gelap, bukan hijau terang — teks putih
-          di atas hijau merek cuma 3,2:1. */}
-      <section className="drive-header relative text-white">
-        <TowingHero aria-hidden className="pointer-events-none block w-full" />
-        <div className="absolute inset-x-0 top-0 px-4 pt-4">
+      {/* HERO FOTO — perlakuannya sama persis dengan hero beranda user:
+          foto full-bleed, peluruhan gradien ke bawah, lalu sapuan hijau merek
+          dari kiri atas. Mitra dulu cuma dapat strip gelap. */}
+      <section className="relative overflow-hidden text-white">
+        <img
+          src="/assets/mitra/hero-driver-towing.webp"
+          alt=""
+          fetchPriority="high"
+          className="pointer-events-none absolute inset-0 size-full object-cover object-center"
+        />
+        {/* Peluruhan ke bawah: foto melebur ke warna halaman, tanpa garis potong. */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,17,0.55)_0%,rgba(7,12,17,0.35)_30%,rgba(15,23,32,0.92)_76%,#0f1720_100%)]" />
+        {/* Sapuan hijau merek dari kiri atas — sumber cahaya yang sama dengan kartu. */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_68%_at_16%_6%,rgba(173,237,31,0.3),transparent_58%)]" />
+        <div className="drive-header drive-fade-b pointer-events-none absolute inset-0 opacity-35" />
+        {/* `pt-12` menyamakan jarak dari tepi atas dengan beranda admin derek dan
+            bengkel. Sebelumnya `pt-4` — di peramban tidak kentara, tapi di ponsel
+            logo berisiko tertimpa bilah status. */}
+        <div className="relative z-10 px-4 pt-12 pb-24">
           <div className="flex justify-center">
             <Logo className="[&_img]:h-8" />
           </div>
 
-          <div className="mt-5 flex items-center justify-between gap-4">
+          <div className="mt-10 flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               {profile?.photoUrl ? (
                 <img
@@ -840,13 +859,13 @@ function DriverOrders({
     <>
       <AppHeader showLogo onBack={onBack} />
       <main className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-24">
-        <section className="relative min-h-[120px] overflow-hidden rounded-xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-4 text-white shadow-sm">
+        <section className="relative min-h-[120px] overflow-hidden rounded-xl bg-linear-to-br from-[#c2f347] to-[#83bd04] p-4 text-on-brand shadow-sm">
           <div className="relative z-10">
-            <p className="text-[12px] font-semibold tracking-wide text-white/60 uppercase">
+            <p className="text-[12px] font-semibold tracking-wide text-on-brand/70 uppercase">
               Status Driver
             </p>
             <h1 className="mt-1 text-[20px] leading-tight font-medium">{copy.title}</h1>
-            <span className="text-12 mt-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 font-medium">
+            <span className="text-12 mt-3 inline-flex items-center gap-2 rounded-full bg-on-brand/12 px-3 py-1.5 font-medium">
               <span className="size-2 rounded-full" style={{ backgroundColor: copy.dot }} />
               {copy.pill}
             </span>
@@ -1044,7 +1063,7 @@ function DriverAccount({
                 className="size-26 rounded-xl object-cover shadow-sm"
               />
             ) : (
-              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-3xl font-semibold text-white shadow-sm">
+              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-on-brand text-3xl font-semibold shadow-sm">
                 {driverInitial(displayName)}
               </div>
             )}
@@ -1070,7 +1089,7 @@ function DriverAccount({
         <Card className={DRIVER_CARD}>
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-white">
+              <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-on-brand">
                 <Truck className="size-6" />
               </span>
               <div className="min-w-0">
@@ -1599,7 +1618,7 @@ function BiodataScreen({
                 className="size-26 rounded-xl object-cover shadow-sm"
               />
             ) : (
-              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-3xl font-semibold text-white shadow-sm">
+              <div className="grid size-22 place-items-center rounded-xl bg-[#aded1f] text-on-brand text-3xl font-semibold shadow-sm">
                 {driverInitial(displayName)}
               </div>
             )}
@@ -1667,7 +1686,7 @@ function BiodataScreen({
               <StatusTile label="KM Total" value={`${kmEstimate(tasks)}`} />
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-[#223039]/40 bg-[#131c24] p-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-white">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#aded1f] text-on-brand">
                 <Truck className="size-5" />
               </span>
               <div className="min-w-0">
@@ -2004,12 +2023,17 @@ function HomeMenuCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[108px] flex-col items-center justify-center gap-2.5 rounded-[18px] bg-neutral-200 px-2 py-4 text-center shadow-[0_14px_28px_rgb(0_0_0_/_0.35)]"
+      className="flex min-h-[108px] flex-col items-center justify-start gap-2.5 rounded-[18px] bg-neutral-200 px-2 py-4 text-center shadow-[0_14px_28px_rgb(0_0_0_/_0.35)]"
     >
       <span className={cn('grid size-12 place-items-center rounded-xl', tint)}>
         <Icon className="size-6" />
       </span>
-      <span className="text-12 leading-tight font-normal text-[#aebbc4]">{label}</span>
+      {/* Tinggi dua baris dipesan di muka: tanpa ini label satu kata seperti
+          "Order" membuat kartunya lebih pendek dan ikonnya tidak sebaris
+          dengan kartu di kiri-kanannya. */}
+      <span className="text-12 flex min-h-[2.6em] items-start justify-center leading-tight font-normal text-[#aebbc4]">
+        {label}
+      </span>
     </button>
   );
 }
@@ -2381,7 +2405,7 @@ function DriverProgress({ status }: { status: string }) {
                 className={cn(
                   'grid size-6 shrink-0 place-items-center rounded-full border-2',
                   active && 'border-[#dd422c] bg-[#df4e3a] text-white',
-                  done && 'border-[#aded1f] bg-[#aded1f] text-white',
+                  done && 'border-[#aded1f] bg-[#aded1f] text-on-brand',
                   !active && !done && 'border-neutral-300 bg-neutral-200 text-neutral-400',
                 )}
               >
@@ -2461,7 +2485,7 @@ function HistoryFilter({
       onClick={onClick}
       className={cn(
         'text-12 h-8 rounded-full px-3 font-normal whitespace-nowrap transition',
-        active ? 'bg-[#aded1f] text-white' : 'bg-[#131c24] text-[#eef4f8]',
+        active ? 'bg-[#aded1f] text-on-brand' : 'bg-[#131c24] text-[#eef4f8]',
       )}
     >
       {label}
@@ -2554,7 +2578,7 @@ function FloatingSupport() {
       <button
         type="button"
         onClick={() => toast.info('Nomor bantuan belum tersedia')}
-        className="pointer-events-auto absolute right-6 bottom-0 grid size-14 place-items-center rounded-full bg-[#aded1f] text-white shadow-lg"
+        className="pointer-events-auto absolute right-6 bottom-0 grid size-14 place-items-center rounded-full bg-[#aded1f] text-on-brand shadow-lg"
         aria-label="Bantuan operasional"
       >
         <Headphones className="size-6" />

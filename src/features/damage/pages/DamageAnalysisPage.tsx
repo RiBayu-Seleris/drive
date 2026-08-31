@@ -467,7 +467,7 @@ export function DamageAnalysisPage() {
         {!isAuthenticated && (
           <div className="absolute inset-x-0 top-[36%] z-50 px-5">
             <div className="drive-card flex flex-row gap-x-3 rounded-2xl px-4 py-5 shadow-[0_14px_35px_0_rgba(15,23,42,0.14)]">
-              <div className="mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#aded1f] to-[#aded1f] p-2 text-white">
+              <div className="mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#c2f347] to-[#83bd04] p-2 text-on-brand">
                 <Info className="h-full w-full" />
               </div>
               <div className="flex min-w-0 flex-col items-start justify-center gap-y-3">

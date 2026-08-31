@@ -30,7 +30,10 @@ export function QuickActionGrid({ actions }: { actions: QuickAction[] }) {
                 </span>
               )
             )}
-            <span className="text-12 leading-tight font-medium text-neutral-600">
+            {/* Tinggi dua baris dipesan di muka: label satu kata seperti
+                "Order" membuat kartunya lebih pendek dan isinya tidak sebaris
+                dengan kartu di kiri-kanannya. */}
+            <span className="text-12 flex min-h-[2.6em] items-start justify-center leading-tight font-medium text-neutral-600">
               {action.label}
             </span>
           </button>

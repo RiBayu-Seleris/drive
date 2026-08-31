@@ -82,7 +82,7 @@ export function OrderTrackingPage() {
               type="button"
               aria-label="Pesan"
               onClick={() => toast.info('Buka pesan…')}
-              className="bg-deep-blue-700 grid size-10 place-items-center rounded-full text-white"
+              className="bg-deep-blue-700 text-on-brand grid size-10 place-items-center rounded-full"
             >
               <MessageSquare className="size-4" />
             </button>

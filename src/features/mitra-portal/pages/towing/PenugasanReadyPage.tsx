@@ -111,7 +111,7 @@ export function PenugasanReadyPage() {
           </div>
           <div className="mt-2 flex items-center gap-3">
             <div className="from-deep-blue-700 to-deep-blue-500 grid size-12 place-items-center rounded-xl bg-gradient-to-br">
-              <Truck className="size-6 text-white/40" />
+              <Truck className="text-on-brand/45 size-6" />
             </div>
             <div>
               <p className="text-14 font-semibold text-neutral-900">{fleet.fleetType}</p>

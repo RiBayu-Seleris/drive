@@ -177,7 +177,11 @@ export async function settleDriverSettlementCode(code: string): Promise<Settleme
   return parseSettlementFlag(res.data?.data ?? {});
 }
 
-function handleDriverOrderStreamChunk(buffer: string, onChange: () => void): string {
+function handleDriverOrderStreamChunk(
+  buffer: string,
+  onChange: () => void,
+  onSelfChange?: () => void,
+): string {
   const blocks = buffer.split('\n\n');
   const rest = blocks.pop() ?? '';
   for (const block of blocks) {
@@ -188,13 +192,20 @@ function handleDriverOrderStreamChunk(buffer: string, onChange: () => void): str
       if (line.startsWith('event:')) event = line.slice(6).trim();
       if (line.startsWith('data:')) hasData = true;
     }
-    if (event === 'orders' && hasData) onChange();
+    if (!hasData) continue;
+    if (event === 'orders') onChange();
+    // Admin menonaktifkan sopir atau mengubah statusnya dari papan dispatch.
+    // Tanpa ini aplikasi sopir masih menampilkan dirinya "Tersedia" padahal
+    // sistem sudah tidak menugaskannya.
+    if (event === 'driver') onSelfChange?.();
   }
   return rest;
 }
 
 export function subscribeDriverTowingOrderChanges(args: {
   onChange: () => void;
+  /** Dipanggil saat data sopir ini diubah admin (dinonaktifkan / status). */
+  onSelfChange?: () => void;
   onError?: () => void;
 }): () => void {
   let stopped = false;
@@ -226,7 +237,7 @@ export function subscribeDriverTowingOrderChanges(args: {
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          buffer = handleDriverOrderStreamChunk(buffer, args.onChange);
+          buffer = handleDriverOrderStreamChunk(buffer, args.onChange, args.onSelfChange);
         }
       })
       .catch(() => {

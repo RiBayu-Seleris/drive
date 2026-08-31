@@ -237,7 +237,7 @@ export function PreviewVehiclePage() {
               <button
                 type="button"
                 onClick={usePendingCapture}
-                className="h-11 rounded-lg bg-[#aded1f] px-3 text-xs font-semibold text-white transition active:scale-[0.98]"
+                className="h-11 rounded-lg bg-[#aded1f] text-on-brand px-3 text-xs font-semibold transition active:scale-[0.98]"
               >
                 Gunakan Foto
               </button>

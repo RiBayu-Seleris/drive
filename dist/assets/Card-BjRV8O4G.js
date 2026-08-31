@@ -1,0 +1,1 @@
+import{j as e}from"./react-vendor-ByvxUYVy.js";import{c as a}from"./index-CatqVeo-.js";function t({className:r,...o}){return e.jsx("div",{className:a("drive-card rounded-xl border border-neutral-300 p-4",r),...o})}export{t as C};

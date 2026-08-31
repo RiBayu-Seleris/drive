@@ -6,7 +6,6 @@ import { useMitraStore } from '@/features/auth/store/mitraStore';
 import { extractErrorMessage } from '@/lib/api/client';
 import { toast } from '@/components/feedback/toast';
 import { Logo } from '@/components/brand/Logo';
-import { TowingHero } from '@/components/brand/MitraArt';
 import { MitraShell } from '../../components/MitraShell';
 import { BalanceCard } from '../../components/BalanceCard';
 import { QuickActionGrid } from '../../components/QuickActionGrid';
@@ -88,16 +87,23 @@ export function TowingHomePage() {
 
   return (
     <MitraShell>
-      {/* HERO gelap dengan pendar hijau — sumber cahaya yang sama dengan
-          seluruh aplikasi. Sebelumnya blok hijau terang dengan teks putih di
-          atasnya; kontrasnya cuma 3,2:1 dan warnanya menyendiri dari tema. */}
-      <header className="drive-header relative z-0 overflow-hidden px-5 pt-12 pb-32 text-white">
-        <TowingHero
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 w-full"
+      {/* HERO FOTO — perlakuannya sama persis dengan hero beranda user:
+          foto full-bleed, peluruhan gradien ke bawah, lalu sapuan hijau merek
+          dari kiri atas. Mitra dulu cuma dapat strip gelap. */}
+      <header className="relative z-0 overflow-hidden px-5 pt-12 pb-20 text-white">
+        <img
+          src="/assets/mitra/hero-admin-towing.webp"
+          alt=""
+          fetchPriority="high"
+          className="pointer-events-none absolute inset-0 size-full object-cover object-center"
         />
+        {/* Peluruhan ke bawah: foto melebur ke warna halaman, tanpa garis potong. */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,17,0.55)_0%,rgba(7,12,17,0.35)_30%,rgba(15,23,32,0.92)_76%,#0f1720_100%)]" />
+        {/* Sapuan hijau merek dari kiri atas — sumber cahaya yang sama dengan kartu. */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_68%_at_16%_6%,rgba(173,237,31,0.3),transparent_58%)]" />
+        <div className="drive-header drive-fade-b pointer-events-none absolute inset-0 opacity-35" />
         <Logo className="relative z-10 mx-auto flex justify-center [&_img]:h-7" />
-        <div className="relative z-10 mt-5 flex items-start justify-between">
+        <div className="relative z-10 mt-10 flex items-start justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-full bg-white/20 text-sm font-semibold ring-2 ring-white/60">
               {initials(name)}

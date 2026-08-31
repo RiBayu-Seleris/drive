@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle2, Flag, MapPin, Send, Star, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -15,6 +15,7 @@ import {
   driverStatusLabel,
   fleetStatusLabel,
   getMitraTowingDrivers,
+  subscribeMitraTowingOrderChanges,
   getMitraTowingFleets,
   isAvailableDriver,
   isAvailableFleet,
@@ -45,28 +46,46 @@ export function PenugasanPage() {
   const [notes, setNotes] = useState(order?.notes ?? '');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [driverRows, fleetRows] = await Promise.all([
-          getMitraTowingDrivers(),
-          getMitraTowingFleets(),
-        ]);
-        setDrivers(driverRows);
-        setFleets(fleetRows);
-        const firstDriver = driverRows.find(isAvailableDriver) ?? driverRows[0];
-        const firstFleet = fleetRows.find(isAvailableFleet) ?? fleetRows[0];
-        setSelectedDriver(firstDriver?.id ?? 0);
-        setSelectedFleet(firstFleet?.id ?? 0);
-      } catch (error) {
-        toast.error(extractErrorMessage(error, 'Gagal memuat sopir atau armada.'));
-      } finally {
-        setLoading(false);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const [driverRows, fleetRows] = await Promise.all([
+        getMitraTowingDrivers(),
+        getMitraTowingFleets(),
+      ]);
+      setDrivers(driverRows);
+      setFleets(fleetRows);
+      /*
+       * Pilihan yang SUDAH dibuat tidak ditimpa saat penyegaran diam-diam.
+       * Kalau tidak, sopir pilihan admin bisa melompat sendiri di tengah
+       * proses hanya karena ada sopir lain yang berganti status.
+       */
+      if (!silent) {
+        setSelectedDriver((driverRows.find(isAvailableDriver) ?? driverRows[0])?.id ?? 0);
+        setSelectedFleet((fleetRows.find(isAvailableFleet) ?? fleetRows[0])?.id ?? 0);
       }
-    };
-    void load();
+    } catch (error) {
+      if (!silent) toast.error(extractErrorMessage(error, 'Gagal memuat sopir atau armada.'));
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  /*
+   * Halaman inilah yang paling berbahaya kalau datanya basi: admin bisa
+   * menugaskan sopir yang beberapa detik lalu menekan "offline" di
+   * aplikasinya. Daftar disegarkan begitu ada perubahan ketersediaan.
+   */
+  useEffect(() => {
+    return subscribeMitraTowingOrderChanges({
+      onChange: () => void load(true),
+      onDriversChange: () => void load(true),
+    });
+  }, [load]);
 
   const availableDrivers = useMemo(() => drivers.filter(isAvailableDriver), [drivers]);
   const availableFleets = useMemo(() => fleets.filter(isAvailableFleet), [fleets]);
@@ -138,7 +157,7 @@ export function PenugasanPage() {
             <div className="drive-card rounded-2xl p-4">
               <div className="flex items-center gap-3">
                 <div className="from-deep-blue-700 to-deep-blue-500 grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br">
-                  <Truck className="size-7 text-white/40" />
+                  <Truck className="text-on-brand/45 size-7" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-14 font-semibold text-neutral-900">
@@ -220,7 +239,7 @@ export function PenugasanPage() {
                         active ? 'border-deep-blue-500 bg-deep-blue-500' : 'border-neutral-300',
                       )}
                     >
-                      {active && <CheckCircle2 className="size-5 text-white" />}
+                      {active && <CheckCircle2 className="text-on-brand size-5" />}
                     </span>
                   </button>
                 );

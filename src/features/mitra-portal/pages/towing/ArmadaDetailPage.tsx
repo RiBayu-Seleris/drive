@@ -207,12 +207,12 @@ export function ArmadaDetailPage() {
             <img src={armada.photo} alt={armada.name} className="h-44 w-full object-cover" />
           ) : (
             <div className="from-deep-blue-700 to-deep-blue-500 grid h-44 w-full place-items-center bg-gradient-to-br">
-              <Truck className="size-16 text-white/30" />
+              <Truck className="text-on-brand/35 size-16" />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
-          <div className="absolute right-0 bottom-0 left-0 p-4 text-white">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+          <div className="text-on-brand absolute right-0 bottom-0 left-0 p-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-on-brand/12 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
               <span className="bg-green-cust size-1.5 rounded-full" />
               {available ? 'Aktif · Siap Beroperasi' : 'Sedang Bertugas'}
             </span>

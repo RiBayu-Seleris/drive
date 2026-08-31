@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Phone, Star, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -15,6 +15,7 @@ import {
   driverStatusLabel,
   fleetTypeLabel,
   getMitraTowingDrivers,
+  subscribeMitraTowingOrderChanges,
   type MitraTowingDriver,
 } from '../../api';
 
@@ -50,21 +51,40 @@ export function SopirListPage() {
   const [drivers, setDrivers] = useState<MitraTowingDriver[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
+  /*
+   * `silent` menyegarkan tanpa status memuat dan tanpa toast — dipakai saat
+   * pembaruan datang dari SSE, supaya daftarnya tidak berkedip dan jaringan
+   * putus tidak memunculkan pesan galat berulang.
+   */
+  const load = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
     getMitraTowingDrivers()
-      .then((items) => {
-        if (active) setDrivers(items);
+      .then(setDrivers)
+      .catch((error) => {
+        if (!silent) toast.error(extractErrorMessage(error, 'Gagal memuat sopir.'));
       })
-      .catch((error) => toast.error(extractErrorMessage(error, 'Gagal memuat sopir.')))
       .finally(() => {
-        if (active) setLoading(false);
+        if (!silent) setLoading(false);
       });
-    return () => {
-      active = false;
-    };
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  /*
+   * Sopir menekan "offline" di aplikasinya sendiri.
+   *
+   * Perubahannya tidak menyentuh order mana pun, jadi tanpa langganan ini admin
+   * baru melihatnya setelah memuat ulang halaman — dan sempat menugaskan sopir
+   * yang sebenarnya sudah tidak siap.
+   */
+  useEffect(() => {
+    return subscribeMitraTowingOrderChanges({
+      onChange: () => load(true),
+      onDriversChange: () => load(true),
+    });
+  }, [load]);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();

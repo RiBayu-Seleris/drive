@@ -404,7 +404,11 @@ export function reassignReasonLabel(reason: string): string {
   }
 }
 
-function handleTowingOrderStreamChunk(buffer: string, onChange: () => void): string {
+function handleTowingOrderStreamChunk(
+  buffer: string,
+  onChange: () => void,
+  onDriversChange?: () => void,
+): string {
   const blocks = buffer.split('\n\n');
   const rest = blocks.pop() ?? '';
   for (const block of blocks) {
@@ -415,13 +419,20 @@ function handleTowingOrderStreamChunk(buffer: string, onChange: () => void): str
       if (line.startsWith('event:')) event = line.slice(6).trim();
       if (line.startsWith('data:')) hasData = true;
     }
-    if (event === 'orders' && hasData) onChange();
+    if (!hasData) continue;
+    if (event === 'orders') onChange();
+    // Sopir menekan "offline" di aplikasinya sendiri: tidak ada order yang
+    // berubah, jadi peristiwanya dipisah supaya yang ditarik ulang hanya
+    // daftar sopir, bukan seluruh papan order.
+    if (event === 'drivers') onDriversChange?.();
   }
   return rest;
 }
 
 export function subscribeMitraTowingOrderChanges(args: {
   onChange: () => void;
+  /** Dipanggil saat ketersediaan/keaktifan sopir berubah dari sisi mana pun. */
+  onDriversChange?: () => void;
   onError?: () => void;
 }): () => void {
   let stopped = false;
@@ -453,7 +464,7 @@ export function subscribeMitraTowingOrderChanges(args: {
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          buffer = handleTowingOrderStreamChunk(buffer, args.onChange);
+          buffer = handleTowingOrderStreamChunk(buffer, args.onChange, args.onDriversChange);
         }
       })
       .catch(() => {
