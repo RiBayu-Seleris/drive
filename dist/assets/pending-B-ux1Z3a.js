@@ -1,0 +1,1 @@
+import{s as n,K as e}from"./index-ByPsHT8f.js";function i(a){n.setJSON(e.pendingPayment,a)}function s(){return n.getJSON(e.pendingPayment)}function m(){n.remove(e.pendingPayment)}export{m as c,s as l,i as s};

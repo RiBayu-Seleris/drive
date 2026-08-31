@@ -136,6 +136,38 @@ export async function getRecommendations(
     .map(parsePlace);
 }
 
+/**
+ * Layanan darurat terdekat (derek / rumah sakit) — TANPA login.
+ *
+ * Memakai `/v1/recommender/emergency`, varian publik dari endpoint rekomendasi.
+ * Layar darurat berada di alur scanning yang memang terbuka untuk tamu; versi
+ * bertoken (`/v1/recommender/`) membalas 401 dan membuat halamannya gagal muat
+ * bagi orang yang belum punya akun — justru di layar yang paling dibutuhkan
+ * saat mobilnya mogok.
+ *
+ * `Authorization: undefined` mematikan penyisipan token: endpointnya publik,
+ * dan token kedaluwarsa tidak boleh ikut memicu alur "sesi berakhir" di sini.
+ */
+export async function getEmergencyServices(
+  target: 'towing' | 'hospital',
+  coords: { latitude: number; longitude: number } = DEFAULT_LOCATION,
+): Promise<RecommendationPlace[]> {
+  const res = await userApi.post<{ data?: { recommendations?: unknown[] } }>(
+    '/v1/recommender/emergency',
+    {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      target: RECOMMENDER_TARGET[target],
+      claim_number: '',
+    },
+    { headers: { Authorization: undefined } },
+  );
+  const list = res.data?.data?.recommendations ?? [];
+  return list
+    .filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null)
+    .map(parsePlace);
+}
+
 export async function createWorkshopVisitRequest(payload: {
   targetWorkshopId: number;
   inferenceTicket?: string;

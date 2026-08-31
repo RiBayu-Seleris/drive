@@ -10,7 +10,7 @@ import { LoadingState } from '@/components/ui/Spinner';
 import { EmptyState, ErrorState } from '@/components/feedback/StateViews';
 import { DEFAULT_LOCATION } from '@/config/constants';
 import { ROUTES } from '@/app/routes';
-import { getRecommendations } from '@/features/workshop/api';
+import { getEmergencyServices } from '@/features/workshop/api';
 
 /**
  * Layanan darurat terdekat — derek dan rumah sakit.
@@ -42,7 +42,7 @@ export function EmergencyServicePage({ variant }: { variant: 'hospital' | 'towin
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['recommendations', variant, coords],
-    queryFn: () => getRecommendations(isTowing ? 'towing' : 'hospital', coords),
+    queryFn: () => getEmergencyServices(isTowing ? 'towing' : 'hospital', coords),
   });
 
   const places = data ?? [];
