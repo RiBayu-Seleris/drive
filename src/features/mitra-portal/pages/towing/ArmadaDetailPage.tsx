@@ -299,24 +299,24 @@ export function ArmadaDetailPage() {
         </div>
 
         {/* Pengemudi utama */}
-        <div className="bg-deep-blue-700 mt-4 rounded-2xl p-4 text-white">
-          <p className="text-[11px] text-white/60">PENGEMUDI UTAMA</p>
+        <div className="bg-deep-blue-700 text-on-brand mt-4 rounded-2xl p-4">
+          <p className="text-[11px] text-on-brand/70">PENGEMUDI UTAMA</p>
           <div className="mt-2 flex items-center gap-3">
-            <div className="grid size-12 place-items-center rounded-full bg-white/20 text-sm font-semibold">
+            <div className="grid size-12 place-items-center rounded-full bg-on-brand/12 text-sm font-semibold">
               {initials(armada.driverName ?? '')}
             </div>
             <div className="min-w-0">
               <p className="text-14 font-semibold">{armada.driverName}</p>
-              <p className="text-[11px] text-white/60">{armada.driverSince}</p>
+              <p className="text-[11px] text-on-brand/70">{armada.driverSince}</p>
             </div>
           </div>
-          <div className="mt-3 flex gap-6 border-t border-white/10 pt-3">
+          <div className="mt-3 flex gap-6 border-t border-on-brand/15 pt-3">
             <div>
-              <p className="text-[11px] text-white/60">Status Unit</p>
+              <p className="text-[11px] text-on-brand/70">Status Unit</p>
               <p className="text-sm font-bold">{armada.statusLabel}</p>
             </div>
             <div>
-              <p className="text-[11px] text-white/60">Total Tugas</p>
+              <p className="text-[11px] text-on-brand/70">Total Tugas</p>
               <p className="text-sm font-bold">{armada.trips?.length ?? 0}+ tugas</p>
             </div>
           </div>
@@ -366,7 +366,7 @@ export function ArmadaDetailPage() {
                   'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition disabled:opacity-60',
                   active
                     ? 'border-deep-blue-500 bg-deep-blue-50'
-                    : 'border-neutral-200 hover:bg-neutral-50',
+                    : 'border-neutral-200 hover:bg-neutral-200',
                 )}
               >
                 <span

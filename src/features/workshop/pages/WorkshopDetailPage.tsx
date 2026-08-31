@@ -191,7 +191,7 @@ export function WorkshopDetailPage() {
   const isOpen = place.openStatus.toUpperCase() !== 'CLOSED' && place.openStatus !== 'Tutup';
 
   return (
-    <PageContainer className="bg-neutral-200 pb-10">
+    <PageContainer className="bg-neutral-200 pb-0">
       {/* Hero */}
       <div className="relative h-44 w-full shrink-0 bg-neutral-300">
         {place.imageUrl ? (
@@ -269,42 +269,44 @@ export function WorkshopDetailPage() {
       </div>
 
       {/* Footer aksi */}
-      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-neutral-100 px-5 py-3">
-        {tab === 'overview' ? (
-          <div className="flex flex-col gap-3">
-            {/* Klaim yang sudah disetujui: pilih bengkel ini sebagai tempat perbaikan. */}
-            {claimNumber && (
-              <Button
-                leftIcon={<Wrench className="size-4.5" />}
-                isLoading={repairMutation.isPending}
-                onClick={() => repairMutation.mutate()}
-              >
-                <span className="text-[14px]">Perbaiki di Bengkel Ini</span>
-              </Button>
-            )}
-            <div className="flex gap-3">
-              <Button
-                variant={claimNumber ? 'outline' : 'primary'}
-                leftIcon={<Truck className="size-5" />}
-                onClick={() => setTowingSheetOpen(true)}
-              >
-                Pesan Towing
-              </Button>
-              <Button
-                variant="outline"
-                leftIcon={<Navigation className="size-5" />}
-                isLoading={visitMutation.isPending}
-                onClick={() => visitMutation.mutate()}
-              >
-                Antar Mandiri
-              </Button>
+      <div className="pb-safe sticky bottom-0 border-t border-neutral-300 bg-neutral-100 px-5">
+        <div className="h-auto w-full py-3">
+          {tab === 'overview' ? (
+            <div className="flex flex-col gap-3">
+              {/* Klaim yang sudah disetujui: pilih bengkel ini sebagai tempat perbaikan. */}
+              {claimNumber && (
+                <Button
+                  leftIcon={<Wrench className="size-4.5" />}
+                  isLoading={repairMutation.isPending}
+                  onClick={() => repairMutation.mutate()}
+                >
+                  <span className="text-[14px]">Perbaiki di Bengkel Ini</span>
+                </Button>
+              )}
+              <div className="flex gap-3">
+                <Button
+                  variant={claimNumber ? 'outline' : 'primary'}
+                  leftIcon={<Truck className="size-5" />}
+                  onClick={() => setTowingSheetOpen(true)}
+                >
+                  Pesan Towing
+                </Button>
+                <Button
+                  variant="outline"
+                  leftIcon={<Navigation className="size-5" />}
+                  isLoading={visitMutation.isPending}
+                  onClick={() => visitMutation.mutate()}
+                >
+                  Antar Mandiri
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <Button leftIcon={<Navigation className="size-5" />} onClick={() => setTab('overview')}>
-            Mulai
-          </Button>
-        )}
+          ) : (
+            <Button leftIcon={<Navigation className="size-5" />} onClick={() => setTab('overview')}>
+              Mulai
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Sheet: Set Lokasi Penjemputan (6.2.1) / Towing tidak tersedia (6.2.2) */}

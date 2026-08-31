@@ -123,7 +123,7 @@ export function LaporanDetailPage() {
           </button>
           <div className="drive-card relative aspect-square overflow-hidden rounded-xl">
             <div className="grid size-full place-items-center">
-              <ImageIcon className="size-8 text-neutral-300" />
+              <ImageIcon className="size-8 text-neutral-500" />
             </div>
             <button
               type="button"

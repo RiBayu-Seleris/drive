@@ -31,6 +31,14 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* ---------- Permukaan & teks (gelap) ---------- */
+  /*
+   * neutral-50 WAJIB ada. Tanpa definisi ini Tailwind memakai bawaannya —
+   * oklch(98.5% 0 0), alias putih — sehingga setiap `bg-neutral-50` jadi blok
+   * putih menyilaukan di atas kartu gelap, dan `hover:bg-neutral-50` membuat
+   * baris berkedip putih saat disentuh. Tema ini hanya menimpa 100–900, jadi
+   * angka di luar itu diam-diam jatuh ke palet bawaan.
+   */
+  --color-neutral-50: #0b1218; /* panel cekung di DALAM kartu (paling dalam) */
   --color-neutral-100: #131c24; /* kartu / panel terangkat */
   --color-neutral-200: #0f1720; /* permukaan halus */
   --color-neutral-300: #223039; /* garis & pembatas */
@@ -42,6 +50,16 @@
   --color-neutral-900: #eef4f8; /* teks utama */
 
   /* ---------- Hijau DRIVE (primary) ---------- */
+  /*
+   * Tinta di atas permukaan hijau merek.
+   *
+   * Hijau DRIVE itu TERANG (#aded1f), jadi teks di atasnya harus gelap. Nilai
+   * ini sudah dipakai puluhan kali sebagai `text-[#10200a]`; dijadikan token
+   * supaya `text-on-brand/70` tersedia untuk baris sekunder — dulu orang
+   * memakai `text-white/70` di sana dan hasilnya nyaris tidak terbaca.
+   */
+  --color-on-brand: #10200a;
+
   --color-deep-blue-50: #16240a;
   --color-deep-blue-100: #1f3310;
   --color-deep-blue-200: #2e4a13;

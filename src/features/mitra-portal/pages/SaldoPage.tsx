@@ -63,15 +63,15 @@ export function SaldoPage() {
       ) : (
         <div className="px-5 py-4">
           {/* Kartu total saldo (navy, sesuai desain) */}
-          <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-5 text-white shadow-lg">
-            <p className="text-12 text-white/70">Total Saldo</p>
+          <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#c2f347] to-[#83bd04] p-5 text-on-brand shadow-lg">
+            <p className="text-12 text-on-brand/70">Total Saldo</p>
             <p className="mt-1 flex items-baseline gap-1.5">
-              <span className="text-14 font-semibold text-white/80">Rp</span>
+              <span className="text-14 font-semibold text-on-brand/75">Rp</span>
               <span className="text-3xl font-bold tracking-tight">
                 {(saldo?.balance ?? 0).toLocaleString('id-ID')}
               </span>
             </p>
-            <span className="text-[11px] mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 font-medium">
+            <span className="text-[11px] mt-4 inline-flex items-center gap-1.5 rounded-full bg-on-brand/12 px-3 py-1.5 font-medium">
               <BadgeCheck className="size-3.5" />
               Akun Terverifikasi
             </span>

@@ -64,17 +64,23 @@ export function WorkshopQueuePage() {
       <AppHeader title="Antrian Bengkel" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="bg-deep-blue-500 rounded-2xl p-4 text-[#10200a]">
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
-              <Wrench className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-14 font-semibold">{waiting} mobil menunggu dikerjakan</p>
-              <p className="text-12 text-white/70">
-                Semua pekerjaan di sini klaimnya sudah disetujui asuransi
-              </p>
-            </div>
+        {/*
+          Kartu gelap dengan aksen hijau — pola yang dipakai seluruh aplikasi
+          ini. Sebelumnya berupa slab hijau terang setinggi penuh dengan baris
+          kedua `text-white/70`: putih di atas #aded1f praktis tidak terbaca,
+          dan bidang hijau sebesar itu menyilaukan di tema gelap.
+        */}
+        <div className="drive-card flex items-center gap-3 p-4">
+          <span className="drive-chip grid size-11 shrink-0 place-items-center rounded-full">
+            <Wrench className="text-deep-blue-500 size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-14 font-semibold text-neutral-900">
+              <span className="text-deep-blue-500">{waiting}</span> mobil menunggu dikerjakan
+            </p>
+            <p className="text-12 text-neutral-600">
+              Semua pekerjaan di sini klaimnya sudah disetujui asuransi
+            </p>
           </div>
         </div>
 
@@ -90,7 +96,7 @@ export function WorkshopQueuePage() {
           <LoadingState label="Memuat antrean…" />
         ) : list.length === 0 ? (
           <div className="py-12 text-center">
-            <Car className="mx-auto size-9 text-neutral-300" />
+            <Car className="mx-auto size-9 text-neutral-500" />
             <p className="text-12 mt-3 text-neutral-500">
               {filter === 'all'
                 ? 'Belum ada pekerjaan masuk.'

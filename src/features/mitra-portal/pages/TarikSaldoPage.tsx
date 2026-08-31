@@ -150,11 +150,11 @@ export function TarikSaldoPage() {
 
       <div className="px-5 py-4 pb-32">
         {/* Hero saldo — navy sesuai desain "Tarik Saldo" */}
-        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#aded1f] to-[#aded1f] p-5 text-white shadow-lg">
-          <p className="text-12 text-white/70">Saldo Tersedia</p>
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#c2f347] to-[#83bd04] p-5 text-on-brand shadow-lg">
+          <p className="text-12 text-on-brand/70">Saldo Tersedia</p>
           <p className="mt-1 text-3xl font-bold">{rupiah(balance)}</p>
           <Wallet
-            className="absolute top-1/2 -right-2 size-20 -translate-y-1/2 text-white/10"
+            className="absolute top-1/2 -right-2 size-20 -translate-y-1/2 text-on-brand/15"
             strokeWidth={1}
           />
         </div>
@@ -294,7 +294,7 @@ export function TarikSaldoPage() {
                 setAmount(digits ? Number(digits) : 0);
               }}
               placeholder="0"
-              className="w-full bg-transparent text-2xl font-semibold text-neutral-900 placeholder:text-neutral-300 focus:outline-none"
+              className="w-full bg-transparent text-2xl font-semibold text-neutral-900 placeholder:text-neutral-500 focus:outline-none"
             />
           </div>
           <div className="mt-3 flex [scrollbar-width:none] gap-2 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -303,7 +303,7 @@ export function TarikSaldoPage() {
                 key={value}
                 type="button"
                 onClick={() => setAmount(value)}
-                className="text-12 shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 font-medium text-neutral-700 hover:bg-neutral-50"
+                className="text-12 shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 font-medium text-neutral-700 hover:bg-neutral-200"
               >
                 {quickLabel(value)}
               </button>

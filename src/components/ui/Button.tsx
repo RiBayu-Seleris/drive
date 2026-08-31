@@ -13,7 +13,7 @@ const ON_BRAND = 'text-[#10200a]';
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   // Tombol utama memakai gradien dua warna merek, bukan warna rata — itu yang
   // membuatnya terbaca sebagai tombol, bukan bidang hijau.
-  primary: `border border-transparent bg-[linear-gradient(148deg,#aded1f,#83bd04)] ${ON_BRAND} shadow-[0_10px_26px_-12px_rgba(173,237,31,0.85)] hover:brightness-110 active:brightness-95 disabled:bg-neutral-300 disabled:bg-none disabled:text-neutral-500 disabled:shadow-none`,
+  primary: `border border-transparent bg-[linear-gradient(148deg,#aded1f,#83bd04)] ${ON_BRAND} shadow-[0_5px_12px_-8px_rgba(173,237,31,0.6)] hover:brightness-110 active:brightness-95 disabled:bg-neutral-300 disabled:bg-none disabled:text-neutral-500 disabled:shadow-none`,
   secondary:
     'border border-deep-blue-200 bg-deep-blue-50 text-deep-blue-600 hover:bg-deep-blue-100 active:bg-deep-blue-200',
   outline:

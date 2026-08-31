@@ -227,19 +227,25 @@ export function KemitraanPage() {
       <AppHeader title="Kemitraan Asuransi" />
 
       <div className="space-y-4 px-5 pt-4">
-        <div className="bg-deep-blue-500 rounded-2xl p-4 text-[#10200a]">
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
-              <Handshake className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-14 font-semibold">{activeCount} kemitraan aktif</p>
-              <p className="text-12 text-white/70">
-                {inboxCount > 0
-                  ? `${inboxCount} undangan menunggu jawaban Anda`
-                  : 'Order derek dari asuransi rekanan diprioritaskan ke Anda'}
-              </p>
-            </div>
+        {/*
+          Kartu gelap dengan aksen hijau — pola yang dipakai seluruh aplikasi
+          ini. Sebelumnya berupa slab hijau terang setinggi penuh dengan baris
+          kedua `text-white/70`: putih di atas #aded1f praktis tidak terbaca,
+          dan bidang hijau sebesar itu menyilaukan di tema gelap.
+        */}
+        <div className="drive-card flex items-center gap-3 p-4">
+          <span className="drive-chip grid size-11 shrink-0 place-items-center rounded-full">
+            <Handshake className="text-deep-blue-500 size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-14 font-semibold text-neutral-900">
+              <span className="text-deep-blue-500">{activeCount}</span> kemitraan aktif
+            </p>
+            <p className="text-12 text-neutral-600">
+              {inboxCount > 0
+                ? `${inboxCount} undangan menunggu jawaban Anda`
+                : 'Order derek dari asuransi rekanan diprioritaskan ke Anda'}
+            </p>
           </div>
         </div>
 
@@ -251,7 +257,7 @@ export function KemitraanPage() {
           <LoadingState label="Memuat kemitraan…" />
         ) : list.length === 0 ? (
           <div className="py-12 text-center">
-            <Building2 className="mx-auto size-9 text-neutral-300" />
+            <Building2 className="mx-auto size-9 text-neutral-500" />
             <p className="text-12 mt-3 text-neutral-500">
               {filter === 'all'
                 ? 'Belum ada kemitraan asuransi.'
@@ -503,7 +509,7 @@ function PartnershipCard({
               {dateLabel(stamp)}
             </span>
           </span>
-          <ChevronRight className="mt-3 size-4 shrink-0 text-neutral-300" />
+          <ChevronRight className="mt-3 size-4 shrink-0 text-neutral-500" />
         </button>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span
