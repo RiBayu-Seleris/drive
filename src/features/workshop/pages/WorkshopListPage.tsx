@@ -162,77 +162,110 @@ export function WorkshopListPage() {
 
 function WorkshopCard({ place, onClick }: { place: RecommendationPlace; onClick: () => void }) {
   const isOpen = place.openStatus.toUpperCase() !== 'CLOSED';
-  const closeText = isOpen ? 'Tutup 17.00' : 'Buka 07.00';
+  /*
+   * Jam buka diambil dari data, bukan dikarang.
+   *
+   * Versi sebelumnya menulis `isOpen ? 'Tutup 17.00' : 'Buka 07.00'` — angka
+   * tetap yang sama untuk SETIAP bengkel, padahal `openHours` dari API sudah
+   * berisi jam sebenarnya. Bengkel yang tutup jam 21.00 tetap tertulis 17.00.
+   */
+  const hours = place.openHours.trim();
+  const hasRating = place.rating > 0;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="drive-card w-full cursor-pointer overflow-hidden rounded-xl text-left transition-shadow hover:shadow-md"
+      className="drive-card w-full cursor-pointer overflow-hidden text-left transition-shadow hover:shadow-md"
     >
-      <div className="flex flex-row gap-x-3 p-3">
-        <div className="h-auto w-[30%] shrink-0">
+      <div className="flex flex-col gap-3 p-4">
+        {/*
+          Baris atas: gambar + identitas. Sebelumnya seluruh isi kartu dipaksa
+          masuk satu baris di samping gambar setinggi 112px, sehingga alamat
+          terpotong, nama mengecil sampai 12px, dan status menggantung di sudut.
+        */}
+        <div className="flex items-start gap-3">
           {place.imageUrl ? (
             <img
               src={place.imageUrl}
-              alt={place.name}
-              className="size-28 rounded-lg object-cover"
+              alt=""
+              loading="lazy"
+              className="size-16 shrink-0 rounded-xl border border-[#223039] object-cover"
             />
           ) : (
-            <div className="bg-deep-blue-50 text-deep-blue-300 flex size-28 items-center justify-center rounded-lg">
-              <Wrench className="size-8" />
+            <div className="drive-chip flex size-16 shrink-0 items-center justify-center rounded-xl">
+              <Wrench className="text-deep-blue-500 size-7" aria-hidden />
             </div>
           )}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-y-2">
-          <div className="mb-2 flex flex-row justify-between">
-            <div>
-              <h3 className="hover:text-deep-blue-700 cursor-pointer text-[12px] font-semibold text-[#c2f347]">
-                {place.name}
-              </h3>
-              {place.isInsurerPartner && (
-                <span className="mt-1 inline-flex rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
-                  Rekanan Asuransi
-                </span>
-              )}
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
+
+          <div className="min-w-0 flex-1">
+            <h3 className="text-14 truncate font-semibold text-neutral-900">{place.name}</h3>
+
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               <span
                 className={cn(
-                  'rounded text-[12px] font-medium',
-                  isOpen ? 'text-success' : 'text-danger',
+                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+                  isOpen
+                    ? 'border-success/35 text-success bg-success/10'
+                    : 'border-danger/35 text-danger bg-danger/10',
                 )}
               >
+                <span
+                  className={cn(
+                    'size-1.5 rounded-full',
+                    isOpen ? 'bg-success' : 'bg-danger',
+                  )}
+                />
                 {isOpen ? 'Buka' : 'Tutup'}
               </span>
-              <span className="text-[10px] text-neutral-600">{closeText}</span>
+              {hours && <span className="text-[11px] text-neutral-600">{hours}</span>}
             </div>
+
+            {place.isInsurerPartner && (
+              <span className="bg-deep-blue-50 border-deep-blue-200 text-deep-blue-600 mt-1.5 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold">
+                Rekanan Asuransi
+              </span>
+            )}
           </div>
-          <p className="mb-3 line-clamp-2 text-[13px] text-neutral-600">{place.address}</p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-[10px] text-neutral-600">
-              <span>{Math.max(1, Math.round(place.estimatedMinutes || 15))} min</span>
-              <span>•</span>
-              <span>{Math.max(0.1, place.distanceKm || 0).toFixed(1)} km</span>
-            </div>
-            <div className="flex items-center gap-x-1">
-              <div className="flex flex-row items-center gap-x-0.5">
+        </div>
+
+        <p className="text-12 line-clamp-2 leading-relaxed text-neutral-600">{place.address}</p>
+
+        <div className="flex items-center justify-between border-t border-[#223039] pt-3">
+          <div className="hud-readout text-11 flex items-center gap-2 text-neutral-600">
+            <span className="text-deep-blue-500">
+              {Math.max(0.1, place.distanceKm || 0).toFixed(1)} km
+            </span>
+            <span>·</span>
+            <span>{Math.max(1, Math.round(place.estimatedMinutes || 15))} mnt</span>
+          </div>
+
+          {/*
+            Tanpa ulasan, jangan tampilkan lima bintang abu-abu dan "0.0" —
+            itu terbaca sebagai bengkel bernilai nol, bukan bengkel yang belum
+            pernah dinilai. Dua hal yang sangat berbeda.
+          */}
+          {hasRating ? (
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-0.5">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <Star
                     key={index}
                     className={cn(
                       'size-3',
-                      index < Math.floor(place.rating) ? 'text-warning' : 'text-neutral-300',
+                      index < Math.floor(place.rating) ? 'text-warning' : 'text-neutral-400',
                     )}
                     fill="currentColor"
                   />
                 ))}
               </div>
-              <span className="text-[12px] font-medium text-neutral-700">
+              <span className="text-12 font-medium text-neutral-800">
                 {place.rating.toFixed(1)}
               </span>
             </div>
-          </div>
+          ) : (
+            <span className="text-11 text-neutral-600">Belum ada ulasan</span>
+          )}
         </div>
       </div>
     </button>

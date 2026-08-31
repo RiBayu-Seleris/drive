@@ -26,7 +26,7 @@ import { extractErrorMessage } from '@/lib/api/client';
 import { STORAGE_KEYS, DEFAULT_LOCATION } from '@/config/constants';
 import { storage } from '@/lib/storage/storage';
 import { cn } from '@/lib/utils/cn';
-import { formatCurrency, formatDate } from '@/lib/utils/format';
+import { formatDate } from '@/lib/utils/format';
 import { buildPath, ROUTES } from '@/app/routes';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { createTowingOrder } from '@/features/towing/api/towingApi';
@@ -46,10 +46,6 @@ const TABS: { id: DetailTab; label: string }[] = [
   { id: 'ulasan', label: 'Ulasan' },
   { id: 'galeri', label: 'Galeri' },
 ];
-
-// Estimasi biaya towing untuk ditampilkan di sheet. Harga final dihitung
-// backend; nilai ini hanya indikatif (TODO: ambil dari endpoint pricing).
-const ESTIMATED_TOWING_FEE = 400_000;
 
 // Spesialisasi belum disediakan API recommender → tampilkan default agar
 // tampilan sesuai desain. Ganti dengan data asli saat field tersedia.
@@ -214,9 +210,19 @@ export function WorkshopDetailPage() {
       <div className="px-5 pt-4">
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-deep-blue-600 text-18 font-semibold">{place.name}</h1>
-          <span className="text-warning text-14 inline-flex shrink-0 items-center gap-1 font-semibold">
-            <Star className="size-4 fill-current" /> {place.rating.toFixed(1)}
-          </span>
+          {/*
+            Bintang ini dulu selalu emas penuh (`fill-current` tanpa syarat),
+            jadi bengkel tanpa ulasan tampil "bintang penuh 0.0" — terbaca
+            seperti tampilan rusak. Bengkel baru memang sengaja ikut tampil di
+            rekomendasi dengan rating 0, jadi kasus ini normal, bukan langka.
+          */}
+          {place.rating > 0 ? (
+            <span className="text-warning text-14 inline-flex shrink-0 items-center gap-1 font-semibold">
+              <Star className="size-4 fill-current" /> {place.rating.toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-12 shrink-0 text-neutral-600">Belum ada ulasan</span>
+          )}
         </div>
         <p className="text-12 mt-1">
           <span className={isOpen ? 'text-success font-medium' : 'text-danger font-medium'}>
@@ -350,17 +356,25 @@ export function WorkshopDetailPage() {
               {locating ? 'Mengambil lokasi…' : 'Gunakan lokasi saya saat ini'}
             </button>
           </div>
+          {/*
+            Angka biaya sengaja tidak ditampilkan di sini.
+            Sebelumnya layar ini menulis "Rp 400.000" dari konstanta tetap di
+            frontend — tidak terhubung ke apa pun. Tarif sebenarnya dihitung
+            backend (`CalculateTowingPrice`: base_fare + kelebihan km * per_km_fare
+            + biaya malam) dari tarif penyedia yang DITUGASKAN, dan penyedia baru
+            ditentukan setelah order masuk. Jadi pada titik ini memang belum ada
+            harga yang bisa dipertanggungjawabkan — lebih baik diam daripada
+            menyebut angka yang meleset.
+          */}
           <div className="flex items-center justify-between rounded-xl border border-neutral-400 px-4 py-3">
             <span className="text-success text-14 inline-flex items-center gap-2 font-medium">
               <Truck className="size-5" /> Towing
             </span>
-            <span className="text-14 font-semibold text-neutral-900">
-              {formatCurrency(ESTIMATED_TOWING_FEE)}
-            </span>
+            <span className="text-12 text-neutral-600">Dihitung setelah penyedia ditugaskan</span>
           </div>
           {place.towingAvailable ? (
             <p className="text-[12px] text-neutral-600">
-              Estimasi; biaya final dikonfirmasi penyedia towing.
+              Biayanya muncul di rincian order, sebelum Anda membayar.
             </p>
           ) : (
             <p className="text-12 text-orange">
@@ -478,21 +492,25 @@ function ReviewsTab({ workshopId, onWrite }: { workshopId: number; onWrite: () =
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-5">
         <div className="text-center">
-          <p className="text-20 font-bold text-neutral-900">{summary.average.toFixed(1)}/5</p>
+          <p className="text-20 font-bold text-neutral-900">
+            {summary.count > 0 ? `${summary.average.toFixed(1)}/5` : '—'}
+          </p>
           <div className="mt-1 flex justify-center gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
                 className={cn(
                   'size-3.5',
-                  i < Math.round(summary.average)
+                  i < Math.floor(summary.average)
                     ? 'text-warning fill-current'
                     : 'text-neutral-500',
                 )}
               />
             ))}
           </div>
-          <p className="mt-1 text-[12px] text-neutral-600">{summary.count} ulasan</p>
+          <p className="mt-1 text-[12px] text-neutral-600">
+            {summary.count > 0 ? `${summary.count} ulasan` : 'Belum dinilai'}
+          </p>
         </div>
         <div className="flex-1">
           {[5, 4, 3, 2, 1].map((star) => {

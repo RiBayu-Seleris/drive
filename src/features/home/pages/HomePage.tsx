@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ROUTES, buildPath } from '@/app/routes';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { DEFAULT_AVATAR, resolveAvatarSrc } from '@/lib/utils/avatar';
 import { useDamageStore } from '@/features/damage/store/damageStore';
 import { useScanStore } from '@/features/vehicle-scan/store/scanStore';
 import { getVehicles } from '@/features/vehicle/api';
@@ -326,9 +327,17 @@ export function HomePage() {
               </div>
             ) : (
               <div className="flex items-center gap-3.5">
+                {/*
+                  Foto user, bukan gambar bawaan. Baris ini dulu memasang
+                  `/assets/home/avatar.png` mati, jadi beranda tetap menampilkan
+                  wajah orang lain sekalipun user sudah mengganti fotonya.
+                */}
                 <img
-                  src="/assets/home/avatar.png"
+                  src={resolveAvatarSrc(user?.imageName)}
                   alt=""
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_AVATAR;
+                  }}
                   className="border-deep-blue-500/45 size-13 shrink-0 rounded-full border-2 bg-neutral-200 object-cover"
                 />
                 <div className="min-w-0">

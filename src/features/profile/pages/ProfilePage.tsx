@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { ROUTES } from '@/app/routes';
 import { APP_INFO } from '@/config/constants';
-import { env } from '@/config/env';
+import { DEFAULT_AVATAR, resolveAvatarSrc } from '@/lib/utils/avatar';
 import { extractErrorMessage } from '@/lib/api/client';
 import { storage } from '@/lib/storage/storage';
 import {
@@ -38,7 +38,6 @@ import {
 import { useAuthStore } from '@/features/auth/store/authStore';
 import type { User } from '@/features/auth/types';
 
-const DEFAULT_AVATAR = '/assets/home/avatar.png';
 const PROFILE_QUERY_KEY = ['member-profile'];
 const PROFILE_COUNTRY_KEY = 'profile_country';
 const PROFILE_LANGUAGE_KEY = 'profile_language';
@@ -643,16 +642,6 @@ function emptyProfileForm(user?: User | null): ProfileForm {
     imageName: user?.imageName ?? '',
     avatarPreview: resolveAvatarSrc(user?.imageName),
   };
-}
-
-function resolveAvatarSrc(imageName?: string): string {
-  const value = imageName?.trim();
-  if (!value) return DEFAULT_AVATAR;
-  if (/^(https?:|data:|blob:)/i.test(value)) return value;
-  if (value.startsWith('/fs/')) return `${env.apiBaseUrl}/v1${value}`;
-  if (value.startsWith('fs/')) return `${env.apiBaseUrl}/v1/${value}`;
-  if (value.startsWith('/')) return value;
-  return `${env.apiBaseUrl}/v1/fs/${encodeURIComponent(value)}`;
 }
 
 function statusLabel(status?: string): string {
