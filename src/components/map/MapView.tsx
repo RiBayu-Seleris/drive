@@ -134,11 +134,17 @@ export function MapView({
   className,
 }: MapViewProps) {
   return (
+    /*
+     * `isolate` mengurung z-index internal Leaflet (panel 400, kontrol dan
+     * atribusi 1000) di dalam kotak peta. Tanpa itu angka-angka besar itu
+     * bersaing langsung dengan elemen halaman: peta menimpa bar aksi yang
+     * melayang di bawah layar, bukan lewat di belakangnya.
+     */
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={zoom}
       scrollWheelZoom={false}
-      className={cn('h-56 w-full overflow-hidden rounded-lg', className)}
+      className={cn('isolate h-56 w-full overflow-hidden rounded-lg', className)}
     >
       <TileLayer url={OSM_TILE_URL} attribution={OSM_TILE_ATTRIBUTION} />
       {follow && accuracyMeters > 0 && (

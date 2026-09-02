@@ -12,6 +12,7 @@ import { EmptyState, ErrorState } from '@/components/feedback/StateViews';
 import { confirm } from '@/components/feedback/confirm';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
+import { cn } from '@/lib/utils/cn';
 import { formatDate } from '@/lib/utils/format';
 import { ROUTES } from '@/app/routes';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -226,21 +227,30 @@ export function PolicyTakeoverPage() {
             Kendaraan ini akan dipakai untuk
           </p>
           <div className="flex flex-col gap-2">
-            {USAGE_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="text-13 flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2.5"
-              >
-                <input
-                  type="radio"
-                  name="vehicle-usage"
-                  value={option.value}
-                  checked={form.vehicleUsage === option.value}
-                  onChange={(event) => set('vehicleUsage', event.target.value)}
-                />
-                {option.label}
-              </label>
-            ))}
+            {USAGE_OPTIONS.map((option) => {
+              const selected = form.vehicleUsage === option.value;
+              return (
+                <label
+                  key={option.value}
+                  className={cn(
+                    'text-13 flex cursor-pointer items-center gap-3 rounded-xl border bg-neutral-200 px-4 py-3 text-neutral-900 transition',
+                    selected
+                      ? 'border-[#aded1f] shadow-[0_0_18px_-8px_rgba(173,237,31,0.7)]'
+                      : 'border-[#22313c]',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="vehicle-usage"
+                    value={option.value}
+                    checked={selected}
+                    onChange={(event) => set('vehicleUsage', event.target.value)}
+                    className="size-4 shrink-0 accent-[#aded1f]"
+                  />
+                  {option.label}
+                </label>
+              );
+            })}
           </div>
           {form.vehicleUsage !== transfer.vehicleUsage && (
             <p className="text-11 text-warning mt-1.5">

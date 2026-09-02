@@ -35,6 +35,7 @@ import {
 import { Logo } from '@/components/brand/Logo';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ROUTES, buildPath } from '@/app/routes';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { cn } from '@/lib/utils/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { DEFAULT_AVATAR, resolveAvatarSrc } from '@/lib/utils/avatar';
@@ -294,9 +295,16 @@ export function HomePage() {
         <div className="drive-header drive-fade-b absolute inset-0 opacity-35" />
 
         <div className="px-gutter relative flex h-full flex-col pt-7">
-          <Link to={ROUTES.home} className="mx-auto">
-            <Logo className="[&_img]:h-9" />
-          </Link>
+          {/*
+            Logo tetap di tengah; lonceng ditempel absolut supaya kehadirannya
+            tidak menggeser logo saat lencana angkanya muncul.
+          */}
+          <div className="relative flex items-center justify-center">
+            <Link to={ROUTES.home}>
+              <Logo className="[&_img]:h-9" />
+            </Link>
+            {isAuthenticated && <NotificationBell className="absolute right-0" />}
+          </div>
 
           {/* Pembacaan status: menegaskan ada mesin yang bekerja di belakang. */}
           <div className="mx-auto mt-3 flex items-center gap-2 rounded-full border border-[#22313c] bg-[#0b1218]/80 px-3 py-1">

@@ -154,6 +154,8 @@ export const TOWING_STATUS_LABEL: Record<string, string> = {
   PENDING_ASSIGNMENT: 'Mencari derek',
   OFFERED: 'Menunggu konfirmasi mitra',
   ASSIGNED: 'Sopir ditetapkan',
+  ACCEPTED_BY_DRIVER: 'Sopir bersiap berangkat',
+  NEEDS_REASSIGN: 'Mencari sopir pengganti',
   EN_ROUTE_TO_PICKUP: 'Sopir menuju lokasi Anda',
   ARRIVED_PICKUP: 'Sopir tiba di lokasi',
   PICKED_UP: 'Kendaraan diangkat',
@@ -168,17 +170,24 @@ export function towingStatusLabel(status: string): string {
 }
 
 const SEARCHING = new Set(['REQUESTED', 'PENDING_ASSIGNMENT', 'OFFERED']);
-const ACTIVE = new Set([
-  'ASSIGNED',
-  'EN_ROUTE_TO_PICKUP',
-  'ARRIVED_PICKUP',
-  'PICKED_UP',
-  'EN_ROUTE_TO_DROPOFF',
-  'DROPPED_OFF',
-]);
+const FINISHED = new Set(['COMPLETED', 'CANCELED', 'CANCELLED']);
 
 export const isTowingSearching = (status: string): boolean => SEARCHING.has(status);
-export const isTowingActive = (status: string): boolean => ACTIVE.has(status);
+export const isTowingFinished = (status: string): boolean => FINISHED.has(status);
+/*
+ * Sengaja dibalik: order dianggap berjalan selama ia bukan "sedang dicarikan
+ * sopir" dan bukan "sudah berakhir" — bukan dari daftar status yang ditulis
+ * tangan di sini.
+ *
+ * Daftar tangan itu pernah menelan order hidup. Backend menambah
+ * ACCEPTED_BY_DRIVER dan NEEDS_REASSIGN, daftar ini tidak ikut diperbarui,
+ * dan begitu sopir menekan Terima, layar pengguna kehilangan peta, kartu
+ * sopir, dan bahkan berhenti memuat ulang — persis seperti ordernya batal.
+ * Dengan aturan terbalik, status baru dari backend paling banter tampil
+ * dengan label apa adanya, tapi ordernya tetap terlihat dan tetap hidup.
+ */
+export const isTowingActive = (status: string): boolean =>
+  status !== '' && !SEARCHING.has(status) && !FINISHED.has(status);
 // Hanya boleh batal selama masih mencari sopir (belum diterima mitra).
 // Begitu mitra menerima/menugaskan (ASSIGNED dst), order tidak bisa dibatalkan.
 export const isTowingCancelable = (status: string): boolean => SEARCHING.has(status);

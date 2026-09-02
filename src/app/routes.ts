@@ -28,6 +28,7 @@ export const ROUTES = {
   // Tab utama
   home: '/',
   profile: '/profile',
+  notifications: '/notifications',
 
   // Checkup / pemeriksaan kendaraan (alur scanning)
   checkCondition: '/check-condition',

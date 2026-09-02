@@ -1234,7 +1234,7 @@ function OrderDetailScreen({
         </div>
 
         {isAssigned ? (
-          <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[46px_1fr] gap-3 border-t border-[#223039] bg-white/95 px-4 py-4 backdrop-blur">
+          <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[46px_1fr] gap-3 border-t border-[#223039] bg-[#131c24]/95 px-4 py-4 backdrop-blur">
             <Button
               variant="outline"
               className="h-[46px] rounded-xl border-[#2f3f4a] px-0 text-[#aebbc4] hover:bg-[#131c24]"
@@ -1351,14 +1351,14 @@ function AcceptedOrderScreen({
               className="h-40 rounded-xl"
             />
             {km !== null && (
-              <span className="text-12 absolute bottom-3 left-3 z-[500] rounded-full bg-neutral-200 px-3 py-1.5 font-bold text-neutral-900 shadow">
+              <span className="text-12 absolute bottom-3 left-3 z-10 rounded-full bg-neutral-200 px-3 py-1.5 font-bold text-neutral-900 shadow">
                 {km.toFixed(1)} KM • {tripEtaMnt(km)} Menit
               </span>
             )}
           </div>
         )}
 
-        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[1fr_86px] gap-4 border-t border-[#223039] bg-white/95 px-4 py-4 backdrop-blur">
+        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto grid w-full max-w-md grid-cols-[1fr_86px] gap-4 border-t border-[#223039] bg-[#131c24]/95 px-4 py-4 backdrop-blur">
           <Button
             className="h-[46px] rounded-lg bg-[#aded1f] font-medium"
             onClick={onStart}
@@ -1429,7 +1429,7 @@ function TrackingOrderScreen({
           fitToMarkers={markers.length > 1}
           className="h-full rounded-none"
         />
-        <div className="absolute inset-x-5 top-4 z-[500] flex items-center justify-between gap-3 rounded-full bg-neutral-200 px-5 py-3 shadow-md">
+        <div className="absolute inset-x-5 top-4 z-10 flex items-center justify-between gap-3 rounded-full bg-neutral-200 px-5 py-3 shadow-md">
           <span className="text-12 flex min-w-0 items-center gap-3 font-medium text-[#c2f347]">
             <Truck className="size-4 shrink-0" />
             <span className="truncate">{driverStatusLabel(task.status)}</span>

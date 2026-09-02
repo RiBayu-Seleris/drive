@@ -312,6 +312,11 @@ const WorkshopReviewPage = lazy(() =>
     default: m.WorkshopReviewPage,
   })),
 );
+const NotificationsPage = lazy(() =>
+  import('@/features/notifications/pages/NotificationsPage').then((m) => ({
+    default: m.NotificationsPage,
+  })),
+);
 const InsuranceSearchPage = lazy(() =>
   import('@/features/insurance/pages/InsuranceSearchPage').then((m) => ({
     default: m.InsuranceSearchPage,
@@ -475,6 +480,7 @@ export const router = createBrowserRouter([
           ? protect(<VehicleFormPage />)
           : disabledSavedVehicleRedirect,
       },
+      { path: ROUTES.notifications, element: protect(<NotificationsPage />) },
       { path: ROUTES.insuranceSearch, element: protect(<InsuranceSearchPage />) },
       { path: ROUTES.insuranceDetail, element: protect(<InsuranceDetailPage />) },
       { path: ROUTES.insurancePurchase, element: protect(<InsurancePurchasePage />) },

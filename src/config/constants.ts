@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   inferencePlateMap: 'inference_plate_map',
   insuranceCoverageCache: 'insurance_coverage_cache',
   lastScanPlateNumber: 'last_scan_plate_number',
+  notificationsRead: 'notifications_read',
   lastScanPlateSource: 'last_scan_plate_source',
   mitraToken: 'mitra_token',
   mitraInfo: 'mitra_info',
