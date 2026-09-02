@@ -242,3 +242,76 @@ export async function purchaseInsurance(input: PurchaseInput): Promise<Insurance
   );
   return parsePolicy(res.data?.data ?? {});
 }
+
+// ── Pengambilalihan polis saat kendaraan berpindah pemilik ─────────────────
+
+export interface PendingPolicyTransfer {
+  policyNumber: string;
+  productName: string;
+  provider: string;
+  vehiclePlate: string;
+  vehicleUsage: string;
+  registrationArea: string;
+  coverageAmount: number;
+  startedAt: string;
+  endedAt: string;
+  deadlineAt: string;
+}
+
+export interface AcceptPolicyTransferInput {
+  policyNumber: string;
+  holderName: string;
+  holderNik: string;
+  holderPhone: string;
+  holderEmail: string;
+  holderAddress: string;
+  holderCity: string;
+  holderPostalCode: string;
+  holderBirthDate: string;
+  vehicleUsage: string;
+  registrationArea: string;
+}
+
+/** Polis yang menunggu diambil alih oleh user ini (mobil baru dibelinya). */
+export async function getPendingPolicyTransfers(): Promise<PendingPolicyTransfer[]> {
+  const res = await userApi.get<{ data?: { items?: unknown[] } }>(
+    '/v1/member/policy-transfers/pending',
+  );
+  const items = res.data?.data?.items ?? [];
+  return items
+    .filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null)
+    .map((json) => ({
+      policyNumber: str(json.policy_number),
+      productName: str(json.product_name),
+      provider: str(json.provider),
+      vehiclePlate: str(json.vehicle_plate),
+      vehicleUsage: str(json.vehicle_usage),
+      registrationArea: str(json.registration_area),
+      coverageAmount: num(json.coverage_amount),
+      startedAt: str(json.started_at),
+      endedAt: str(json.ended_at),
+      deadlineAt: str(json.deadline_at),
+    }));
+}
+
+/** Mengambil alih polis: identitas tertanggung diganti dengan data pembeli. */
+export async function acceptPolicyTransfer(input: AcceptPolicyTransferInput): Promise<void> {
+  await userApi.post('/v1/member/policy-transfers/accept', {
+    policy_number: input.policyNumber,
+    holder_name: input.holderName,
+    holder_nik: input.holderNik,
+    holder_phone: input.holderPhone,
+    holder_email: input.holderEmail,
+    holder_address: input.holderAddress,
+    holder_city: input.holderCity,
+    holder_postal_code: input.holderPostalCode,
+    holder_birth_date: input.holderBirthDate,
+    vehicle_usage: input.vehicleUsage,
+    registration_area: input.registrationArea,
+  });
+}
+
+/** Menolak: polis kembali ke pemilik sebelumnya. */
+export async function declinePolicyTransfer(policyNumber: string): Promise<void> {
+  await userApi.post('/v1/member/policy-transfers/decline', { policy_number: policyNumber });
+}

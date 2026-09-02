@@ -58,7 +58,14 @@ export async function requestVehicleTransfer(plate: string): Promise<void> {
  * kendaraan masih berpolis, padahal justru itu keadaan yang paling sering saat
  * mobil dijual. Endpoint ini juga mengabari orang yang pernah meminta platnya
  * dilepas.
+ *
+ * `toEmail` = email pembeli. Bila kendaraan ini punya polis berjalan, polisnya
+ * ikut ditandai menunggu diambil alih oleh pemilik email tersebut — pembeli
+ * tidak perlu sudah punya akun, undangannya dikirim ke sana.
  */
-export async function markVehicleSold(plate: string): Promise<void> {
-  await userApi.post('/v1/vehicle/mark-sold', { vehicle_plate: plate });
+export async function markVehicleSold(plate: string, toEmail = ''): Promise<void> {
+  await userApi.post('/v1/vehicle/mark-sold', {
+    vehicle_plate: plate,
+    to_email: toEmail.trim(),
+  });
 }

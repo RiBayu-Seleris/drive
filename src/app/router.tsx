@@ -369,6 +369,11 @@ const ClaimReviewPage = lazy(() =>
 const ClaimStatusPage = lazy(() =>
   import('@/features/claim/pages/ClaimStatusPage').then((m) => ({ default: m.ClaimStatusPage })),
 );
+const PolicyTakeoverPage = lazy(() =>
+  import('@/features/insurance/pages/PolicyTakeoverPage').then((m) => ({
+    default: m.PolicyTakeoverPage,
+  })),
+);
 const ClaimTicketPage = lazy(() =>
   import('@/features/claim/pages/ClaimTicketPage').then((m) => ({ default: m.ClaimTicketPage })),
 );
@@ -481,6 +486,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.claimDetail, element: protect(<ClaimDetailPage />) },
       { path: ROUTES.claimReview, element: protect(<ClaimReviewPage />) },
       { path: ROUTES.claimStatus, element: protect(<ClaimStatusPage />) },
+      { path: ROUTES.policyTakeover, element: protect(<PolicyTakeoverPage />) },
       { path: ROUTES.claimTicket, element: protect(<ClaimTicketPage />) },
       { path: ROUTES.claimApproved, element: protect(<ClaimApprovedPage />) },
       { path: ROUTES.rating, element: protect(<RatingPage />) },

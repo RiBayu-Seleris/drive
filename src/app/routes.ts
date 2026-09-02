@@ -70,6 +70,7 @@ export const ROUTES = {
   insurancePurchase: '/insurance/purchase',
   insurancePolicies: '/insurance/policies',
   insurancePolicyDetail: '/insurance/policies/:policyNumber',
+  policyTakeover: '/insurance/takeover',
   claims: '/claims',
   claimInsuranceData: '/claim/insurance-data',
   claimSelectPolicy: '/claim/select-policy',

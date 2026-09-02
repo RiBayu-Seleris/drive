@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowRightLeft, Car, Plus, Pencil, Trash2 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/Spinner';
 import { ErrorState, EmptyState } from '@/components/feedback/StateViews';
@@ -11,7 +14,7 @@ import { confirm } from '@/components/feedback/confirm';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { ROUTES } from '@/app/routes';
-import { getVehicles, deleteVehicle } from '../api';
+import { getVehicles, deleteVehicle, markVehicleSold } from '../api';
 import { hasPolis, type SavedVehicle } from '../types';
 
 export function MyVehiclesPage() {
@@ -42,25 +45,29 @@ export function MyVehiclesPage() {
    * sendiri tidak tersentuh — ia menyimpan salinan data kendaraannya sendiri,
    * dan alur klaim tidak pernah membaca tabel garasi.
    */
+  const [sellTarget, setSellTarget] = useState<SavedVehicle | null>(null);
+  const [buyerEmail, setBuyerEmail] = useState('');
+
   const sold = useMutation({
-    mutationFn: (plate: string) => deleteVehicle(plate),
+    mutationFn: (input: { plate: string; email: string }) =>
+      markVehicleSold(input.plate, input.email),
     onSuccess: () => {
+      setSellTarget(null);
+      setBuyerEmail('');
       toast.success('Kendaraan dilepas. Pemilik barunya sudah bisa mendaftarkannya.');
       void queryClient.invalidateQueries({ queryKey: ['vehicles'] });
     },
     onError: (error) => toast.error(extractErrorMessage(error, 'Gagal melepas kendaraan.')),
   });
 
-  const handleSold = async (v: SavedVehicle) => {
-    const insured = hasPolis(v);
-    const ok = await confirm({
-      title: 'Tandai sudah terjual',
-      message: insured
-        ? `${v.vehicleName} (${v.vehiclePlate}) akan dilepas dari daftar Anda, sehingga pemilik barunya bisa mendaftarkannya. Kalau ada yang pernah meminta plat ini, dia akan dikabari lewat email.\n\nPolis Anda tetap berjalan sampai ${formatVehicleDate(v.polisEnd)}. Menandai terjual tidak membatalkan polis, dan premi yang sudah dibayar tidak dikembalikan.`
-        : `${v.vehicleName} (${v.vehiclePlate}) akan dilepas dari daftar Anda, sehingga pemilik barunya bisa mendaftarkannya. Kalau ada yang pernah meminta plat ini, dia akan dikabari lewat email.`,
-      confirmText: 'Ya, sudah terjual',
-    });
-    if (ok) sold.mutate(v.vehiclePlate);
+  /*
+   * Menjual kendaraan berpolis kini MEMINDAHKAN polisnya, bukan membiarkannya
+   * di akun penjual. Karena itu emailnya perlu ditanya di sini — bukan lagi
+   * sekadar konfirmasi ya/tidak.
+   */
+  const handleSold = (v: SavedVehicle) => {
+    setBuyerEmail('');
+    setSellTarget(v);
   };
 
   const handleDelete = async (v: SavedVehicle) => {
@@ -225,6 +232,70 @@ export function MyVehiclesPage() {
           </Button>
         </div>
       </div>
+
+      {/* Lembar "sudah terjual": polis ikut pindah, jadi email pembeli wajib
+          ditanya di sini. Tanpa penerima, polis tetap dilepas tapi tidak ada
+          yang bisa mengambil alihnya sampai tenggat 30 hari habis. */}
+      <Modal
+        open={Boolean(sellTarget)}
+        onClose={() => setSellTarget(null)}
+        title="Tandai sudah terjual"
+        variant="sheet"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setSellTarget(null)}>
+              Batal
+            </Button>
+            <Button
+              isLoading={sold.isPending}
+              onClick={() =>
+                sellTarget && sold.mutate({ plate: sellTarget.vehiclePlate, email: buyerEmail })
+              }
+            >
+              Ya, sudah terjual
+            </Button>
+          </div>
+        }
+      >
+        {sellTarget && (
+          <div className="space-y-3">
+            <p className="text-13 text-neutral-800">
+              <strong>
+                {sellTarget.vehicleName} ({sellTarget.vehiclePlate})
+              </strong>{' '}
+              akan dilepas dari daftar Anda supaya pemilik barunya bisa mendaftarkannya.
+            </p>
+
+            {hasPolis(sellTarget) ? (
+              <>
+                <Input
+                  label="Email pembeli"
+                  type="email"
+                  value={buyerEmail}
+                  onChange={(event) => setBuyerEmail(event.target.value)}
+                  placeholder="pembeli@email.com"
+                />
+                <div className="border-warning/40 bg-warning/5 text-12 rounded-xl border p-3 text-neutral-800">
+                  <p className="font-semibold text-neutral-900">Polis ikut berpindah</p>
+                  <p className="mt-1">
+                    Polis {sellTarget.polisNumber} akan menunggu diambil alih pembeli. Ia punya{' '}
+                    <strong>30 hari</strong> untuk menyelesaikannya — lewat itu polis berakhir
+                    terhitung sejak hari ini.
+                  </p>
+                  <p className="mt-1">
+                    Urusan sisa premi diselesaikan langsung dengan pihak asuransi, tidak lewat
+                    aplikasi ini.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-12 text-neutral-700">
+                Kalau ada yang pernah meminta plat ini, dia akan dikabari lewat email.
+              </p>
+            )}
+          </div>
+        )}
+      </Modal>
     </PageContainer>
   );
 }
