@@ -17,6 +17,7 @@ import {
   Phone,
   ShieldCheck,
   Star,
+  Truck,
   type LucideIcon,
 } from 'lucide-react';
 import { confirm } from '@/components/feedback/confirm';
@@ -281,7 +282,7 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={openEditProfile}
-            className="mt-4 rounded-lg bg-deep-blue-500/20 px-4 py-2 text-sm font-medium text-deep-blue-500 transition hover:bg-deep-blue-500"
+            className="bg-deep-blue-500/20 text-deep-blue-500 hover:bg-deep-blue-500 mt-4 rounded-lg px-4 py-2 text-sm font-medium transition"
           >
             Edit Profil
           </button>
@@ -309,11 +310,16 @@ export function ProfilePage() {
               label="Klaim Saya"
               onClick={() => navigate(ROUTES.claims)}
             />
-			<MenuRow
-				icon={FileText}
-				label="Polis Saya"
-				onClick={() => navigate(ROUTES.insurancePolicies)}
-			/>
+            <MenuRow
+              icon={FileText}
+              label="Polis Saya"
+              onClick={() => navigate(ROUTES.insurancePolicies)}
+            />
+            <MenuRow
+              icon={Truck}
+              label="Pesanan Derek"
+              onClick={() => navigate(ROUTES.towingOrders)}
+            />
           </MenuSection>
 
           <MenuSection>
@@ -342,10 +348,10 @@ export function ProfilePage() {
           <button
             type="button"
             onClick={handleLogout}
-            className="drive-card flex w-full items-center justify-between rounded-2xl p-4 text-xs font-medium text-danger"
+            className="drive-card text-danger flex w-full items-center justify-between rounded-2xl p-4 text-xs font-medium"
           >
             <span>Keluar</span>
-            <LogOut className="size-5 text-danger" />
+            <LogOut className="text-danger size-5" />
           </button>
         </div>
       </div>

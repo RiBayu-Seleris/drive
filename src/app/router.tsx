@@ -132,6 +132,9 @@ const PaymentSuccessPage = lazy(() =>
 const TowingOrderPage = lazy(() =>
   import('@/features/towing/pages/TowingOrderPage').then((m) => ({ default: m.TowingOrderPage })),
 );
+const TowingOrdersPage = lazy(() =>
+  import('@/features/towing/pages/TowingOrdersPage').then((m) => ({ default: m.TowingOrdersPage })),
+);
 const TowingStatusPage = lazy(() =>
   import('@/features/towing/pages/TowingStatusPage').then((m) => ({ default: m.TowingStatusPage })),
 );
@@ -491,6 +494,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.claimApproved, element: protect(<ClaimApprovedPage />) },
       { path: ROUTES.rating, element: protect(<RatingPage />) },
       { path: ROUTES.towingOrder, element: protect(<TowingOrderPage />) },
+      { path: ROUTES.towingOrders, element: protect(<TowingOrdersPage />) },
       { path: ROUTES.towingStatus, element: protect(<TowingStatusPage />) },
       { path: ROUTES.towingTracking, element: protect(<TowingTrackingPage />) },
 

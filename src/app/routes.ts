@@ -85,6 +85,7 @@ export const ROUTES = {
 
   // Towing (sisi user)
   towingOrder: '/towing/order',
+  towingOrders: '/towing/orders',
   towingStatus: '/towing/:code/status',
   towingTracking: '/towing/:code/tracking',
 
