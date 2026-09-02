@@ -104,6 +104,8 @@ export const ROUTES = {
   mitraArmadaEdit: '/mitra/armada/:id/edit',
   mitraKemitraan: '/mitra/kemitraan',
   mitraBengkelKemitraan: '/mitra/bengkel/kemitraan',
+  mitraBengkelProfil: '/mitra/bengkel/profil',
+  mitraTarif: '/mitra/tarif',
   mitraOrder: '/mitra/order',
   mitraOrderTerima: '/mitra/order/diterima',
   mitraOrderTracking: '/mitra/order/tracking',

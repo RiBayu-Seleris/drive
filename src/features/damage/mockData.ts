@@ -75,9 +75,9 @@ const ESTIMATION_ITEMS = [
  * - `percentage` total = rata-rata sisi yang rusak, jadi gauge nyambung
  *   dengan kartu per-sisi dan sisi 0% tidak menurunkan skor utama.
  */
-export function makeMockDamageResult(
-  submission?: { sides: Array<{ id: string; damaged: boolean | null }> },
-): DamageResult {
+export function makeMockDamageResult(submission?: {
+  sides: Array<{ id: string; damaged: boolean | null }>;
+}): DamageResult {
   const damaged = new Set<DamageSide>();
   if (submission) {
     for (const s of submission.sides) {
@@ -109,6 +109,10 @@ export function makeMockDamageResult(
       detail,
       percentage,
       severity: severityLabel(percentage),
+      // Data contoh selalu "sudah terbuka", jadi ringkasannya dihitung langsung
+      // dari rinciannya — sama seperti hasil sungguhan yang laporannya dibayar.
+      damagePointCount: Object.values(detail).reduce((sum, items) => sum + items.length, 0),
+      affectedSides: Object.values(avgSeverityPerSide).filter((v) => v > 0).length,
     },
     estimation: {
       items: ESTIMATION_ITEMS,

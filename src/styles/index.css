@@ -239,7 +239,11 @@ body {
     border: 1px solid #1e2a34;
     border-radius: var(--radius-card);
     background-color: var(--color-neutral-100);
-    background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0) 46%);
+    background-image: linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0) 46%
+    );
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
       0 14px 28px -22px rgba(0, 0, 0, 0.95);
@@ -376,6 +380,29 @@ body {
     }
   }
 
+  /*
+   * Pita cahaya pemindai — sepupu .hud-sweep, tapi TANPA animasi sendiri.
+   *
+   * .hud-sweep bergerak dengan keyframes CSS: sekali arah, lajunya lepas dari
+   * apa pun. Yang ini posisinya digerakkan pemanggil supaya bisa satu irama
+   * dengan hal lain di layar yang sama — di layar analisis, dengan irisan yang
+   * memotong kendaraan. Dua sapuan pada ketinggian berbeda di satu panel
+   * terbaca sebagai dua alat yang tidak saling kenal.
+   */
+  .hud-scanline {
+    position: absolute;
+    inset-inline: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(173, 237, 31, 0.12) 40%,
+      rgba(230, 255, 168, 0.55) 50%,
+      rgba(173, 237, 31, 0.12) 60%,
+      transparent
+    );
+  }
+
   /* Pembacaan data: angka & kode dalam monospace. */
   .hud-readout {
     font-family: var(--font-mono);
@@ -411,16 +438,8 @@ body {
       /* Kisi teknis tipis — memberi kesan instrumen seperti di poster tanpa
          menambah satu pun berkas gambar. Opasitasnya sengaja sangat rendah;
          yang dicari tekstur, bukan pola yang terbaca. */
-      repeating-linear-gradient(
-        0deg,
-        rgba(173, 237, 31, 0.05) 0 1px,
-        transparent 1px 34px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        rgba(173, 237, 31, 0.05) 0 1px,
-        transparent 1px 34px
-      );
+        repeating-linear-gradient(0deg, rgba(173, 237, 31, 0.05) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(90deg, rgba(173, 237, 31, 0.05) 0 1px, transparent 1px 34px);
   }
 
   /*

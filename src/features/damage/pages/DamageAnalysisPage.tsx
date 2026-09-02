@@ -15,13 +15,10 @@ import { storage } from '@/lib/storage/storage';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useScanServices } from '@/features/vehicle-scan/services/scanServicesContext';
 import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/scanStore';
-import {
-  DEFAULT_MAX_PURCHASE_DAMAGE_PCT,
-  getInsuranceProducts,
-} from '@/features/insurance/api';
+import { DEFAULT_MAX_PURCHASE_DAMAGE_PCT, getInsuranceProducts } from '@/features/insurance/api';
 import { useDamageStore } from '../store/damageStore';
 import { claimInferenceTicket, fetchDamageDetail } from '../api/damageApi';
-import { RadialProgress } from '../components/RadialProgress';
+import { AnalysisVerdict } from '../components/AnalysisVerdict';
 import type { DamageItem, DamageResult, DamageSide } from '../types';
 import { MockDataBadge } from '../components/MockDataBadge';
 import Lock from '/assets/damage_analysis/red-lock.svg';
@@ -206,7 +203,7 @@ export function DamageAnalysisPage() {
     );
   }
 
-  const { avgSeverityPerSide, detail, percentage } = result.repair;
+  const { avgSeverityPerSide, detail, percentage, damagePointCount, affectedSides } = result.repair;
   const sideDetails: DamageItem[] = detail[selectedSide] ?? [];
   const payLocked = isAuthenticated && !reportUnlocked;
   // damageFree tetap berarti "tidak ada kerusakan sama sekali" — dipakai untuk
@@ -287,12 +284,20 @@ export function DamageAnalysisPage() {
 
         {/* Konten hasil — di-blur untuk guest */}
         <div className={isAuthenticated ? '' : 'pointer-events-none blur-[3px] select-none'}>
-          {/* Gauge */}
-          <div className="flex justify-center py-2">
-            <div className="flex size-[300px] items-center justify-center rounded-full bg-neutral-100 p-[30px] shadow-[0_4px_30px_0_#0000000d]">
-              <RadialProgress value={percentage} className="relative size-full" />
-            </div>
-          </div>
+          {/*
+            Putusan analisis. Dulu gauge donat (`RadialProgress`) — komponennya
+            masih ada di folder ini kalau sewaktu-waktu mau dipakai lagi.
+            Diganti karena busur berjarum meminjam bahasa alat ukur: ia
+            menyiratkan sesuatu yang sedang berjalan, padahal ini kesimpulan
+            yang sudah selesai dihitung.
+          */}
+          <AnalysisVerdict
+            percentage={percentage}
+            avgSeverityPerSide={avgSeverityPerSide}
+            damagePointCount={damagePointCount}
+            affectedSides={affectedSides}
+            className="px-4 pt-1 pb-3"
+          />
 
           {insurancePurchaseMode && !insurable && (
             <div className="border-danger/30 bg-danger/10 mx-4 mb-4 rounded-lg border p-3 text-left">
@@ -377,7 +382,29 @@ export function DamageAnalysisPage() {
 
                 {/* Daftar kerusakan */}
                 <div className="space-y-3 px-4">
-                  {sideDetails.length === 0 ? (
+                  {payLocked ? (
+                    /*
+                      Rincian dikunci di SERVER, jadi daftarnya memang datang
+                      kosong. Tanpa cabang ini halaman jatuh ke kalimat "tidak
+                      ada kerusakan terdeteksi" — pernyataan yang salah, dan
+                      langsung membantah angka kerusakan di kartu putusan tepat
+                      di atasnya. Baris buram ini cuma penanda tempat: tidak
+                      membawa data apa pun untuk dibaca dari inspect element.
+                    */
+                    Array.from({ length: 3 }, (_, index) => (
+                      <div
+                        key={index}
+                        aria-hidden
+                        className="flex items-center gap-4 rounded-lg border border-neutral-300 bg-neutral-100 p-4"
+                      >
+                        <div className="size-12 shrink-0 rounded-md bg-neutral-300/60" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 w-2/5 rounded bg-neutral-300/60" />
+                          <div className="h-2.5 w-3/5 rounded bg-neutral-300/40" />
+                        </div>
+                      </div>
+                    ))
+                  ) : sideDetails.length === 0 ? (
                     <p className="text-12 py-4 text-center text-neutral-600">
                       Tidak ada kerusakan terdeteksi pada bagian{' '}
                       {SIDE_LABELS[selectedSide].toLowerCase()}.
@@ -467,7 +494,7 @@ export function DamageAnalysisPage() {
         {!isAuthenticated && (
           <div className="absolute inset-x-0 top-[36%] z-50 px-5">
             <div className="drive-card flex flex-row gap-x-3 rounded-2xl px-4 py-5 shadow-[0_14px_35px_0_rgba(15,23,42,0.14)]">
-              <div className="mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#c2f347] to-[#83bd04] p-2 text-on-brand">
+              <div className="text-on-brand mt-3 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#c2f347] to-[#83bd04] p-2">
                 <Info className="h-full w-full" />
               </div>
               <div className="flex min-w-0 flex-col items-start justify-center gap-y-3">

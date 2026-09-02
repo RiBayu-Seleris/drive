@@ -31,6 +31,12 @@ function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
 }
 
+/** Cacah bulat tak-negatif; apa pun yang bukan angka wajar jadi 0. */
+function asCount(v: unknown): number {
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+}
+
 function asString(v: unknown, fallback: string): string {
   return typeof v === 'string' ? v : fallback;
 }
@@ -39,7 +45,10 @@ function normalizePlateValue(value: string | null | undefined): string {
   return normalizeVehiclePlate(value ?? '');
 }
 
-function rememberInferencePlate(ticket: string | undefined, plateNumber: string | null | undefined) {
+function rememberInferencePlate(
+  ticket: string | undefined,
+  plateNumber: string | null | undefined,
+) {
   const normalizedPlate = normalizePlateValue(plateNumber);
   if (!ticket || !normalizedPlate) return;
 
@@ -154,6 +163,21 @@ function mapBackendResult(raw: Record<string, unknown>): DamageResult {
     {} as Record<DamageSide, DamageItem[]>,
   );
 
+  /*
+   * Ringkasan yang selamat dari penyensoran laporan berbayar.
+   *
+   * `damage_point_count` dihitung gateway sebelum menyensor. `stages` sudah
+   * lebih dulu ada di payload ringkas endpoint detail — jumlah sisi yang
+   * terdampak — dan dipakai daftar aktivitas. Keduanya cuma dipakai sebagai
+   * cadangan: kalau rinciannya memang terbuka, hitung saja langsung dari sana,
+   * supaya angka di layar selalu cocok dengan daftar yang bisa dibuka user.
+   */
+  const detailPoints = Object.values(detail).reduce((sum, items) => sum + items.length, 0);
+  const detailSides = Object.values(avgSeverityPerSide).filter((v) => v > 0).length;
+  const damagePointCount =
+    detailPoints > 0 ? detailPoints : asCount(output.damage_point_count ?? raw.damage_point_count);
+  const affectedSides = detailSides > 0 ? detailSides : asCount(damageResult.stages);
+
   // Estimasi biaya ada di repairResult.
   const estimationItems = Array.isArray(repairResult.estimation_detail)
     ? repairResult.estimation_detail.map(mapEstimationItem)
@@ -185,6 +209,8 @@ function mapBackendResult(raw: Record<string, unknown>): DamageResult {
       detail,
       percentage: derivedPercentage || rawPercentage,
       severity: asString(damageResult.severity, '-'),
+      damagePointCount,
+      affectedSides,
     },
     estimation: {
       items: estimationItems,
@@ -220,7 +246,14 @@ function zeroDamageResult(): DamageResult {
     {} as Record<DamageSide, DamageItem[]>,
   );
   return {
-    repair: { avgSeverityPerSide: zeros, detail: empty, percentage: 0, severity: '-' },
+    repair: {
+      avgSeverityPerSide: zeros,
+      detail: empty,
+      percentage: 0,
+      severity: '-',
+      damagePointCount: 0,
+      affectedSides: 0,
+    },
     estimation: { items: [], totalPrice: '-' },
     createdAt: new Date().toISOString(),
   };
@@ -278,7 +311,8 @@ export async function analyzeDamage(submission: DamageSubmission): Promise<Damag
     : '/v1/ai-noauth/damage/create';
   const res = await userApi.post<{ data?: Record<string, unknown> }>(endpoint, payload);
   const result = mapBackendResult(asRecord(res.data?.data));
-  result.plateNumber = normalizePlateValue(result.plateNumber ?? submission.plateNumber) || undefined;
+  result.plateNumber =
+    normalizePlateValue(result.plateNumber ?? submission.plateNumber) || undefined;
   rememberInferencePlate(result.ticket, result.plateNumber);
   return result;
 }

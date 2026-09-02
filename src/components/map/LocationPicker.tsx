@@ -150,6 +150,12 @@ export function LocationPicker({ value, onPick, className }: LocationPickerProps
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          // Pencarian berjalan sambil mengetik, jadi Enter tidak punya tugas di
+          // sini — dan tanpa penahan ini Enter akan mengirim form induknya
+          // (pendaftaran mitra, data bengkel) sebelum lokasinya dipilih.
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.preventDefault();
+          }}
           placeholder="Cari alamat / tempat"
           className="focus:border-deep-blue-500 h-10 w-full rounded-lg border border-neutral-400 bg-neutral-100 pr-3 pl-9 text-sm focus:outline-none"
         />

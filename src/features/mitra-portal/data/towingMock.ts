@@ -1,4 +1,4 @@
-import { BarChart3, FileText, PackageCheck, Truck, UserRound, Wallet } from 'lucide-react';
+import { BarChart3, FileText, PackageCheck, Receipt, Truck, UserRound, Wallet } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import type { MitraActivity, QuickAction } from '../types';
 
@@ -63,6 +63,13 @@ export const TOWING_QUICK_ACTIONS: QuickAction[] = [
     icon: PackageCheck,
     tint: TINT_GREEN,
     to: ROUTES.mitraOrder,
+  },
+  {
+    key: 'tarif',
+    label: 'Tarif Derek',
+    icon: Receipt,
+    tint: TINT_AMBER,
+    to: ROUTES.mitraTarif,
   },
 ];
 

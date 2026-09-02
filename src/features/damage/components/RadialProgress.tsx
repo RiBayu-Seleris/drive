@@ -15,6 +15,25 @@ const OUTER_RING_PADDING = 10;
 const INNER_RING_SPREAD = 20;
 const CENTER_DISC_PADDING = 16;
 
+/*
+ * Tiga lapis permukaan gauge.
+ *
+ * Rancangan aslinya bertumpuk seperti relief: piringan luar, lalu permukaan
+ * cincin tempat track duduk, lalu cakram tengah tempat angkanya. Di tema terang
+ * ketiganya PUTIH dan yang memisahkan cuma bayangan halus. Saat pindah ke tema
+ * gelap, ketiganya diganti #131c24 begitu saja — satu warna untuk tiga lapis
+ * yang berbeda, jadi reliefnya hilang dan seluruh bagian ini terbaca sebagai
+ * satu gumpalan gelap.
+ *
+ * Tumpukannya dipertahankan; yang diperbaiki cara memisahkannya. Di latar gelap
+ * bayangan hitam tidak terlihat, jadi pemisahnya beda TERANG antar lapis —
+ * cincin lebih terang daripada piringan luar, cakram tengah lebih dalam —
+ * ditambah garis rambut di tiap tepi.
+ */
+const SURFACE_RING = '#182430';
+const SURFACE_DISC = '#0b1218';
+const SURFACE_EDGE = '#223039';
+
 function getSeverityColor(value: number) {
   if (value <= 33) return 'var(--color-severity-green)';
   if (value <= 66) return 'var(--color-severity-yellow)';
@@ -31,12 +50,21 @@ function getSeverityLabel(value: number) {
 }
 
 /**
- * Gauge donat tingkat kerusakan (port ProgressLevel.vue).
+ * Gauge donat tingkat kerusakan.
  *
- * Track abu-abu dengan bukaan di bawah, lalu diisi busur gradient yang dipetakan
- * ke skala penuh 0..100: hijau di awal → kuning/oren → merah di akhir. Karena
- * isian hanya disingkap sampai `value`, kerusakan kecil (<10%) hanya menampilkan
- * hijau, sedangkan 100% memunculkan gabungan hijau-kuning/oren-merah.
+ * Track dengan bukaan di bawah, lalu diisi busur gradient yang dipetakan ke
+ * skala penuh 0..100: hijau di awal → kuning/oren → merah di akhir. Karena
+ * isian hanya disingkap sampai `value`, kerusakan kecil (<10%) hanya
+ * menampilkan hijau, sedangkan 100% memunculkan gabungan hijau-kuning-merah.
+ *
+ * Warna hijau/kuning/merah SENGAJA bukan hijau merek. Ia menyatakan seberapa
+ * parah kerusakannya, memakai skala yang sudah dikenal orang dari lampu lalu
+ * lintas; menggantinya dengan warna merek akan menghapus artinya.
+ *
+ * TIDAK ada tik skala di sini. Sempat dicoba dan hasilnya terbaca sebagai
+ * speedometer — instrumen yang menunjukkan sesuatu sedang berjalan. Layar ini
+ * menyampaikan satu kesimpulan yang sudah selesai dihitung, dan itu disampaikan
+ * oleh angka besar di tengah, bukan oleh jarum pada skala.
  */
 export function RadialProgress({
   value,
@@ -45,9 +73,9 @@ export function RadialProgress({
   size = 240,
   thickness,
 }: RadialProgressProps) {
-  const gradientId = `radial-grad-${useId().replace(/:/g, '')}`;
-  const ringShadowId = `radial-ring-shadow-${useId().replace(/:/g, '')}`;
-  const discShadowId = `radial-disc-shadow-${useId().replace(/:/g, '')}`;
+  const uid = useId().replace(/:/g, '');
+  const gradientId = `radial-grad-${uid}`;
+  const glowId = `radial-glow-${uid}`;
   const clamped = Math.min(100, Math.max(0, value));
   const displayLabel = label ?? getSeverityLabel(clamped);
 
@@ -68,12 +96,13 @@ export function RadialProgress({
   const [ax, ay] = toXY(startDeg);
   const [bx, by] = toXY(endDeg);
   const arc = `M ${ax.toFixed(2)} ${ay.toFixed(2)} A ${r} ${r} 0 1 1 ${bx.toFixed(2)} ${by.toFixed(2)}`;
-  const valueFontSize = Math.round(size * 0.135);
-  const labelFontSize = Math.round(size * 0.05);
-  const labelGap = Math.round(size * 0.025);
+
+  const valueFontSize = Math.round(size * 0.15);
+  const labelFontSize = Math.round(size * 0.052);
+  const labelGap = Math.round(size * 0.04);
   const valueTextY = displayLabel ? cy - (labelFontSize + labelGap) / 2 : cy;
-  const labelTextY = cy + (valueFontSize + labelGap) / 2;
-  const valueTextColor = getSeverityColor(clamped);
+  const labelTextY = cy + (valueFontSize + labelGap) / 2 - size * 0.02;
+  const severityColor = getSeverityColor(clamped);
 
   return (
     <div
@@ -101,44 +130,25 @@ export function RadialProgress({
             <stop offset="90%" stopColor="var(--color-severity-red)" />
             <stop offset="100%" stopColor="var(--color-severity-red)" />
           </linearGradient>
-          <filter
-            id={ringShadowId}
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feDropShadow
-              dx="0"
-              dy="12"
-              stdDeviation="15"
-              floodColor="#131c24"
-              floodOpacity="0.06"
-            />
-          </filter>
-          <filter
-            id={discShadowId}
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feDropShadow
-              dx="0"
-              dy="10"
-              stdDeviation="12.5"
-              floodColor="#131c24"
-              floodOpacity="0.10"
-            />
-          </filter>
+          {/* Pendar tipis di dalam cakram, berwarna sesuai tingkat keparahan —
+              cukup untuk memisahkan angka dari cakramnya, tanpa menyala. */}
+          <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={severityColor} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={severityColor} stopOpacity="0" />
+          </radialGradient>
         </defs>
 
-        {/* Cincin dalam — permukaan putih tempat track berada (efek timbul). */}
-        <circle cx={cx} cy={cy} r={innerRingR} fill="#131c24" filter={`url(#${ringShadowId})`} />
+        {/* Lapis 2 — permukaan cincin tempat track duduk. */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={innerRingR}
+          fill={SURFACE_RING}
+          stroke={SURFACE_EDGE}
+          strokeWidth="1"
+        />
 
-        {/* Track abu-abu. */}
+        {/* Track: alur tempat isian berjalan. */}
         <path d={arc} fill="none" stroke="#223039" strokeWidth={t} strokeLinecap="round" />
 
         {/* Isian sesuai persentase. */}
@@ -155,14 +165,24 @@ export function RadialProgress({
           />
         )}
 
-        {/* Cakram tengah putih + teks. */}
-        <circle cx={cx} cy={cy} r={discR} fill="#131c24" filter={`url(#${discShadowId})`} />
+        {/* Lapis 3 — cakram tengah, lebih dalam daripada cincinnya. */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={discR}
+          fill={SURFACE_DISC}
+          stroke={SURFACE_EDGE}
+          strokeWidth="1"
+        />
+        <circle cx={cx} cy={cy} r={discR} fill={`url(#${glowId})`} />
+
         <text
           x={cx}
           y={valueTextY}
           textAnchor="middle"
           dominantBaseline="central"
-          fill={valueTextColor}
+          fill={severityColor}
+          fontFamily="var(--font-display)"
           fontSize={valueFontSize}
           fontWeight={700}
         >
@@ -174,7 +194,7 @@ export function RadialProgress({
             y={labelTextY}
             textAnchor="middle"
             dominantBaseline="central"
-            fill="#131c24"
+            fill="var(--color-neutral-700)"
             fontSize={labelFontSize}
             fontWeight={500}
           >

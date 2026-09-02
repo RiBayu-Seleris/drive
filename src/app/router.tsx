@@ -253,6 +253,16 @@ const WorkshopJobDetailPage = lazy(() =>
     default: m.WorkshopJobDetailPage,
   })),
 );
+const WorkshopProfilPage = lazy(() =>
+  import('@/features/mitra-portal/pages/workshop/WorkshopProfilPage').then((m) => ({
+    default: m.WorkshopProfilPage,
+  })),
+);
+const TarifPage = lazy(() =>
+  import('@/features/mitra-portal/pages/towing/TarifPage').then((m) => ({
+    default: m.TarifPage,
+  })),
+);
 const MitraRegisterPage = lazy(() =>
   import('@/features/mitra/pages/MitraRegisterPage').then((m) => ({
     default: m.MitraRegisterPage,
@@ -495,6 +505,8 @@ export const router = createBrowserRouter([
           { path: ROUTES.mitraArmadaEdit, element: <ArmadaEditPage /> },
           { path: ROUTES.mitraKemitraan, element: <KemitraanPage /> },
           { path: ROUTES.mitraBengkelKemitraan, element: <WorkshopKemitraanPage /> },
+          { path: ROUTES.mitraBengkelProfil, element: <WorkshopProfilPage /> },
+          { path: ROUTES.mitraTarif, element: <TarifPage /> },
           { path: ROUTES.mitraOrder, element: <OrderListPage /> },
           { path: ROUTES.mitraOrderTerima, element: <OrderTerimaPage /> },
           { path: ROUTES.mitraOrderTracking, element: <OrderTrackingPage /> },

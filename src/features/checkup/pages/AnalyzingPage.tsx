@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Check } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Logo } from '@/components/brand/Logo';
 import { ScanTurntable } from '@/components/brand/ScanTurntable';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { Button } from '@/components/ui/Button';
 import { extractErrorMessage } from '@/lib/api/client';
 import { cn } from '@/lib/utils/cn';
@@ -12,6 +13,21 @@ import { isInsuranceScan, useScanStore } from '@/features/vehicle-scan/store/sca
 import { analyzeDamage } from '@/features/damage/api/damageApi';
 import { useDamageStore } from '@/features/damage/store/damageStore';
 import { scanSignature } from '../scanSignature';
+
+/*
+ * Hologram three.js dimuat TERPISAH dari bundel utama.
+ *
+ * three plus model dan decoder-nya hampir satu megabyte. Layar ini justru yang
+ * muncul saat orang sedang menunggu, jadi memblokirnya sampai semua itu selesai
+ * diunduh akan memperpanjang penungguan yang seharusnya ia perpendek.
+ *
+ * Selama unduhannya berjalan — dan seterusnya kalau gagal, atau kalau peramban
+ * tidak punya WebGL — yang tampil `ScanTurntable`, animasi SVG yang sudah ada
+ * di bundel utama. Jadi tidak ada layar kosong, dan tidak ada yang terbuang.
+ */
+const HoloCar = lazy(() =>
+  import('@/components/brand/HoloCar').then((m) => ({ default: m.HoloCar })),
+);
 
 /**
  * Layar tunggu saat foto sedang dianalisis.
@@ -62,8 +78,30 @@ const FINISH_MS = 1400;
 const FRAME_MS = 1900;
 /** Laju putar kendaraan (radian per detik) saat memindai. */
 const SPIN_RATE = 0.9;
+/** Tinggi pita cahaya pemindai, dalam persen tinggi panel. */
+const SCANLINE_HEIGHT = 26;
+/**
+ * Laju sapuan pemindai naik-turun (satu lintasan penuh ≈ 2,2 detik).
+ *
+ * Sengaja LEPAS dari laju putar. Dulu tinggi sapuan dihitung dari sudut putar,
+ * jadi keduanya terkunci: sapuan ikut melambat bersama rotasi dan nyaris tidak
+ * terbaca sebagai gerakan memindai. Dipisah, gerakan naik-turunnya punya irama
+ * sendiri — itu yang bikin layar ini terlihat seperti alat yang bekerja.
+ */
+const SWEEP_RATE = 0.45;
 /** Setelah selesai kendaraannya tetap berputar, tapi setengah laju. */
 const SPIN_RATE_DONE = 0.35;
+/**
+ * Sapuan pemindai juga TIDAK berhenti setelah 100%, hanya melambat dan meredup.
+ *
+ * Alasannya sama dengan putaran kendaraan: layar yang membeku total terasa
+ * seperti aplikasinya mati, padahal user masih harus menekan "Lihat Hasil
+ * Analisis". Melambat sekaligus menyampaikan bahwa pekerjaannya sudah kelar —
+ * berbeda dari sapuan penuh yang berarti masih membaca.
+ */
+const SWEEP_RATE_DONE = 0.2;
+/** Redup sapuan setelah selesai; masih terlihat, tidak lagi menuntut perhatian. */
+const SCANLINE_OPACITY_DONE = 0.45;
 
 type Phase = 'scanning' | 'finishing' | 'ready' | 'error';
 
@@ -101,6 +139,15 @@ export function AnalyzingPage() {
   const [frame, setFrame] = useState(0);
   const [target, setTarget] = useState<string>(ROUTES.damageAnalysis);
   const [angle, setAngle] = useState(0);
+  const [sweep, setSweep] = useState(0);
+  // Sekali gagal, jangan dicoba lagi: kegagalannya bukan hal sementara (model
+  // tidak ada, WebGL mati), dan mencoba ulang tiap render akan menyalakan
+  // permintaan jaringan berulang di layar yang sedang sibuk.
+  const [holoFailed, setHoloFailed] = useState(false);
+  const handleHoloUnavailable = useCallback(() => setHoloFailed(true), []);
+  // Dibaca sekali: sapuan cahaya itu hiasan, jadi ikut padam bila user memilih
+  // mengurangi animasi. Cincin persentase tetap hidup — ia membawa informasi.
+  const reduceMotion = useMemo(prefersReducedMotion, []);
 
   /** Menahan StrictMode agar tidak mengirim foto dua kali di mode pengembangan. */
   const startedRef = useRef(-1);
@@ -121,6 +168,8 @@ export function AnalyzingPage() {
   const finishRef = useRef<{ from: number; at: number } | null>(null);
   /** Sudut putar disimpan di ref agar loop tidak bergantung pada render. */
   const angleRef = useRef(0);
+  /** Fase sapuan: 0..1 turun dari tepi atas panel, 1..2 naik lagi, berulang. */
+  const sweepRef = useRef(0);
 
   /**
    * Label foto yang benar-benar dikirim. Gambarnya tidak lagi ditampilkan,
@@ -174,11 +223,19 @@ export function AnalyzingPage() {
       const dt = Math.min(64, now - last) / 1000;
       last = now;
 
-      // Kendaraan terus berputar, termasuk setelah selesai — layar yang
-      // membeku total terasa seperti aplikasinya berhenti.
+      // Kendaraan berputar dan sapuan menyapu terus, termasuk setelah selesai —
+      // layar yang membeku total terasa seperti aplikasinya berhenti. Keduanya
+      // hanya melambat, tidak berhenti.
       if (!reduceMotion) {
         angleRef.current += (phase === 'ready' ? SPIN_RATE_DONE : SPIN_RATE) * dt;
         setAngle(angleRef.current);
+
+        // Gelombang segitiga: turun lurus, naik lurus, tanpa melambat di ujung.
+        // Sinus sempat dipakai dan sapuannya menggantung lama di atas dan di
+        // bawah — terbaca seperti berhenti, bukan berbalik arah.
+        sweepRef.current =
+          (sweepRef.current + (phase === 'ready' ? SWEEP_RATE_DONE : SWEEP_RATE) * dt) % 2;
+        setSweep(1 - Math.abs(sweepRef.current - 1));
       }
 
       if (phase === 'ready') {
@@ -279,6 +336,20 @@ export function AnalyzingPage() {
   const activeStep = ready ? STEPS.length : Math.max(0, passed - 1);
   const current = shots[frame % Math.max(1, shots.length)];
 
+  /*
+   * Animasi SVG dipakai di TIGA tempat: penyangga selagi three.js diunduh,
+   * cadangan bila render-nya melempar, dan pengganti tetap setelah gagal.
+   * Ditulis sekali supaya ketiganya tidak bisa berbeda diam-diam.
+   */
+  const turntable = (
+    <ScanTurntable
+      angle={angle}
+      sweep={sweep}
+      scanning={!reduceMotion}
+      className="relative block size-full"
+    />
+  );
+
   if (phase === 'error') {
     return (
       <PageContainer>
@@ -334,14 +405,48 @@ export function AnalyzingPage() {
                 'repeating-linear-gradient(0deg,#aded1f 0 1px,transparent 1px 26px),repeating-linear-gradient(90deg,#aded1f 0 1px,transparent 1px 26px)',
             }}
           />
-          <ScanTurntable angle={angle} scanning={!ready} className="relative block size-full" />
+          {holoFailed ? (
+            turntable
+          ) : (
+            <ErrorBoundary fallback={turntable} onError={handleHoloUnavailable}>
+              <Suspense fallback={turntable}>
+                <HoloCar
+                  angle={angle}
+                  sweep={sweep}
+                  scanning={!reduceMotion}
+                  className="relative block size-full"
+                  onUnavailable={handleHoloUnavailable}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+
+          {/*
+            Pita cahaya yang menyapu seluruh panel dari atas ke bawah lalu naik
+            lagi — pola yang sama dengan kartu "Periksa Mobil Anda" di beranda.
+            Posisinya digerakkan JS, bukan keyframes CSS, supaya seirama dengan
+            irisan yang memotong kendaraan di dalam gambar: satu alat yang
+            memindai, bukan dua cahaya yang berjalan sendiri-sendiri.
+          */}
+          {!reduceMotion && (
+            <span
+              aria-hidden
+              className="hud-scanline z-10 transition-opacity duration-700"
+              style={{
+                height: `${SCANLINE_HEIGHT}%`,
+                top: `${sweep * 100}%`,
+                transform: 'translateY(-50%)',
+                opacity: ready ? SCANLINE_OPACITY_DONE : 1,
+              }}
+            />
+          )}
           {current && (
-            <span className="hud-readout text-deep-blue-500 absolute bottom-2.5 left-3 text-[10px] tracking-[0.16em] uppercase">
+            <span className="hud-readout text-deep-blue-500 absolute bottom-4 left-3 text-[10px] tracking-[0.16em] uppercase">
               {ready ? 'Semua sisi terbaca' : current}
             </span>
           )}
           {shots.length > 0 && (
-            <span className="hud-readout absolute right-3 bottom-2.5 text-[10px] text-neutral-700">
+            <span className="hud-readout absolute right-3 bottom-4 text-[10px] text-neutral-700">
               {String(ready ? shots.length : (frame % shots.length) + 1).padStart(2, '0')}/
               {String(shots.length).padStart(2, '0')}
             </span>

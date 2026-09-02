@@ -1,4 +1,4 @@
-import { BarChart3, ClipboardList, FileText, Wallet, Wrench } from 'lucide-react';
+import { BarChart3, ClipboardList, FileText, Store, Wallet, Wrench } from 'lucide-react';
 import { ROUTES } from '@/app/routes';
 import type { QuickAction } from '../types';
 
@@ -13,4 +13,5 @@ export const WORKSHOP_QUICK_ACTIONS: QuickAction[] = [
   { key: 'reports', label: 'Laporan Bengkel', icon: FileText, tint: TINT_GREEN, to: ROUTES.mitraLaporan },
   { key: 'saldo', label: 'Tarik Saldo', icon: Wallet, tint: TINT_RED, to: ROUTES.mitraTarikSaldo },
   { key: 'transactions', label: 'Transaction report', icon: BarChart3, tint: TINT_BLUE, to: ROUTES.mitraSaldo },
+  { key: 'profile', label: 'Data Bengkel', icon: Store, tint: TINT_AMBER, to: ROUTES.mitraBengkelProfil },
 ];

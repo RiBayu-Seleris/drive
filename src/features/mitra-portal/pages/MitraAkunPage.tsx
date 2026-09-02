@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Handshake, LogOut, User } from 'lucide-react';
+import { ChevronRight, Handshake, LogOut, Receipt, Store, User } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { confirm } from '@/components/feedback/confirm';
@@ -42,6 +42,44 @@ export function MitraAkunPage() {
             <p className="text-12 text-neutral-600 capitalize">{role.replace(/_/g, ' ')}</p>
           </div>
         </div>
+        {partnerType === 'workshop' && (
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.mitraBengkelProfil)}
+            className="drive-card mt-4 flex w-full items-center gap-3 rounded-2xl p-4 text-left transition active:scale-[0.99]"
+          >
+            <span className="bg-deep-blue-50 text-deep-blue-600 grid size-10 shrink-0 place-items-center rounded-full">
+              <Store className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="text-14 block font-semibold text-neutral-900">Data Bengkel</span>
+              <span className="text-12 block text-neutral-500">
+                Ubah alamat, titik peta, jam buka, dan foto
+              </span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-neutral-400" />
+          </button>
+        )}
+
+        {partnerType === 'towing' && (
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.mitraTarif)}
+            className="drive-card mt-4 flex w-full items-center gap-3 rounded-2xl p-4 text-left transition active:scale-[0.99]"
+          >
+            <span className="bg-deep-blue-50 text-deep-blue-600 grid size-10 shrink-0 place-items-center rounded-full">
+              <Receipt className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="text-14 block font-semibold text-neutral-900">Tarif Derek</span>
+              <span className="text-12 block text-neutral-500">
+                Tarif per kilometer, tarif dasar, dan tambahan malam
+              </span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-neutral-400" />
+          </button>
+        )}
+
         {/* Berlaku untuk mitra towing maupun bengkel — keduanya memakai alur
             kemitraan yang sama, hanya tujuan halamannya berbeda. */}
         {(partnerType === 'towing' || partnerType === 'workshop') && (

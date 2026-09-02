@@ -293,7 +293,7 @@ export function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(100%_68%_at_16%_6%,rgba(173,237,31,0.3),transparent_58%)]" />
         <div className="drive-header drive-fade-b absolute inset-0 opacity-35" />
 
-        <div className="relative flex h-full flex-col px-gutter pt-7">
+        <div className="px-gutter relative flex h-full flex-col pt-7">
           <Link to={ROUTES.home} className="mx-auto">
             <Logo className="[&_img]:h-9" />
           </Link>
@@ -357,7 +357,7 @@ export function HomePage() {
         inilah yang membuat halaman terbaca berlapis; tanpa itu ia kembali jadi
         tumpukan blok yang berhenti dan mulai di garis yang sama.
       */}
-      <div className="relative z-20 -mt-[62px] px-gutter">
+      <div className="px-gutter relative z-20 -mt-[62px]">
         <Link
           to={ROUTES.checkCondition}
           onClick={prepareStandardScan}
@@ -382,7 +382,7 @@ export function HomePage() {
 
       <div className="relative z-10 flex w-full flex-col">
         {isAuthenticated && (
-          <div className="mt-5 px-gutter">
+          <div className="px-gutter mt-5">
             <div className="overflow-hidden rounded-xl">
               {vehiclesQuery.isLoading ? (
                 <PolicyCardSkeleton />
@@ -410,9 +410,7 @@ export function HomePage() {
                     type="button"
                     className={cn(
                       'h-2 rounded-full transition-all',
-                      activePolicy === index
-                        ? 'bg-deep-blue-500 w-7'
-                        : 'w-2 bg-neutral-400',
+                      activePolicy === index ? 'bg-deep-blue-500 w-7' : 'w-2 bg-neutral-400',
                     )}
                     aria-label={`Lihat polis ${index + 1}`}
                     aria-current={activePolicy === index ? 'true' : undefined}
@@ -424,7 +422,7 @@ export function HomePage() {
           </div>
         )}
 
-        <section className="mt-5 px-gutter pb-7">
+        <section className="px-gutter mt-5 pb-7">
           <div className="grid grid-cols-4 items-stretch gap-2">
             {SERVICE_MENU.map((item) => (
               <Link
@@ -599,7 +597,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="mb-6 bg-neutral-100 px-gutter pt-2 pb-4">
+        <section className="px-gutter mb-6 bg-neutral-100 pt-2 pb-4">
           <span className="drive-eyebrow">Kenapa kami</span>
           <h2 className="drive-title mt-1.5 mb-4 text-[19px] text-neutral-900">
             Alasan orang bertahan
@@ -611,7 +609,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="mb-5 px-gutter">
+        <section className="px-gutter mb-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <span className="drive-eyebrow">Sering ditanya</span>
@@ -646,7 +644,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="flex w-full flex-col gap-y-2 px-gutter">
+        <section className="px-gutter flex w-full flex-col gap-y-2">
           <span className="drive-eyebrow">Cara kerja</span>
           <div className="mt-1.5 flex w-full flex-col gap-y-1.5">
             <p className="drive-title text-[22px] leading-tight text-neutral-900">
@@ -662,7 +660,7 @@ export function HomePage() {
           teksnya ikut tercetak di dalamnya, sehingga tidak bisa diterjemahkan,
           tidak terbaca pembaca layar, dan tidak ikut berubah saat rebrand.
         */}
-        <ol className="mt-5 mb-6 flex w-full flex-col gap-y-2 px-gutter">
+        <ol className="px-gutter mt-5 mb-6 flex w-full flex-col gap-y-2">
           {HOW_IT_WORKS.map((step, index) => (
             <li key={step.title} className="drive-card flex items-start gap-3.5 p-4">
               <span className="drive-chip-solid hud-readout mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-[#10200a]">
@@ -678,7 +676,7 @@ export function HomePage() {
           ))}
         </ol>
 
-        <section className="bg-neutral-100 px-gutter py-4">
+        <section className="px-gutter bg-neutral-100 py-4">
           <span className="drive-eyebrow">Bantuan</span>
           <h2 className="drive-title mt-1.5 mb-4 text-[16px] text-neutral-900">
             Ada yang mau ditanya?
@@ -702,16 +700,72 @@ export function HomePage() {
   );
 }
 
+/*
+ * Sisi kanan kartu polis: gambar kendaraan yang meluruh ke kiri bawah.
+ *
+ * Peluruhannya mengerjakan dua hal sekaligus. Ia menutup potongan gambar —
+ * hiasan bawaannya (800x498) memang sudah terpotong di sumbernya, mobilnya
+ * menyentuh tepi kanan berkas, dan dulu potongan itu bertemu sudut kartu
+ * sebagai garis lurus tajam yang terbaca sebagai salah pasang. Dan ia
+ * mengosongkan ruang untuk keterangan di kiri tanpa perlu memberi batas: di
+ * tempat tulisannya duduk, gambarnya sudah jadi transparan.
+ *
+ * Sumbunya menuju kiri-bawah, jadi bagian yang tetap pekat adalah pojok
+ * kanan-atas — tempat badan kendaraan paling terbaca.
+ */
+function PolicyCardArt({
+  src,
+  photo,
+  opacity,
+}: {
+  src: string;
+  /* Foto kendaraan sungguhan dipangkas mengisi bidangnya; hiasan bawaan
+     ditampilkan utuh, karena mobilnya sudah digambar pas di bingkainya. */
+  photo: boolean;
+  opacity: string;
+}) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className={`pointer-events-none absolute inset-y-0 right-0 h-full w-[62%] ${
+        photo ? 'object-cover object-center' : 'object-contain object-right'
+      } ${opacity}`}
+      style={{
+        maskImage: 'linear-gradient(to bottom left, #000 22%, transparent 72%)',
+        WebkitMaskImage: 'linear-gradient(to bottom left, #000 22%, transparent 72%)',
+      }}
+    />
+  );
+}
+
+/**
+ * Kartu polis di beranda.
+ *
+ * Susunannya tetap: keterangan di kiri, kendaraan di kanan. Yang berubah cuma
+ * SUMBER gambarnya — foto kendaraan user kalau ada, hiasan bawaan kalau belum.
+ * Kartu ini tentang polisnya, jadi tiga barisnya tidak berpindah tempat hanya
+ * karena fotonya tersedia.
+ */
 function PolicyVehicleCard({ vehicle }: { vehicle: SavedVehicle }) {
+  const hasPhoto = Boolean(vehicle.vehicleImage);
   return (
     <div className="drive-edge relative h-[166px] w-full shrink-0 overflow-hidden rounded-xl">
       <div className="absolute inset-0 bg-[radial-gradient(130%_110%_at_100%_0%,rgba(173,237,31,0.2),transparent_62%)]" />
-      <img
-        src="/assets/home/car.webp"
-        alt=""
-        className="absolute top-0 right-0 h-auto w-[240px] opacity-70"
+      <PolicyCardArt
+        src={hasPhoto ? vehicle.vehicleImage : '/assets/home/car.webp'}
+        photo={hasPhoto}
+        opacity={hasPhoto ? 'opacity-95' : 'opacity-70'}
       />
-      <div className="absolute top-4 left-4 flex max-w-[62%] flex-col gap-4">
+      {/* Peluruhan gelap tipis di bawah teks: foto kendaraan user paling sering
+          putih dan diambil di luar ruang, dan tanpa ini barisnya bisa hilang
+          begitu bagian yang kebetulan terang merambat ke kiri. */}
+      {hasPhoto && (
+        <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(11,18,24,0.92)_0%,rgba(11,18,24,0.72)_42%,transparent_70%)]" />
+      )}
+      <div className="absolute top-4 left-4 flex max-w-[56%] flex-col gap-4">
         <PolicyInfo label="No. Polis" value={vehicle.polisNumber} />
         <PolicyInfo label="Jenis Kendaraan" value={vehicle.vehicleName || vehicle.vehicleType} />
         <PolicyInfo label="Masa Berlaku" value={formatDate(vehicle.polisEnd)} />
@@ -724,11 +778,7 @@ function PolicyEmptyCard({ onOpenVehicles }: { onOpenVehicles: () => void }) {
   return (
     <div className="drive-edge relative h-[166px] w-full overflow-hidden rounded-xl">
       <div className="absolute inset-0 bg-[radial-gradient(130%_110%_at_100%_0%,rgba(173,237,31,0.14),transparent_62%)]" />
-      <img
-        src="/assets/home/car.webp"
-        alt=""
-        className="absolute top-0 right-0 h-auto w-[240px] opacity-40"
-      />
+      <PolicyCardArt src="/assets/home/car.webp" photo={false} opacity="opacity-40" />
       <div className="absolute top-4 left-4 flex max-w-[62%] flex-col gap-3">
         <PolicyInfo label="No. Polis" value="-" />
         <PolicyInfo label="Jenis Kendaraan" value="-" />
@@ -779,11 +829,15 @@ function HomeSection({
   children: ReactNode;
 }) {
   return (
-    <section className={cn('bg-neutral-100 px-gutter', className)}>
+    <section className={cn('px-gutter bg-neutral-100', className)}>
       <div className="mb-4 flex items-center justify-between pt-4">
         <h2 className="text-[15px] font-semibold text-neutral-800">{title}</h2>
         {action && (
-          <button type="button" onClick={onAction} className="cursor-pointer text-xs text-deep-blue-500">
+          <button
+            type="button"
+            onClick={onAction}
+            className="text-deep-blue-500 cursor-pointer text-xs"
+          >
             {action}
           </button>
         )}
@@ -990,11 +1044,7 @@ function EmergencySheet({ onClose }: { onClose: () => void }) {
               align="center"
               onClick={() => go(ROUTES.insuranceSearch)}
             />
-            <SheetItem
-              icon={FileText}
-              label="Klaim"
-              onClick={() => go(ROUTES.claims)}
-            />
+            <SheetItem icon={FileText} label="Klaim" onClick={() => go(ROUTES.claims)} />
           </SheetGroup>
 
           <SheetGroup title="DRIVE">

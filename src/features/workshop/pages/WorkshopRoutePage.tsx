@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { X, ExternalLink, LocateFixed } from 'lucide-react';
+import { ExternalLink, LocateFixed, QrCode, X } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
@@ -39,6 +39,15 @@ export function WorkshopRoutePage() {
     routeState && 'place' in routeState
       ? (routeState.place ?? null)
       : (routeState as RecommendationPlace | null);
+  /*
+   * Kode kunjungan dari "Antar Mandiri".
+   *
+   * Sebelumnya objek ini dititipkan ke halaman ini lalu diabaikan — kodenya
+   * tidak pernah muncul di layar mana pun, jadi tidak ada yang bisa ditunjukkan
+   * ke bengkel saat tiba. Halaman inilah tempatnya: user membuka rute sambil
+   * berkendara, dan begitu sampai, kode ini yang dipindai bengkel.
+   */
+  const visit = routeState && 'visit' in routeState ? (routeState.visit ?? null) : null;
   const workshopId = Number(useParams().id) || 0;
   const live = useLiveLocation();
   const userPoint = live.point;
@@ -170,6 +179,22 @@ export function WorkshopRoutePage() {
 
       {/* Kartu rute + Berhenti */}
       <div className="pb-safe border-t border-neutral-300 bg-neutral-100 px-5 pt-4">
+        {visit && (
+          <div className="drive-card mb-4 flex items-center gap-3 p-4">
+            <span className="drive-chip grid size-11 shrink-0 place-items-center rounded-xl">
+              <QrCode className="text-deep-blue-500 size-5" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <span className="drive-eyebrow">Tunjukkan saat tiba</span>
+              <p className="hud-readout text-deep-blue-500 mt-1 text-[15px] font-bold">
+                {visit.visitCode}
+              </p>
+              <p className="text-11 mt-0.5 text-neutral-600">
+                Bengkel memindai kode ini untuk mencatat kendaraan Anda sudah sampai.
+              </p>
+            </div>
+          </div>
+        )}
         <p className="text-16 text-center font-semibold text-neutral-900">
           {minutes > 0 ? `${Math.max(1, Math.round(minutes))} Menit` : 'Rute'}
           {km > 0 && ` · ${km.toFixed(1)} km`}

@@ -22,6 +22,17 @@ export interface DamageResult {
     detail: Record<DamageSide, DamageItem[]>;
     percentage: number;
     severity: string;
+    /*
+     * Ringkasan yang TETAP dikirim walau laporannya belum dibayar.
+     *
+     * `detail` disensor server saat belum dibayar, jadi menghitungnya dari situ
+     * selalu menghasilkan nol — dan layar hasil akan bilang "0 titik" pada
+     * kendaraan yang jelas-jelas penyok. Dua angka ini dihitung server SEBELUM
+     * menyensor: jumlahnya bukan isi laporan, justru itu yang membuat orang
+     * tahu ada apa di balik kunci.
+     */
+    damagePointCount: number;
+    affectedSides: number;
   };
   estimation: {
     items: EstimationItem[];

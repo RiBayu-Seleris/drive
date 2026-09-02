@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
 import { scanRepairJob, type RepairJob } from '../repairJobApi';
+import { scanWorkshopVisit } from '../workshopVisitApi';
 
 // Pustaka pembacanya ~120 kB (gzip). Dimuat hanya saat kamera benar-benar
 // diminta, supaya halaman antrean bengkel tetap ringan di jaringan seluler.
@@ -60,6 +61,7 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
 
     if (
       expected &&
+      !value.startsWith('WVS-') &&
       value !== normalize(expected.jobCode) &&
       value !== normalize(expected.claimNumber)
     ) {
@@ -69,6 +71,25 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
 
     setSaving(true);
     try {
+      /*
+       * Kode kunjungan mandiri (WVS-...) ditangani terpisah.
+       *
+       * Kunjungan mandiri bukan pekerjaan perbaikan — bisa datang tanpa klaim
+       * sama sekali — jadi ia punya endpoint sendiri dan memindainya hanya
+       * menandai kendaraan SUDAH TIBA. Tanpa cabang ini, kode WVS ditolak
+       * "tiket tidak ditemukan" padahal pelanggannya berdiri di depan meja.
+       */
+      if (value.startsWith('WVS-')) {
+        const visit = await scanWorkshopVisit(value);
+        toast.success(
+          `Kedatangan ${visit.vehiclePlate || 'kendaraan'} tercatat. Silakan lanjut pemeriksaan.`,
+        );
+        setCode('');
+        setCameraOn(false);
+        onClose();
+        return;
+      }
+
       const job = await scanRepairJob(value);
       toast.success('Tiket terverifikasi.');
       setCode('');
@@ -102,7 +123,7 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
     >
       <p className="text-12 mb-3 text-neutral-600">
         Minta pelanggan membuka tiketnya dan menekan <strong>Tampilkan kode</strong>, lalu arahkan
-        kamera ke barcode-nya. Bisa juga diketik manual — nomor klaim ikut diterima.
+        kamera ke barcode-nya. Bisa juga diketik manual — nomor klaim dan kode kunjungan (WVS) ikut diterima.
       </p>
 
       {cameraOn ? (
