@@ -89,10 +89,15 @@ export function TowingStatusPage() {
       ['DROPPED_OFF', 'COMPLETED'].includes(data.status) &&
       data.userPayable > 0,
   );
+  /*
+   * Tagihan derek dicari lewat NOMOR ORDER, bukan tiket pemindaian. Derek yang
+   * dipesan lewat jalur Darurat tidak pernah punya tiket, dan dulu itu membuat
+   * tombol bayarnya mati selamanya.
+   */
   const { data: payment } = useQuery({
-    queryKey: ['towing-payment', data?.inferenceTicket],
-    queryFn: () => getInvoice(data!.inferenceTicket, 'TOWING'),
-    enabled: isTowingPaymentStep && Boolean(data?.inferenceTicket),
+    queryKey: ['towing-payment', data?.orderCode],
+    queryFn: () => getInvoice(data!.orderCode, 'TOWING'),
+    enabled: isTowingPaymentStep && Boolean(data?.orderCode),
     retry: false,
   });
 
@@ -161,15 +166,11 @@ export function TowingStatusPage() {
   const towingPaid = paymentStatus === 'SUCCEEDED' || towingFlag?.status === 'SETTLED';
 
   const handlePayTowing = () => {
-    if (!data.inferenceTicket) {
-      toast.error('Referensi pembayaran towing tidak ditemukan.');
-      return;
-    }
     navigate(ROUTES.payment, {
       state: {
         payment_type: 'TOWING',
         redirect_route: buildPath.towingStatus(data.orderCode),
-        ticket: data.inferenceTicket,
+        ticket: data.orderCode,
         amount: data.userPayable,
         item_name: 'Biaya Towing',
       },
@@ -269,18 +270,9 @@ export function TowingStatusPage() {
               {towingPaid && <Badge tone="green">Lunas</Badge>}
             </div>
             {!towingPaid && (
-              <Button
-                leftIcon={<CreditCard className="size-5" />}
-                disabled={!data.inferenceTicket}
-                onClick={handlePayTowing}
-              >
+              <Button leftIcon={<CreditCard className="size-5" />} onClick={handlePayTowing}>
                 Bayar Biaya Towing
               </Button>
-            )}
-            {!data.inferenceTicket && (
-              <p className="text-11 text-danger">
-                Pembayaran online belum tersedia karena referensi klaim tidak ditemukan.
-              </p>
             )}
           </Card>
         )}

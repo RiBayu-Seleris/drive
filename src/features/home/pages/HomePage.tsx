@@ -804,11 +804,13 @@ function PolicyEmptyCard({ onOpenVehicles }: { onOpenVehicles: () => void }) {
 
 function PolicyCardSkeleton() {
   return (
-    <div className="h-[166px] w-full animate-pulse rounded-xl bg-white/80 shadow-[inset_3px_3px_4.1px_rgba(0,0,0,0.10)]">
+    // Sisa tema terang: kartu putih dengan batang gelap di atasnya. Di layar
+    // gelap ia berkedip sebagai balok terang tiap kali beranda dimuat.
+    <div className="h-[166px] w-full animate-pulse rounded-xl border border-[#22313c] bg-neutral-100">
       <div className="flex h-full flex-col gap-4 p-4">
-        <div className="h-3 w-20 rounded bg-neutral-200" />
-        <div className="h-4 w-32 rounded bg-neutral-200" />
-        <div className="mt-1 h-3 w-24 rounded bg-neutral-200" />
+        <div className="h-3 w-20 rounded bg-neutral-300" />
+        <div className="h-4 w-32 rounded bg-neutral-300" />
+        <div className="mt-1 h-3 w-24 rounded bg-neutral-300" />
       </div>
     </div>
   );
