@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Truck } from 'lucide-react';
 import { buildPath } from '@/app/routes';
 import { getTowingOrders } from '../api/towingApi';
-import { isTowingActive, isTowingSearching, towingStatusLabel } from '../types';
+import { isTowingOngoing, towingStatusLabel } from '../types';
 
 /**
  * Penanda order derek yang sedang berjalan, seperti bilah pesanan aktif di
@@ -25,7 +25,7 @@ export function ActiveTowingBar() {
     refetchInterval: 30_000,
   });
 
-  const order = data?.find((item) => isTowingSearching(item.status) || isTowingActive(item.status));
+  const order = data?.find((item) => isTowingOngoing(item.status));
   if (!order) return null;
 
   return (

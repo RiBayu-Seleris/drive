@@ -1,9 +1,19 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   BadgeCheck,
   Bell,
+  Camera,
   CarFront,
   ChartColumn,
   Check,
@@ -18,6 +28,7 @@ import {
   House,
   KeyRound,
   Lightbulb,
+  Loader2,
   LogOut,
   MapPin,
   Navigation,
@@ -37,6 +48,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { TextArea } from '@/components/ui/TextArea';
 import { LoadingState } from '@/components/ui/Spinner';
@@ -264,6 +276,16 @@ const PLAIN_SCREENS = ['biodata', 'editProfile', 'changePassword'] as const;
 const TASK_SCREENS = ['detail', 'accepted', 'inspection', 'dropoffProof', 'tracking'] as const;
 type PlainScreenKind = (typeof PLAIN_SCREENS)[number];
 type TaskScreenKind = (typeof TASK_SCREENS)[number];
+
+/*
+ * Pustaka pembaca barcode ~120 kB (gzip). Sopir jarang membukanya — hanya di
+ * ujung satu tugas — jadi ia baru diunduh saat kameranya benar-benar diminta.
+ */
+const BarcodeScanner = lazy(() =>
+  import('@/features/mitra-portal/components/BarcodeScanner').then((m) => ({
+    default: m.BarcodeScanner,
+  })),
+);
 
 export function DriverTasksPage() {
   const navigate = useNavigate();
@@ -1499,18 +1521,49 @@ function TrackingOrderScreen({
 
 function DriverSettlementBox({ task }: { task: DriverTask }) {
   const queryClient = useQueryClient();
-  const [code, setCode] = useState(task.orderCode);
+  /*
+   * Kode TIDAK diisikan otomatis dari tugas yang sedang dibuka.
+   *
+   * Dulu kolomnya sudah terisi begitu layar terbuka, jadi sopir tinggal menekan
+   * tombol tanpa pernah bertemu tiket pelanggan — pemindaian yang seharusnya
+   * membuktikan keduanya bertemu berubah jadi formalitas satu ketukan.
+   */
+  const [code, setCode] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [manualCode, setManualCode] = useState('');
 
   useEffect(() => {
-    setCode(task.orderCode);
+    setCode('');
+    setManualCode('');
   }, [task.orderCode]);
 
+  /** Tiket yang dipindai wajib milik order ini, bukan order sebelah. */
+  const belongsToTask = (value: string): boolean => {
+    const normalized = value.trim().toUpperCase();
+    if (!normalized) return false;
+    return (
+      normalized === task.orderCode.trim().toUpperCase() ||
+      (Boolean(task.claimNumber) && normalized === task.claimNumber.trim().toUpperCase())
+    );
+  };
+
   const scan = useMutation({
-    mutationFn: () => scanDriverSettlementCode(code.trim()),
-    onSuccess: () => {
+    mutationFn: (value: string) => scanDriverSettlementCode(value),
+    onSuccess: (_flag, value) => {
+      setCode(value);
+      setScannerOpen(false);
+      setCameraOn(false);
       toast.success('Tiket klaim valid.');
     },
-    onError: (error) => toast.error(extractErrorMessage(error, 'Tiket klaim tidak valid.')),
+    /*
+     * Penolakan sungguhan dari server selalu membawa kalimatnya sendiri
+     * ("Tiket tidak ditemukan.", "Tiket ini bukan tugas Anda."). Kalimat di
+     * bawah ini hanya terpakai kalau balasan datang tanpa pesan sama sekali —
+     * yang artinya permintaannya tidak sampai, bukan tiketnya yang ditolak.
+     */
+    onError: (error) =>
+      toast.error(extractErrorMessage(error, 'Tiket gagal diperiksa. Periksa koneksi lalu ulangi.')),
   });
 
   const settle = useMutation({
@@ -1528,48 +1581,132 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
     onError: (error) => toast.error(extractErrorMessage(error, 'Tiket klaim gagal diselesaikan.')),
   });
 
-  const disabled = code.trim().length === 0 || scan.isPending || settle.isPending;
+  const verify = (raw: string) => {
+    const value = raw.trim().toUpperCase();
+    if (!value) return;
+    if (!belongsToTask(value)) {
+      toast.error('Tiket ini bukan milik order yang sedang Anda kerjakan.');
+      return;
+    }
+    scan.mutate(value);
+  };
+
+  const closeScanner = () => {
+    setScannerOpen(false);
+    setCameraOn(false);
+  };
 
   return (
     <div className="mt-auto flex flex-col gap-3 rounded-2xl bg-[#131c24] p-4">
       <div>
-        <p className="text-12 font-semibold text-neutral-900">Kode tiket klaim</p>
+        <p className="text-12 font-semibold text-neutral-900">Tiket klaim pelanggan</p>
         <p className="text-11 mt-1 text-neutral-600">
-          Input kode dari tiket user setelah drop-off selesai.
+          Minta pelanggan membuka tiketnya, lalu pindai barcode-nya untuk menutup tugas ini.
         </p>
       </div>
-      <label className="drive-card flex h-12 items-center rounded-xl border border-neutral-300 px-4">
-        <input
-          value={code}
-          onChange={(event) => setCode(event.target.value.toUpperCase())}
-          className="text-14 min-w-0 flex-1 bg-transparent font-semibold tracking-wide text-neutral-900 outline-none placeholder:text-neutral-500"
-          placeholder="Masukkan kode tiket"
-        />
-      </label>
-      <div className="grid grid-cols-2 gap-3">
+
+      {code ? (
+        <div className="drive-card flex h-12 items-center justify-between rounded-xl border border-[#aded1f]/45 px-4">
+          <span className="text-14 font-semibold tracking-wide text-neutral-900">{code}</span>
+          <button
+            type="button"
+            onClick={() => setCode('')}
+            className="text-11 font-semibold text-[#c2f347]"
+          >
+            Pindai ulang
+          </button>
+        </div>
+      ) : (
         <Button
           variant="outline"
           className="h-12 rounded-2xl"
-          disabled={disabled}
-          isLoading={scan.isPending}
-          onClick={() => scan.mutate()}
+          leftIcon={<Camera className="size-5" />}
+          onClick={() => setScannerOpen(true)}
         >
-          Scan
+          Pindai Tiket Pelanggan
         </Button>
-        <Button
-          className="h-12 rounded-2xl"
-          disabled={disabled}
-          isLoading={settle.isPending}
-          onClick={() => settle.mutate()}
-        >
-          Selesaikan
-        </Button>
-      </div>
+      )}
+
+      <Button
+        className="h-12 rounded-2xl"
+        disabled={!code || settle.isPending}
+        isLoading={settle.isPending}
+        onClick={() => settle.mutate()}
+      >
+        Selesaikan
+      </Button>
+
+      <Modal
+        open={scannerOpen}
+        onClose={closeScanner}
+        title="Pindai Tiket Pelanggan"
+        variant="sheet"
+      >
+        <p className="text-12 mb-3 text-neutral-700">
+          Minta pelanggan menekan <strong>Tampilkan kode</strong> di tiketnya, lalu arahkan kamera
+          ke barcode.
+        </p>
+
+        {cameraOn ? (
+          <Suspense
+            fallback={
+              <div className="drive-card text-12 grid h-56 place-items-center rounded-xl text-neutral-600">
+                <span className="flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin" /> Menyiapkan pemindai…
+                </span>
+              </div>
+            }
+          >
+            <BarcodeScanner
+              onDetected={(scanned) => verify(scanned)}
+              onError={() => setCameraOn(false)}
+            />
+          </Suspense>
+        ) : (
+          <Button
+            variant="outline"
+            leftIcon={<Camera className="size-4" />}
+            onClick={() => setCameraOn(true)}
+          >
+            Nyalakan Kamera
+          </Button>
+        )}
+
+        {/*
+          Jalan keluar kalau barcode-nya rusak atau kamera bermasalah. Kodenya
+          tetap harus cocok dengan order ini, jadi mengetiknya tidak melewati
+          pemeriksaan mana pun — hanya melewati kameranya.
+        */}
+        <div className="text-11 my-3 flex items-center gap-3 text-neutral-500">
+          <span className="h-px flex-1 bg-neutral-300" />
+          atau ketik kodenya
+          <span className="h-px flex-1 bg-neutral-300" />
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={manualCode}
+            onChange={(event) => setManualCode(event.target.value.toUpperCase())}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') verify(manualCode);
+            }}
+            placeholder="Contoh: CLM-XXXXXXXX"
+            autoCapitalize="characters"
+            className="text-14 h-12 min-w-0 flex-1 rounded-xl border border-neutral-300 bg-neutral-200 px-4 font-semibold tracking-wide text-neutral-900 outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-neutral-500"
+          />
+          <Button
+            className="h-12 shrink-0 rounded-xl px-5"
+            disabled={!manualCode.trim() || scan.isPending}
+            isLoading={scan.isPending}
+            onClick={() => verify(manualCode)}
+          >
+            Periksa
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
 
-/** Format tanggal YYYY-MM-DD ke tampilan id-ID; '-' bila kosong. */
 function formatProfileDate(value: string | null): string {
   if (!value) return '-';
   const date = new Date(value);

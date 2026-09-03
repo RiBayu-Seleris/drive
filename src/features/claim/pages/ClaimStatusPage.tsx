@@ -6,7 +6,6 @@ import {
   Check,
   Clock,
   FileText,
-  ShieldCheck,
   TicketCheck,
   Truck,
   XCircle,
@@ -289,6 +288,13 @@ export function ClaimStatusPage() {
           </Card>
         )}
 
+        {/*
+          Sengaja hanya ada tiket di sini.
+          "Lihat Estimasi Biaya" dulu ikut terpasang, dan itu melempar pengguna
+          kembali ke halaman estimasi yang berujung MEMILIH BENGKEL LAGI —
+          padahal bengkelnya sudah dipilih dan klaimnya sudah disetujui. Dibuka
+          dari Klaim Saya, tombol itu justru mengulang langkah yang sudah lewat.
+        */}
         {isApproved && (
           <div className="mt-auto flex flex-col gap-3 pt-6">
             <Button
@@ -297,22 +303,6 @@ export function ClaimStatusPage() {
               onClick={() => navigate(ROUTES.claimTicket, { state: claim })}
             >
               Lihat Tiket Klaim
-            </Button>
-            <Button
-              variant="outline"
-              leftIcon={<ShieldCheck className="size-5" />}
-              onClick={() =>
-                navigate(ROUTES.estimatedCost, {
-                  state: {
-                    claimNumber: claim.claimNumber,
-                    fromApprovedClaim: true,
-                    inferenceTicket: claim.inferenceTicket,
-                    customerPayable: claim.settlementPass.customerPayable,
-                  },
-                })
-              }
-            >
-              Lihat Estimasi Biaya
             </Button>
           </div>
         )}

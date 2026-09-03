@@ -40,6 +40,7 @@ import {
 import {
   towingStatusLabel,
   isTowingActive,
+  isTowingOngoing,
   isTowingSearching,
   isTowingCancelable,
   type SettlementFlag,
@@ -59,8 +60,11 @@ export function TowingStatusPage() {
     queryKey: ['towing-order', code],
     queryFn: () => getTowingOrder(code),
     refetchInterval: (query) => {
+      // Berhenti menanyai server begitu kendaraan diturunkan: sopir tidak punya
+      // langkah berikutnya, dan order derek tidak pernah berpindah sendiri ke
+      // COMPLETED — status itu ditulis saat mitra membuat laporan.
       const status = query.state.data?.status ?? '';
-      return isTowingActive(status) || isTowingSearching(status) ? 8000 : false;
+      return isTowingOngoing(status) ? 8000 : false;
     },
   });
 

@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils/format';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { getPendingPolicyTransfers } from '@/features/insurance/api';
 import { getTowingOrders } from '@/features/towing/api/towingApi';
-import { isTowingActive, isTowingSearching, towingStatusLabel } from '@/features/towing/types';
+import { isTowingOngoing, towingStatusLabel } from '@/features/towing/types';
 import { claimStatusLabel, getClaims } from '@/features/claim/api';
 import { useNotificationReadStore } from './readStore';
 
@@ -79,7 +79,7 @@ export function useNotifications() {
     }
 
     for (const order of towing.data ?? []) {
-      if (!isTowingSearching(order.status) && !isTowingActive(order.status)) continue;
+      if (!isTowingOngoing(order.status)) continue;
       list.push({
         id: `towing:${order.orderCode}:${order.status}`,
         title: towingStatusLabel(order.status),

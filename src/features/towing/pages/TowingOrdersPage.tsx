@@ -10,12 +10,12 @@ import { EmptyState, ErrorState } from '@/components/feedback/StateViews';
 import { formatCurrency, formatDateTime } from '@/lib/utils/format';
 import { buildPath } from '@/app/routes';
 import { getTowingOrders } from '../api/towingApi';
-import { isTowingActive, isTowingSearching, towingStatusLabel, type TowingOrder } from '../types';
+import { isTowingOngoing, towingStatusLabel, type TowingOrder } from '../types';
 
 function statusTone(status: string): BadgeProps['tone'] {
   if (status === 'COMPLETED' || status === 'DROPPED_OFF') return 'green';
   if (status === 'CANCELED' || status === 'CANCELLED') return 'neutral';
-  if (isTowingSearching(status) || isTowingActive(status)) return 'blue';
+  if (isTowingOngoing(status)) return 'blue';
   return 'yellow';
 }
 
@@ -26,7 +26,7 @@ export function TowingOrdersPage() {
 
   const orders = query.data ?? [];
   const running = orders.filter(
-    (order) => isTowingSearching(order.status) || isTowingActive(order.status),
+    (order) => isTowingOngoing(order.status),
   );
   const history = orders.filter((order) => !running.includes(order));
 

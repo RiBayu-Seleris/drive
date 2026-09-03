@@ -188,6 +188,23 @@ export const isTowingFinished = (status: string): boolean => FINISHED.has(status
  */
 export const isTowingActive = (status: string): boolean =>
   status !== '' && !SEARCHING.has(status) && !FINISHED.has(status);
+/** Kendaraan sudah diturunkan di tujuan; dari sisi user, dereknya selesai. */
+export const TOWING_ARRIVED = 'DROPPED_OFF';
+
+/*
+ * Order yang masih perlu DIIKUTI user: sedang dicarikan sopir, atau sopirnya
+ * masih di jalan.
+ *
+ * Sengaja dibedakan dari `isTowingActive`. Order derek tidak pernah berpindah
+ * sendiri ke COMPLETED — status itu baru ditulis saat mitra membuat laporan,
+ * pekerjaan administratif yang tidak ada hubungannya dengan user. Kalau bilah
+ * "order berjalan" dan notifikasi memakai `isTowingActive`, mobil yang sudah
+ * sampai di bengkel tetap tampil seperti derek yang sedang jalan, kadang
+ * berhari-hari, sampai mitra sempat mengurus laporannya.
+ */
+export const isTowingOngoing = (status: string): boolean =>
+  isTowingSearching(status) || (isTowingActive(status) && status !== TOWING_ARRIVED);
+
 // Hanya boleh batal selama masih mencari sopir (belum diterima mitra).
 // Begitu mitra menerima/menugaskan (ASSIGNED dst), order tidak bisa dibatalkan.
 export const isTowingCancelable = (status: string): boolean => SEARCHING.has(status);

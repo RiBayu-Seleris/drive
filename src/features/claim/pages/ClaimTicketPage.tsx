@@ -13,7 +13,7 @@ import { DEFAULT_LOCATION } from '@/config/constants';
 import { buildPath, ROUTES } from '@/app/routes';
 import { getRecommendations, type RecommendationPlace } from '@/features/workshop/api';
 import { getTowingOrders } from '@/features/towing/api/towingApi';
-import { isTowingActive, isTowingSearching, type TowingOrder } from '@/features/towing/types';
+import { isTowingOngoing, type TowingOrder } from '@/features/towing/types';
 import { getClaimRepairJob, isClaimTicketUsed, type Claim, type ClaimRepairJob } from '../api';
 import { useClaimDraftStore } from '../store/claimDraftStore';
 import { ClaimTicket, type ClaimTicketState } from '../components/ClaimTicket';
@@ -86,7 +86,7 @@ export function ClaimTicketPage() {
     towingQuery.data?.find(
       (order) =>
         order.claimNumber === claimNumber &&
-        (isTowingSearching(order.status) || isTowingActive(order.status)),
+        isTowingOngoing(order.status),
     ) ?? null;
 
   if (!claim || !isApproved) {
