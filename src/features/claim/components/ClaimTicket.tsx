@@ -190,8 +190,16 @@ export function ClaimTicket({
             }}
           >
             <Barcode value={code} className="h-12 w-full text-neutral-900" />
+            {/*
+              Angka di bawah barcode HARUS sama dengan isi barcode-nya.
+              Dulu di sini selalu tertulis nomor klaim, padahal yang tersandi
+              adalah kode pekerjaan bengkel begitu pekerjaannya terbit — jadi
+              petugas yang membaca dan mengetiknya mengetik nomor yang berbeda
+              dari yang barusan ia pindai. Nomor klaimnya sendiri tetap tercetak
+              di badan tiket.
+            */}
             <span className="text-11 font-semibold tracking-wide text-neutral-900">
-              Klaim #{claimNumber || '-'}
+              {code || claimNumber || '-'}
             </span>
           </div>
         </div>

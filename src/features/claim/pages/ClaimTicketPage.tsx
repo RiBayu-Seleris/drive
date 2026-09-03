@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Clock, Info, Navigation, Phone, QrCode, Star, Truck, Wrench } from 'lucide-react';
+import {
+  Clock,
+  Info,
+  Navigation,
+  PackageCheck,
+  Phone,
+  QrCode,
+  Star,
+  Truck,
+  Wrench,
+} from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
@@ -13,7 +23,7 @@ import { DEFAULT_LOCATION } from '@/config/constants';
 import { buildPath, ROUTES } from '@/app/routes';
 import { getRecommendations, type RecommendationPlace } from '@/features/workshop/api';
 import { getTowingOrders } from '@/features/towing/api/towingApi';
-import { isTowingOngoing, type TowingOrder } from '@/features/towing/types';
+import { isTowingOngoing, TOWING_ARRIVED, type TowingOrder } from '@/features/towing/types';
 import { getClaimRepairJob, isClaimTicketUsed, type Claim, type ClaimRepairJob } from '../api';
 import { useClaimDraftStore } from '../store/claimDraftStore';
 import { ClaimTicket, type ClaimTicketState } from '../components/ClaimTicket';
@@ -84,10 +94,29 @@ export function ClaimTicketPage() {
   });
   const towingOrder =
     towingQuery.data?.find(
+      (order) => order.claimNumber === claimNumber && isTowingOngoing(order.status),
+    ) ?? null;
+
+  /*
+   * Kendaraan sudah berada di bengkel.
+   *
+   * Selama ini kartu bengkel hanya menanyakan "ada derek berjalan?", jadi
+   * begitu dereknya SELESAI kartunya kembali menawarkan "Pesan Derek" — mengajak
+   * menderek mobil yang sudah dibongkar di halaman bengkel itu sendiri. "Lihat
+   * Rute" pun kehilangan gunanya: tidak ada lagi perjalanan yang perlu dipandu.
+   *
+   * Tiga saksi, cukup salah satu: bengkel sudah memindai tiketnya, bengkel
+   * sudah menyatakan menerima kendaraannya, atau dereknya sudah sampai tujuan.
+   */
+  const vehicleAtWorkshop =
+    Boolean(job?.scannedAt) ||
+    (towingQuery.data ?? []).some(
       (order) =>
         order.claimNumber === claimNumber &&
-        isTowingOngoing(order.status),
-    ) ?? null;
+        (Boolean(order.vehicleReceivedAt) ||
+          order.status === TOWING_ARRIVED ||
+          order.status === 'COMPLETED'),
+    );
 
   if (!claim || !isApproved) {
     return (
@@ -132,7 +161,17 @@ export function ClaimTicketPage() {
               claimType={claim.claimType}
               incidentDate={claim.incidentDate}
               approvedAmount={approvedAmountOf(claim, job)}
-              code={job?.jobCode || claim.claimNumber}
+              /*
+                Barcode SELALU berisi nomor klaim, bukan kode pekerjaan bengkel.
+                Satu tiket dipindai banyak pihak — sopir derek, bengkel, dan
+                pihak lain nanti — dan nomor klaim satu-satunya kode yang
+                dikenali semuanya. Kode pekerjaan (RPJ-) hanya dimengerti
+                bengkel yang menerbitkannya; begitu barcode berpindah ke sana,
+                sopir derek yang memindai tiket yang sama akan ditolak "tiket
+                tidak ditemukan" — padahal tiketnya benar dan orangnya berdiri
+                di depan mobilnya.
+              */
+              code={claim.claimNumber}
               state={ticketStateOf(job, used)}
             />
 
@@ -172,6 +211,7 @@ export function ClaimTicketPage() {
               <WorkshopCard
                 place={workshop}
                 towingOrder={towingOrder}
+                vehicleAtWorkshop={vehicleAtWorkshop}
                 onRoute={() =>
                   navigate(buildPath.workshopRoute(String(workshop.id)), {
                     state: { place: workshop },
@@ -243,6 +283,7 @@ export function ClaimTicketPage() {
 function WorkshopCard({
   place,
   towingOrder,
+  vehicleAtWorkshop,
   onRoute,
   onTowing,
   onTowingStatus,
@@ -250,6 +291,8 @@ function WorkshopCard({
   place: RecommendationPlace;
   /** Order derek yang masih berjalan untuk klaim ini, bila ada. */
   towingOrder: TowingOrder | null;
+  /** Kendaraan sudah diterima bengkel; tidak ada lagi yang perlu dirutekan atau diderek. */
+  vehicleAtWorkshop: boolean;
   onRoute: () => void;
   onTowing: () => void;
   onTowingStatus: () => void;
@@ -286,28 +329,41 @@ function WorkshopCard({
         )}
       </div>
 
-      {/* Dua cara mobil sampai ke bengkel, berdampingan di titik keputusannya.
-          Mendaftarkan bengkel perbaikan tidak menentukan salah satunya — itu
-          catatan terpisah (workshop_visits vs towing_orders). */}
-      <div className="mt-3 flex gap-2 border-t border-neutral-300 pt-3">
-        <Button
-          variant="outline"
-          size="sm"
-          leftIcon={<Navigation className="size-4" />}
-          onClick={onRoute}
-        >
-          Lihat Rute
-        </Button>
-        {towingOrder ? (
-          <Button size="sm" leftIcon={<Truck className="size-4" />} onClick={onTowingStatus}>
-            Status Derek
+      {vehicleAtWorkshop ? (
+        <p className="text-12 mt-3 flex items-center gap-2 border-t border-neutral-300 pt-3 text-[#6ae791]">
+          <PackageCheck className="size-4 shrink-0" aria-hidden />
+          Kendaraan sudah diterima bengkel.
+        </p>
+      ) : (
+        /* Dua cara mobil sampai ke bengkel, berdampingan di titik keputusannya.
+           Mendaftarkan bengkel perbaikan tidak menentukan salah satunya — itu
+           catatan terpisah (workshop_visits vs towing_orders). */
+        <div className="mt-3 flex gap-2 border-t border-neutral-300 pt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Navigation className="size-4" />}
+            onClick={onRoute}
+          >
+            Lihat Rute
           </Button>
-        ) : (
-          <Button size="sm" leftIcon={<Truck className="size-4" />} onClick={onTowing}>
-            Pesan Derek
-          </Button>
-        )}
-      </div>
+          {towingOrder ? (
+            /*
+              Yang ingin diketahui pemiliknya bukan "status order derek",
+              melainkan di mana mobilnya sekarang. Tombolnya menamai itu, dan
+              memang ke sanalah ia mengantar: halaman pelacakan dengan peta
+              posisi sopir yang bergerak.
+            */
+            <Button size="sm" leftIcon={<Truck className="size-4" />} onClick={onTowingStatus}>
+              Track Kendaraan
+            </Button>
+          ) : (
+            <Button size="sm" leftIcon={<Truck className="size-4" />} onClick={onTowing}>
+              Pesan Derek
+            </Button>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

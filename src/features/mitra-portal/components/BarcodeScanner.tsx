@@ -47,6 +47,12 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [deviceId, setDeviceId] = useState('');
   const [slow, setSlow] = useState(false);
+  /** Keterangan kamera yang benar-benar terpakai — dibaca dari trek-nya. */
+  const [info, setInfo] = useState('');
+  /** Kamera terbuka tapi tidak mengirim gambar (hitam). */
+  const [blank, setBlank] = useState(false);
+  /** Percobaan ke berapa; menaikkannya menyalakan ulang kamera dari nol. */
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let controls: IScannerControls | null = null;
@@ -64,6 +70,7 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
     const reader = new BrowserMultiFormatReader(hints);
 
     const start = async () => {
+      if (cancelled) return;
       if (!navigator.mediaDevices?.getUserMedia) {
         const message = 'Kamera tidak tersedia di browser ini. Ketik kodenya manual.';
         setError(message);
@@ -73,6 +80,8 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
       }
       setStarting(true);
       setSlow(false);
+      setBlank(false);
+      setInfo('');
       try {
         /*
          * Resolusi diminta setinggi mungkin. Bawaan kamera laptop kerap
@@ -111,6 +120,42 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
          */
         const all = await navigator.mediaDevices.enumerateDevices();
         if (!cancelled) setDevices(all.filter((item) => item.kind === 'videoinput'));
+
+        /*
+         * Kamera bisa "berhasil dibuka" tapi mengirim gambar hitam: perangkat
+         * dipegang aplikasi lain, atau di macOS kamera iPhone (Continuity)
+         * terpilih sementara HP-nya terkunci. Tidak ada error yang dilempar
+         * pada kasus itu — layarnya hanya hitam, dan pemakainya tidak punya
+         * satu pun petunjuk. Trek videonya ditanyai langsung supaya keadaan
+         * itu bisa dikatakan apa adanya.
+         */
+        window.setTimeout(() => {
+          if (cancelled) return;
+          const element = videoRef.current;
+          const stream = element?.srcObject as MediaStream | null;
+          const track = stream?.getVideoTracks()[0];
+          if (!track) {
+            setBlank(true);
+            return;
+          }
+          const settings = track.getSettings();
+          setInfo(
+            `${track.label || 'Kamera'} · ${settings.width ?? 0}x${settings.height ?? 0}`,
+          );
+
+          const isBlank = track.muted || !element?.videoWidth;
+          /*
+           * Sekali coba lagi sebelum menyerah. Gambar yang tidak muncul hampir
+           * selalu berasal dari aliran yang tertukar saat komponen dipasang
+           * ulang, dan menyalakannya sekali lagi dari nol menyelesaikannya —
+           * jauh lebih baik daripada menyuruh pemakainya menebak-nebak.
+           */
+          if (isBlank && attempt === 0) {
+            setAttempt(1);
+            return;
+          }
+          setBlank(isBlank);
+        }, 1500);
       } catch (err) {
         if (cancelled) return;
         const message = messageFor(err);
@@ -120,20 +165,37 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
       }
     };
 
-    void start();
+    /*
+     * Kamera dinyalakan setelah satu putaran event, bukan seketika.
+     *
+     * React StrictMode (mode pengembangan) memasang efek ini, melepasnya, lalu
+     * memasangnya lagi. Kalau kamera dibuka seketika, pemasangan pertama sempat
+     * menempelkan aliran video ke elemen <video>, lalu pembersihannya
+     * menghentikan aliran itu SETELAH pemasangan kedua menempelkan aliran
+     * barunya ke elemen yang sama — dan penghentian itu ikut mengosongkan
+     * elemennya.
+     *
+     * Gejalanya persis kotak hitam tanpa pesan apa pun: tidak ada error karena
+     * memang tidak ada yang gagal, spinner sudah hilang karena pemindainya
+     * memang sudah jalan, tapi elemen videonya sudah telanjur dikosongkan.
+     * Dengan penundaan ini, pemasangan yang dibatalkan tidak pernah sampai
+     * membuka kamera.
+     */
+    const bootTimer = window.setTimeout(() => void start(), 0);
     const hintTimer = window.setTimeout(() => {
       if (!cancelled && !detectedRef.current) setSlow(true);
     }, HINT_AFTER_MS);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(bootTimer);
       window.clearTimeout(hintTimer);
       controls?.stop();
     };
     // onDetected/onError sengaja tidak jadi dependency: kamera hanya boleh
     // dinyalakan ulang saat kameranya diganti, bukan tiap render induknya.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deviceId]);
+  }, [deviceId, attempt]);
 
   if (error) {
     return (
@@ -169,6 +231,8 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
             value={deviceId || devices[0]?.deviceId || ''}
             onChange={(event) => {
               detectedRef.current = false;
+              // Kamera baru berhak atas jatah percobaan ulangnya sendiri.
+              setAttempt(0);
               setDeviceId(event.target.value);
             }}
             className="text-12 h-9 min-w-0 flex-1 rounded-lg border border-neutral-300 bg-neutral-200 px-2 text-neutral-900"
@@ -182,7 +246,17 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
         </label>
       )}
 
-      {slow && !starting && (
+      {info && <p className="text-11 text-neutral-500">{info}</p>}
+
+      {blank && (
+        <p className="text-11 text-danger">
+          Kamera terbuka tapi tidak mengirim gambar. Biasanya karena perangkatnya sedang dipakai
+          aplikasi lain, atau kamera yang terpilih bukan kamera fisik (mis. kamera iPhone yang
+          sedang terkunci). Pilih kamera lain di daftar atas, atau ketik kodenya di bawah.
+        </p>
+      )}
+
+      {slow && !starting && !blank && (
         <p className="text-11 text-neutral-600">
           Belum terbaca? Dekatkan sampai barcode memenuhi lebar bingkai, naikkan kecerahan layar
           pelanggan, dan hindari pantulan lampu. Kalau tetap gagal, ketik kodenya di bawah.
