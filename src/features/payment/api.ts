@@ -92,6 +92,8 @@ export interface CreateInvoiceArgs {
 	policyNumber?: string;
 	/** Kode pekerjaan bengkel; wajib saat paymentType = REPAIR. */
 	jobCode?: string;
+	/** Nomor HP terdaftar di e-wallet; wajib untuk OVO. */
+	mobileNumber?: string;
   paymentType: PaymentType;
   /** EWALLET / QRIS / VA. */
   paymentMethod: string;
@@ -107,6 +109,7 @@ export async function createInvoice(args: CreateInvoiceArgs): Promise<Invoice> {
 		inference_ticket: args.inferenceTicket,
 		policy_number: args.policyNumber,
 		job_code: args.jobCode,
+		mobile_number: args.mobileNumber,
     payment_method: args.paymentMethod,
     payment_channel: args.paymentChannel,
     bank_code: args.bankCode,

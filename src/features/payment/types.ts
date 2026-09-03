@@ -78,7 +78,15 @@ export interface PaymentMethodOption {
   description: string;
 }
 
-/** Pilihan metode pembayaran (QRIS + e-wallet + Virtual Account). */
+/*
+ * Pilihan metode pembayaran.
+ *
+ * Daftar ini HARUS mencerminkan kanal yang benar-benar aktif di akun Xendit.
+ * Sebelumnya ia memuat GoPay, ShopeePay, dan AstraPay — ketiganya tidak ada di
+ * akun, jadi siapa pun yang memilihnya ditolak "unsupported payment channel"
+ * setelah menempuh seluruh alur pembayaran. Menampilkan pilihan yang pasti
+ * gagal lebih buruk daripada tidak menampilkannya sama sekali.
+ */
 export const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
   {
     key: 'QRIS',
@@ -88,39 +96,25 @@ export const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
     description: 'Scan dari e-wallet atau m-banking apa pun',
   },
   {
-    key: 'EWALLET:ID_GOPAY',
-    kind: 'EWALLET',
-    value: 'ID_GOPAY',
-    label: 'GoPay',
-    description: 'Bayar instan lewat aplikasi GoPay',
-  },
-  {
     key: 'EWALLET:ID_DANA',
     kind: 'EWALLET',
     value: 'ID_DANA',
     label: 'DANA',
-    description: 'Bayar instan lewat aplikasi DANA',
+    description: 'Bayar lewat aplikasi DANA',
+  },
+  {
+    key: 'EWALLET:ID_OVO',
+    kind: 'EWALLET',
+    value: 'ID_OVO',
+    label: 'OVO',
+    description: 'Tagihan dikirim ke nomor HP OVO Anda',
   },
   {
     key: 'EWALLET:ID_LINKAJA',
     kind: 'EWALLET',
     value: 'ID_LINKAJA',
     label: 'LinkAja',
-    description: 'Saldo LinkAja & LinkAja Syariah',
-  },
-  {
-    key: 'EWALLET:ID_SHOPEEPAY',
-    kind: 'EWALLET',
-    value: 'ID_SHOPEEPAY',
-    label: 'ShopeePay',
-    description: 'Bayar dengan saldo ShopeePay',
-  },
-  {
-    key: 'EWALLET:ID_ASTRAPAY',
-    kind: 'EWALLET',
-    value: 'ID_ASTRAPAY',
-    label: 'AstraPay',
-    description: 'Saldo AstraPay & kartu terhubung',
+    description: 'Bayar lewat aplikasi LinkAja',
   },
   {
     key: 'VA:BCA',
@@ -149,6 +143,13 @@ export const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
     value: 'MANDIRI',
     label: 'Virtual Account Mandiri',
     description: 'Transfer ke nomor VA Mandiri',
+  },
+  {
+    key: 'VA:PERMATA',
+    kind: 'VA',
+    value: 'PERMATA',
+    label: 'Virtual Account Permata',
+    description: 'Transfer ke nomor VA Permata',
   },
 ];
 

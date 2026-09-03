@@ -38,9 +38,21 @@ const METHOD_ICON: Record<PaymentMethodKind, typeof QrCode> = {
   VA: Landmark,
 };
 
+/*
+ * Logo per metode. Kuncinya sama dengan `key` di PAYMENT_METHOD_OPTIONS.
+ * Metode tanpa logo tetap tampil — hanya memakai inisial huruf sebagai
+ * gantinya — jadi menambah berkas ke folder ini cukup untuk menghidupkannya.
+ */
 const METHOD_LOGO: Partial<Record<string, string>> = {
-  QRIS: '/assets/co/qris.png',
-  'EWALLET:ID_GOPAY': '/assets/payment-logo/gopay.png',
+  QRIS: '/assets/payment-logo/qris.webp',
+  'EWALLET:ID_DANA': '/assets/payment-logo/dana.webp',
+  'EWALLET:ID_LINKAJA': '/assets/payment-logo/linkaja.webp',
+  'VA:BCA': '/assets/payment-logo/bca.webp',
+  // Nama berkas mengikuti yang benar-benar ada di folder, termasuk
+  // perbedaan formatnya — bukan pola seragam yang lalu gagal dimuat.
+  'VA:BNI': '/assets/payment-logo/bni.jpeg',
+  'VA:BRI': '/assets/payment-logo/bri.png',
+  'VA:MANDIRI': '/assets/payment-logo/mandiri.webp',
 };
 
 function getPaymentInstructionSteps(method?: PaymentMethodOption) {
@@ -107,6 +119,12 @@ export function PaymentPage() {
   const [methodOpen, setMethodOpen] = useState(false);
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  /*
+   * OVO menagih ke nomor HP yang terdaftar di akun OVO pelanggan: Xendit
+   * mengirim permintaan bayar ke aplikasi di nomor itu. Kanal lain tidak
+   * memerlukannya, jadi kolomnya hanya muncul saat OVO dipilih.
+   */
+  const [mobileNumber, setMobileNumber] = useState('');
 
   const pricingQuery = useQuery({
     queryKey: ['payment-pricing', paymentType],
@@ -161,6 +179,12 @@ export function PaymentPage() {
       );
       return;
     }
+    const needsMobile = selected.kind === 'EWALLET' && selected.value === 'ID_OVO';
+    if (needsMobile && mobileNumber.trim().length < 9) {
+      toast.error('Masukkan nomor HP yang terdaftar di OVO.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
 		const invoice = await createInvoice({
@@ -168,6 +192,7 @@ export function PaymentPage() {
 			policyNumber: paymentType === 'POLICY_PREMIUM' ? policyNumber : undefined,
 			// Untuk REPAIR, `ticket` yang dibawa halaman ini adalah kode pekerjaan.
 			jobCode: paymentType === 'REPAIR' ? ticket : undefined,
+			mobileNumber: needsMobile ? mobileNumber.trim() : undefined,
         paymentType,
         paymentMethod: selected.kind,
         paymentChannel: selected.kind === 'EWALLET' ? selected.value : '',
@@ -335,6 +360,31 @@ export function PaymentPage() {
             </div>
           </div>
         </section>
+
+        {/*
+          Kolom ini hanya untuk OVO. Xendit tidak membuka halaman pembayaran
+          untuk OVO — ia mengirim permintaan bayar ke aplikasi OVO di nomor
+          yang disebutkan, dan pelanggan menyetujuinya di sana.
+        */}
+        {selected?.kind === 'EWALLET' && selected.value === 'ID_OVO' && (
+          <section className="drive-card rounded-xl p-4">
+            <label className="text-12 mb-2 block font-semibold text-neutral-900" htmlFor="ovo-phone">
+              Nomor HP OVO
+            </label>
+            <input
+              id="ovo-phone"
+              value={mobileNumber}
+              onChange={(event) => setMobileNumber(event.target.value.replace(/[^0-9+]/g, ''))}
+              inputMode="tel"
+              placeholder="08xxxxxxxxxx"
+              className="text-14 h-12 w-full rounded-xl border border-neutral-300 bg-neutral-200 px-4 text-neutral-900 outline-none placeholder:text-neutral-500"
+            />
+            <p className="text-11 mt-2 text-neutral-600">
+              Permintaan bayar akan dikirim ke aplikasi OVO nomor ini. Pastikan nomornya benar dan
+              aplikasinya terpasang.
+            </p>
+          </section>
+        )}
       </div>
 
       <div className="sticky bottom-0 border-t border-neutral-300 bg-neutral-100 px-5 py-4">
@@ -355,12 +405,21 @@ export function PaymentPage() {
 
 function PaymentMethodLogo({ method }: { method: PaymentMethodOption }) {
   const Icon = METHOD_ICON[method.kind];
-  const logo = METHOD_LOGO[method.key];
+  const mapped = METHOD_LOGO[method.key];
+  // Berkas yang hilang atau gagal dimuat jatuh ke ikon polos, bukan kotak
+  // kosong dengan gambar rusak.
+  const [broken, setBroken] = useState(false);
+  const logo = broken ? undefined : mapped;
 
   if (logo) {
     return (
       <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-100 p-2">
-        <img src={logo} alt={method.label} className="max-h-full max-w-full object-contain" />
+        <img
+          src={logo}
+          alt={method.label}
+          onError={() => setBroken(true)}
+          className="max-h-full max-w-full object-contain"
+        />
       </span>
     );
   }
