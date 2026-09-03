@@ -29,8 +29,12 @@ interface BrowserSpeechRecognition {
   interimResults: boolean;
   onresult: ((event: SpeechResultEvent) => void) | null;
   onerror: (() => void) | null;
+  onend: (() => void) | null;
   start: () => void;
+  /** Mengakhiri sesi dan menunggu hasil final. */
   stop: () => void;
+  /** Mengakhiri sesi seketika; hasil yang belum final dibuang. */
+  abort: () => void;
 }
 
 type SpeechRecognitionWindow = Window & {
@@ -69,6 +73,7 @@ export function ClaimDetailPage() {
   const chunksRef = useRef<Blob[]>([]);
   const browserTranscriptRef = useRef('');
   const startingRef = useRef(false);
+  const recognitionReleaseRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!previewUrl) return;
@@ -85,8 +90,14 @@ export function ClaimDetailPage() {
    */
   useEffect(
     () => () => {
+      if (recognitionReleaseRef.current !== null) {
+        window.clearTimeout(recognitionReleaseRef.current);
+      }
       recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
-      recognitionRef.current?.stop();
+      // Halaman sudah ditinggalkan; tidak ada lagi yang menunggu hasil final,
+      // jadi mikrofon dilepas seketika.
+      recognitionRef.current?.abort();
+      recognitionRef.current = null;
     },
     [],
   );
@@ -159,6 +170,13 @@ export function ClaimDetailPage() {
           if (text.trim()) setTranscript(text.trim());
         };
         recognition.onerror = () => undefined;
+        recognition.onend = () => {
+          if (recognitionReleaseRef.current !== null) {
+            window.clearTimeout(recognitionReleaseRef.current);
+            recognitionReleaseRef.current = null;
+          }
+          recognitionRef.current = null;
+        };
         /*
          * Transkripsi langsung dari browser cuma bonus: kalau mesinnya menolak
          * start (mis. sesi sebelumnya belum benar-benar berhenti), perekaman
@@ -186,8 +204,26 @@ export function ClaimDetailPage() {
   };
 
   const stopRecording = () => {
-    recognitionRef.current?.stop();
-    recognitionRef.current = null;
+    /*
+     * `stop()` mengakhiri sesi pengenalan suara tapi menunggu hasil final, dan
+     * selama menunggu itu Chrome Android masih memegang mikrofonnya — lampu
+     * rekam di HP tetap menyala meski perekaman sudah selesai. Kalau sesinya
+     * tidak juga berakhir, `abort()` melepasnya paksa.
+     */
+    const recognition = recognitionRef.current;
+    if (recognition) {
+      recognition.stop();
+      if (recognitionReleaseRef.current !== null) {
+        window.clearTimeout(recognitionReleaseRef.current);
+      }
+      recognitionReleaseRef.current = window.setTimeout(() => {
+        recognitionReleaseRef.current = null;
+        if (recognitionRef.current === recognition) {
+          recognition.abort();
+          recognitionRef.current = null;
+        }
+      }, 1200);
+    }
     recorderRef.current?.stop();
     recorderRef.current = null;
     setRecording(false);
@@ -209,12 +245,21 @@ export function ClaimDetailPage() {
       const uploadedUrl = await uploadClaimEvidence(blob, 'claim_audio', filename);
       let finalTranscript = browserTranscriptRef.current.trim();
       let finalSource: 'SERVER_ASR' | 'BROWSER_ASR' = 'BROWSER_ASR';
+      /*
+       * Kegagalan transkripsi dulu ditelan diam-diam, lalu pengguna diberi
+       * pesan "isi manual" — seolah rekamannya yang bermasalah. Padahal
+       * penyebabnya bisa jauh lebih spesifik, dan cuma satu di antaranya yang
+       * bisa dia perbuat sesuatu.
+       */
+      let transcriptionIssue: 'none' | 'not_configured' | 'failed' = 'none';
       if (!finalTranscript) {
         try {
           const result = await transcribeClaimAudio(blob, filename);
           finalTranscript = result.text.trim();
           finalSource = 'SERVER_ASR';
-        } catch {
+        } catch (transcribeError) {
+          const status = (transcribeError as { response?: { status?: number } })?.response?.status;
+          transcriptionIssue = status === 503 ? 'not_configured' : 'failed';
           finalTranscript = '';
         }
       }
@@ -223,6 +268,16 @@ export function ClaimDetailPage() {
       setTranscript(finalTranscript);
       if (finalTranscript) {
         toast.success('Rekaman dan transkripsi berhasil diproses.');
+      } else if (transcriptionIssue === 'not_configured') {
+        toast.warning(
+          'Rekaman tersimpan. Alih suara ke teks belum aktif di server, jadi tulis kronologinya sendiri dulu.',
+          { duration: 6000 },
+        );
+      } else if (transcriptionIssue === 'failed') {
+        toast.warning(
+          'Rekaman tersimpan, tapi suaranya gagal diubah jadi teks. Tulis kronologinya sendiri, atau rekam ulang di tempat yang lebih sepi.',
+          { duration: 6000 },
+        );
       } else {
         toast.warning('Rekaman tersimpan. Silakan isi hasil transkripsi secara manual.');
       }
