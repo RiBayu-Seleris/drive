@@ -1,1 +1,0 @@
-import"./maps-Bv8JbqZX.js";import{G as t}from"./index-C4FOFe4V.js";const e={lat:t.latitude,lng:t.longitude},s="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",r='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> kontributor',n=15,p={default:"#aded1f",origin:"#3adfac",destination:"#df3a3a",driver:"#aded1f"};export{e as D,p as M,r as O,n as a,s as b};

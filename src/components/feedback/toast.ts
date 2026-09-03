@@ -16,9 +16,19 @@ interface ToastState {
   dismiss: (id: string) => void;
 }
 
-export const useToastStore = create<ToastState>((set) => ({
+export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
   push: (toast) => {
+    /*
+     * Pesan yang sama tidak menumpuk. Tombol yang ditekan berulang saat izin
+     * ditolak dulu melahirkan satu notifikasi per tekanan, sampai formulir di
+     * belakangnya tertutup tembok notifikasi identik.
+     */
+    const existing = get().toasts.find(
+      (item) => item.message === toast.message && item.tone === toast.tone,
+    );
+    if (existing) return existing.id;
+
     const id = crypto.randomUUID();
     set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
     return id;

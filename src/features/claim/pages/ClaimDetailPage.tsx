@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { toast } from '@/components/feedback/toast';
 import { extractErrorMessage } from '@/lib/api/client';
+import { deviceErrorMessage } from '@/lib/utils/deviceError';
 import { ROUTES } from '@/app/routes';
 import { useDamageStore } from '@/features/damage/store/damageStore';
 import { normalizeIDRLabel } from '@/features/damage/api/damageApi';
@@ -67,14 +68,27 @@ export function ClaimDetailPage() {
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const browserTranscriptRef = useRef('');
+  const startingRef = useRef(false);
 
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  /*
+   * Pelepasan mikrofon HANYA saat halaman ditinggalkan.
+   *
+   * Dulu ini menumpang efek pembersih previewUrl, jadi ia ikut berjalan setiap
+   * kali pratinjau rekaman berganti — mematikan perangkat di tengah hidupnya
+   * komponen. Kebetulan belum pernah kelihatan karena urutannya selalu pas,
+   * tapi itu kebetulan, bukan jaminan.
+   */
   useEffect(
     () => () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
       recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
       recognitionRef.current?.stop();
     },
-    [previewUrl],
+    [],
   );
 
   if (!policy) {
@@ -89,22 +103,43 @@ export function ClaimDetailPage() {
   }
 
   const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      toast.error('Browser tidak mendukung perekaman suara.');
+    /*
+     * Mikrofon, kamera, dan pengenalan suara hanya hidup di konteks aman.
+     * Dibuka lewat http://192.168.x.x dari HP, `navigator.mediaDevices` bahkan
+     * tidak ada — dan pesan "browser tidak mendukung" mengirim orang mencari
+     * jawaban di tempat yang salah, karena browsernya sebenarnya mendukung.
+     */
+    if (!window.isSecureContext) {
+      toast.error(
+        'Perekaman suara hanya jalan lewat koneksi aman. Buka aplikasi ini lewat alamat https, bukan http.',
+        { duration: 6000 },
+      );
       return;
     }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      toast.error('Browser ini tidak mendukung perekaman suara.');
+      return;
+    }
+    // Izin mikrofon butuh waktu; `recording` baru menyala setelah izin turun.
+    // Tanpa penjaga ini, dua ketukan cepat melahirkan dua perekam sekaligus dan
+    // yang pertama kehilangan pemiliknya — mikrofon menyala terus.
+    if (startingRef.current || recorderRef.current) return;
+    startingRef.current = true;
+
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((type) =>
         MediaRecorder.isTypeSupported(type),
       );
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const activeStream = stream;
       chunksRef.current = [];
       browserTranscriptRef.current = '';
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
-      recorder.onstop = () => void processRecording(recorder.mimeType || 'audio/webm', stream);
+      recorder.onstop = () => void processRecording(recorder.mimeType || 'audio/webm', activeStream);
       recorderRef.current = recorder;
 
       const speechWindow = window as SpeechRecognitionWindow;
@@ -124,14 +159,29 @@ export function ClaimDetailPage() {
           if (text.trim()) setTranscript(text.trim());
         };
         recognition.onerror = () => undefined;
-        recognition.start();
-        recognitionRef.current = recognition;
+        /*
+         * Transkripsi langsung dari browser cuma bonus: kalau mesinnya menolak
+         * start (mis. sesi sebelumnya belum benar-benar berhenti), perekaman
+         * suaranya tetap harus jalan. Rekaman itu yang jadi bukti klaim.
+         */
+        try {
+          recognition.start();
+          recognitionRef.current = recognition;
+        } catch {
+          recognitionRef.current = null;
+        }
       }
 
       recorder.start(500);
       setRecording(true);
     } catch (error) {
-      toast.error(extractErrorMessage(error, 'Izin mikrofon diperlukan untuk membuat klaim.'));
+      // Mikrofon sudah menyala sebelum kegagalan ini; tanpa dimatikan, lampu
+      // rekam di HP tetap hidup padahal tidak ada yang direkam.
+      stream?.getTracks().forEach((track) => track.stop());
+      recorderRef.current = null;
+      toast.error(deviceErrorMessage(error, 'mikrofon'));
+    } finally {
+      startingRef.current = false;
     }
   };
 
@@ -139,6 +189,7 @@ export function ClaimDetailPage() {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     recorderRef.current?.stop();
+    recorderRef.current = null;
     setRecording(false);
   };
 
