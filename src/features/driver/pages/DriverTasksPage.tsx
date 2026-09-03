@@ -1644,7 +1644,7 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
       >
         <p className="text-12 mb-3 text-neutral-700">
           Minta pelanggan menekan <strong>Tampilkan kode</strong> di tiketnya, lalu arahkan kamera
-          ke barcode.
+          ke kode QR.
         </p>
 
         {cameraOn ? (
@@ -1694,6 +1694,10 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
             className="text-14 h-12 min-w-0 flex-1 rounded-xl border border-neutral-300 bg-neutral-200 px-4 font-semibold tracking-wide text-neutral-900 outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-neutral-500"
           />
           <Button
+            // Tombol ini melebar penuh secara bawaan; di baris yang sama dengan
+            // kolom kode, itu memakan seluruh lebar dan menyisakan kotak kecil
+            // untuk mengetik.
+            fullWidth={false}
             className="h-12 shrink-0 rounded-xl px-5"
             disabled={!manualCode.trim() || scan.isPending}
             isLoading={scan.isPending}

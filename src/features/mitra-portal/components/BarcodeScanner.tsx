@@ -89,14 +89,23 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
          * terbaca, dan hasilnya pemindai yang "menyala tapi tidak pernah
          * mengenali apa pun".
          */
+        /*
+         * Resolusi diminta setinggi yang kamera mau berikan.
+         *
+         * Nomor klaim 16 karakter menjadi 231 modul Code 128. Pada bingkai
+         * 1280 px, barcode yang difoto dari layar HP hanya kebagian sekitar
+         * 1,7 piksel per modul — di bawah ambang aman 2-3 piksel, dan dekoder
+         * gagal padahal barcode-nya terlihat jelas oleh mata. Menaikkan
+         * bingkai ke 1920 px menambah setengah kali lipat bahan untuk dibaca.
+         */
+        const resolution = { width: { ideal: 1920 }, height: { ideal: 1080 } };
         const video: MediaTrackConstraints = deviceId
-          ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          ? { deviceId: { exact: deviceId }, ...resolution }
           : {
               // Hanya preferensi, bukan syarat: laptop yang cuma punya kamera
               // depan tetap mendapat kameranya.
               facingMode: 'environment',
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              ...resolution,
             };
 
         controls = await reader.decodeFromConstraints({ video }, videoRef.current!, (result) => {
@@ -210,9 +219,9 @@ export function BarcodeScanner({ onDetected, onError }: BarcodeScannerProps) {
       <div className="relative overflow-hidden rounded-xl bg-black">
         <video ref={videoRef} className="h-56 w-full object-cover" autoPlay muted playsInline />
 
-        {/* Bingkai bidik: barcode tiket berbentuk memanjang, jadi kotaknya lebar. */}
+        {/* Bingkai bidik kotak: tiket memakai QR, bukan barcode batang. */}
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="h-20 w-4/5 rounded-lg border-2 border-white/80 shadow-[0_0_0_9999px_rgb(0_0_0_/_0.35)]" />
+          <div className="size-40 rounded-lg border-2 border-white/80 shadow-[0_0_0_9999px_rgb(0_0_0_/_0.35)]" />
         </div>
 
         {starting && (

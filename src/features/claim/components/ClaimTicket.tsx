@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
-import { Barcode } from '@/components/ui/Barcode';
+import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils/cn';
 import { formatCurrency } from '@/lib/utils/format';
 
@@ -189,7 +189,25 @@ export function ClaimTicket({
               backfaceVisibility: 'hidden',
             }}
           >
-            <Barcode value={code} className="h-12 w-full text-neutral-900" />
+            {/*
+              QR, bukan barcode batang.
+              Nomor klaim 16 karakter menjadi 231 modul kalau disandikan Code
+              128 — direntang selebar tiket, tiap modul cuma kebagian 1,3 piksel,
+              dan begitu difoto ulang dari layar HP tersisa sekitar 1,7 piksel:
+              di bawah ambang yang bisa dibaca dekoder. Terlihat jelas oleh
+              mata, tapi tidak terbaca mesin.
+              QR menyimpan data dua arah, jadi 16 karakter cukup ditampung petak
+              kecil yang jauh lebih longgar, punya koreksi kesalahan untuk
+              bagian yang tertutup pantulan, dan tidak peduli arah miringnya.
+            */}
+            <QRCodeSVG
+              value={code}
+              size={132}
+              level="M"
+              bgColor="transparent"
+              fgColor="#1b1300"
+              className="rounded-md bg-white p-2"
+            />
             {/*
               Angka di bawah barcode HARUS sama dengan isi barcode-nya.
               Dulu di sini selalu tertulis nomor klaim, padahal yang tersandi

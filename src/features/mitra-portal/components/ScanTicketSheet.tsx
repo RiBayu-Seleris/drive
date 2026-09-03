@@ -123,7 +123,7 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
     >
       <p className="text-12 mb-3 text-neutral-600">
         Minta pelanggan membuka tiketnya dan menekan <strong>Tampilkan kode</strong>, lalu arahkan
-        kamera ke barcode-nya. Bisa juga diketik manual — nomor klaim dan kode kunjungan (WVS) ikut diterima.
+        kamera ke kode QR-nya. Bisa juga diketik manual — nomor klaim dan kode kunjungan (WVS) ikut diterima.
       </p>
 
       {cameraOn ? (

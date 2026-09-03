@@ -7,7 +7,7 @@ import {
   Navigation,
   PackageCheck,
   Phone,
-  QrCode,
+  ScanBarcode,
   Star,
   Truck,
   Wrench,
@@ -179,7 +179,9 @@ export function ClaimTicketPage() {
                 menggantikan petunjuk pindai, supaya pesannya tidak dobel. */}
             {job ? (
               <div className="bg-deep-blue-50 border-deep-blue-100 flex items-start gap-3 rounded-xl border p-4">
-                <QrCode className="text-deep-blue-600 mt-0.5 size-5 shrink-0" />
+                {/* Tiketnya barcode batang (Code 128), bukan QR — ikonnya
+                    harus menggambarkan yang benar-benar dilihat pemegangnya. */}
+                <ScanBarcode className="text-deep-blue-600 mt-0.5 size-5 shrink-0" />
                 <p className="text-13 text-deep-blue-700">{scanHintOf(used)}</p>
               </div>
             ) : (
