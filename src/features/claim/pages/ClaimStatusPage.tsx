@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -23,9 +24,16 @@ import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { STORAGE_KEYS } from '@/config/constants';
 import { storage } from '@/lib/storage/storage';
 import { ROUTES } from '@/app/routes';
-import { cancelClaim, claimStatusLabel, type Claim } from '../api';
+import { cancelClaim, claimStatusLabel, getClaims, type Claim } from '../api';
 import { useClaimDraftStore } from '../store/claimDraftStore';
 import { useDamageStore } from '@/features/damage/store/damageStore';
+
+/** Keputusan sudah turun; tidak ada gunanya terus menanyai server. */
+const DECIDED = new Set(['APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED']);
+
+function isClaimDecided(status: string): boolean {
+  return DECIDED.has(status);
+}
 
 const STEPS = [
   { key: 'PENDING_REVIEW', label: 'Klaim diajukan' },
@@ -72,7 +80,32 @@ export function ClaimStatusPage() {
   const submittedClaim = useClaimDraftStore((state) => state.submittedClaim);
   const setFlowMode = useDamageStore((state) => state.setFlowMode);
   const [canceling, setCanceling] = useState(false);
-  const claim = locationClaim ?? submittedClaim;
+  const knownClaim = locationClaim ?? submittedClaim;
+
+  /*
+   * Status klaim dulu dibekukan pada keadaan saat halaman dibuka: ia datang
+   * dari state navigasi. Kalau asuransi menyetujuinya semenit kemudian, layar
+   * ini tetap menampilkan "sedang ditinjau" sampai pengguna keluar-masuk lagi —
+   * padahal justru halaman inilah yang ia buka untuk menunggu kabar.
+   *
+   * Daftar klaim dipakai sebagai sumber terbaru (queryKey yang sama dengan
+   * halaman Klaim Saya, jadi datanya dipakai bersama), dan hanya ditarik ulang
+   * selama keputusannya memang belum turun.
+   */
+  const claimsQuery = useQuery({
+    queryKey: ['claims'],
+    queryFn: getClaims,
+    enabled: Boolean(knownClaim?.claimNumber),
+    refetchInterval: (query) => {
+      const latest = query.state.data?.find(
+        (item) => item.claimNumber === knownClaim?.claimNumber,
+      );
+      return latest && isClaimDecided(latest.status) ? false : 15_000;
+    },
+  });
+
+  const claim =
+    claimsQuery.data?.find((item) => item.claimNumber === knownClaim?.claimNumber) ?? knownClaim;
 
   if (!claim) {
     return (
@@ -129,7 +162,13 @@ export function ClaimStatusPage() {
 
   return (
     <PageContainer>
-      <AppHeader title="Status Klaim" />
+      {/*
+        Halaman ini sering dibuka berulang kali sambil menunggu keputusan, dan
+        jalan masuknya bermacam-macam. Panah kembali diarahkan ke beranda supaya
+        pengguna tidak dilempar mundur satu per satu melewati formulir yang sudah
+        selesai ia isi.
+      */}
+      <AppHeader title="Status Klaim" onBack={() => navigate(ROUTES.home)} />
       <div className="flex flex-1 flex-col px-5 py-5">
         <Card className="flex flex-col items-center gap-2 py-6 text-center">
           <FileText className="text-deep-blue-500 size-8" />

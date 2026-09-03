@@ -40,6 +40,9 @@ function isPdf(file: File): boolean {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 }
 
+/** Rasio kartu identitas Indonesia (85,6 x 54 mm) — KTP, SIM, dan STNK. */
+const DOCUMENT_FRAME_RATIO = 1.58;
+
 export function ClaimDocumentsPage() {
   const navigate = useNavigate();
   const documents = useClaimDraftStore((state) => state.documents);
@@ -324,6 +327,8 @@ export function ClaimDocumentsPage() {
     toast.success('Nomor rangka/VIN sudah dikonfirmasi.');
   };
 
+  const isDocumentCapture = cameraTarget?.kind === 'document';
+
   const cameraGuideText = (() => {
     if (!cameraTarget) return '';
     if (cameraTarget.kind === 'engine') return 'Foto nomor mesin dengan jelas';
@@ -375,7 +380,7 @@ export function ClaimDocumentsPage() {
             const isUploading = uploading === type;
             return (
               <section key={type} className="min-w-0">
-                <div className="relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-neutral-400 bg-neutral-100 text-neutral-700">
+                <div className="relative flex aspect-[1.58] flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-neutral-400 bg-neutral-100 text-neutral-700">
                   {preview?.kind === 'image' ? (
                     <img
                       src={preview.url}
@@ -581,6 +586,17 @@ export function ClaimDocumentsPage() {
         confirmBeforeCapture
         confirmLabel="Gunakan Foto"
         retakeLabel="Ambil Ulang"
+        /*
+         * Dokumen disimpan sebatas bingkainya saja. Tanpa ini, yang tersimpan
+         * adalah seluruh bidang kamera — orang membingkai KTP-nya rapi di
+         * panduan, lalu yang terkirim ke asuransi justru foto tegak berisi meja
+         * dan lantai dengan kartunya kecil di tengah.
+         *
+         * Hanya untuk dokumen; nomor mesin dan rangka difoto apa adanya karena
+         * letaknya bermacam-macam dan sering butuh konteks sekitarnya.
+         */
+        cropToGuide={isDocumentCapture}
+        guideFrameAspectRatio={isDocumentCapture ? DOCUMENT_FRAME_RATIO : undefined}
         onClose={() => setCameraTarget(null)}
         onCapture={handleCameraCapture}
       />
