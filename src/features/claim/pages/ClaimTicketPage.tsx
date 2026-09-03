@@ -12,6 +12,7 @@ import {
   Truck,
   Wrench,
 } from 'lucide-react';
+import { Barcode } from '@/components/ui/Barcode';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
@@ -46,6 +47,15 @@ function scanHintOf(used: boolean): string {
 }
 
 export function ClaimTicketPage() {
+  /*
+   * Mode kode besar.
+   *
+   * Barcode di badan tiket hanya selebar kartunya, dan pada lebar itu tiap
+   * garis tersempit cuma kebagian sekitar satu piksel — cukup dilihat mata,
+   * di ambang untuk kamera pemindai. Diputar memakai sisi panjang layar,
+   * lebarnya jadi dua kali lipat lebih, dan barulah kamera punya cukup bahan.
+   */
+  const [enlarged, setEnlarged] = useState(false);
   const navigate = useNavigate();
   const locationClaim = useLocation().state as Claim | null;
   const submittedClaim = useClaimDraftStore((state) => state.submittedClaim);
@@ -172,6 +182,7 @@ export function ClaimTicketPage() {
                 di depan mobilnya.
               */
               code={claim.claimNumber}
+              onEnlarge={() => setEnlarged(true)}
               state={ticketStateOf(job, used)}
             />
 
@@ -278,6 +289,33 @@ export function ClaimTicketPage() {
           </>
         )}
       </div>
+
+      {/*
+        Kode besar: barcode diputar seperempat putaran sehingga memakai SISI
+        PANJANG layar. Pada HP tegak, sisi itu dua kali lebih panjang daripada
+        lebarnya — dan lebar inilah satu-satunya yang menentukan apakah barcode
+        bisa dibaca mesin. Latar sengaja putih pekat dan kecerahan maksimum
+        dianjurkan, karena pantulan lampu yang menutup satu garis saja sudah
+        cukup membatalkan pembacaan.
+      */}
+      {enlarged && (
+        <div
+          role="dialog"
+          aria-label="Kode klaim diperbesar"
+          onClick={() => setEnlarged(false)}
+          className="fixed inset-0 z-[9999] grid place-items-center bg-white p-6"
+        >
+          <div className="flex rotate-90 flex-col items-center gap-3">
+            <Barcode value={claim.claimNumber} className="h-24 w-[70vh] text-black" />
+            <span className="text-14 font-semibold tracking-[0.2em] text-black">
+              {claim.claimNumber}
+            </span>
+          </div>
+          <span className="text-12 absolute inset-x-0 bottom-6 text-center text-neutral-500">
+            Ketuk di mana saja untuk menutup
+          </span>
+        </div>
+      )}
     </PageContainer>
   );
 }

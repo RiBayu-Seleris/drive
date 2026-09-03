@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
-import { QRCodeSVG } from 'qrcode.react';
+import { Barcode } from '@/components/ui/Barcode';
 import { cn } from '@/lib/utils/cn';
 import { formatCurrency } from '@/lib/utils/format';
 
@@ -80,6 +80,8 @@ export interface ClaimTicketProps {
   /** Isi barcode: kode pekerjaan bengkel, atau nomor klaim bila belum ada. */
   code: string;
   state: ClaimTicketState;
+  /** Membuka kode dalam mode layar penuh agar mudah dipindai. */
+  onEnlarge?: () => void;
   className?: string;
 }
 
@@ -94,6 +96,7 @@ export function ClaimTicket({
   approvedAmount,
   code,
   state,
+  onEnlarge,
   className,
 }: ClaimTicketProps) {
   const status = STATE_STYLE[state];
@@ -190,24 +193,22 @@ export function ClaimTicket({
             }}
           >
             {/*
-              QR, bukan barcode batang.
-              Nomor klaim 16 karakter menjadi 231 modul kalau disandikan Code
-              128 — direntang selebar tiket, tiap modul cuma kebagian 1,3 piksel,
-              dan begitu difoto ulang dari layar HP tersisa sekitar 1,7 piksel:
-              di bawah ambang yang bisa dibaca dekoder. Terlihat jelas oleh
-              mata, tapi tidak terbaca mesin.
-              QR menyimpan data dua arah, jadi 16 karakter cukup ditampung petak
-              kecil yang jauh lebih longgar, punya koreksi kesalahan untuk
-              bagian yang tertutup pantulan, dan tidak peduli arah miringnya.
+              Barcode batang, sesuai desain tiketnya.
+              Bentuk ini padat: nomor klaim 16 karakter menjadi 231 modul, dan
+              selebar tiket tiap modul cuma kebagian sekitar 1,3 piksel — cukup
+              untuk mata, di ambang untuk kamera. Karena itu ada tombol
+              perbesar di bawahnya: dalam mode itu barcode diputar memakai sisi
+              panjang layar, dan tiap modul mendapat dua kali lipat lebih
+              banyak piksel.
             */}
-            <QRCodeSVG
-              value={code}
-              size={132}
-              level="M"
-              bgColor="transparent"
-              fgColor="#1b1300"
-              className="rounded-md bg-white p-2"
-            />
+            <button
+              type="button"
+              onClick={onEnlarge}
+              className="w-full"
+              aria-label="Perbesar kode untuk dipindai"
+            >
+              <Barcode value={code} className="h-12 w-full text-neutral-900" />
+            </button>
             {/*
               Angka di bawah barcode HARUS sama dengan isi barcode-nya.
               Dulu di sini selalu tertulis nomor klaim, padahal yang tersandi

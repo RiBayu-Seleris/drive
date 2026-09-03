@@ -43,6 +43,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
+import type { SettlementFlag } from '@/features/towing/types';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
@@ -1532,10 +1533,19 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  /*
+   * Hasil akhir tiket disimpan supaya layarnya BERUBAH setelah ditekan.
+   * Dulu tombol "Selesaikan" bekerja diam-diam: server menandai tiketnya
+   * selesai, tapi kotak ini tetap menampilkan tombol yang sama, jadi sopir
+   * tidak punya satu pun tanda bahwa tugasnya sudah tuntas — dan sebagian
+   * menekannya berkali-kali.
+   */
+  const [settledFlag, setSettledFlag] = useState<SettlementFlag | null>(null);
 
   useEffect(() => {
     setCode('');
     setManualCode('');
+    setSettledFlag(null);
   }, [task.orderCode]);
 
   /** Tiket yang dipindai wajib milik order ini, bukan order sebelah. */
@@ -1550,10 +1560,14 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
 
   const scan = useMutation({
     mutationFn: (value: string) => scanDriverSettlementCode(value),
-    onSuccess: (_flag, value) => {
+    onSuccess: (flag, value) => {
       setCode(value);
       setScannerOpen(false);
       setCameraOn(false);
+      // Tiket yang sudah tuntas tidak perlu diselesaikan dua kali.
+      if (flag.status === 'SETTLED' || flag.status === 'AWAITING_PAYMENT') {
+        setSettledFlag(flag);
+      }
       toast.success('Tiket klaim valid.');
     },
     /*
@@ -1569,6 +1583,7 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
   const settle = useMutation({
     mutationFn: () => settleDriverSettlementCode(code.trim()),
     onSuccess: (flag) => {
+      setSettledFlag(flag);
       void queryClient.invalidateQueries({ queryKey: ['driver-tasks'] });
       if (flag.status === 'SETTLED') {
         toast.success('Tiket klaim towing selesai.');
@@ -1591,6 +1606,21 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
     scan.mutate(value);
   };
 
+  /*
+   * Menutup tiket bersifat final, dan tombolnya berada tepat di bawah kode yang
+   * baru saja dipindai — mudah tertekan saat sopir masih memeriksa layarnya.
+   * Satu pertanyaan singkat memisahkan "sudah dipindai" dari "sudah diserahkan".
+   */
+  const handleSettle = async () => {
+    const ok = await confirm({
+      title: 'Selesaikan tugas ini?',
+      message: `Tiket ${code} akan ditutup dan tugas dianggap tuntas. Pastikan kendaraan sudah benar-benar diserahkan.`,
+      confirmText: 'Selesaikan',
+    });
+    if (!ok) return;
+    settle.mutate();
+  };
+
   const closeScanner = () => {
     setScannerOpen(false);
     setCameraOn(false);
@@ -1605,36 +1635,52 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
         </p>
       </div>
 
-      {code ? (
-        <div className="drive-card flex h-12 items-center justify-between rounded-xl border border-[#aded1f]/45 px-4">
-          <span className="text-14 font-semibold tracking-wide text-neutral-900">{code}</span>
-          <button
-            type="button"
-            onClick={() => setCode('')}
-            className="text-11 font-semibold text-[#c2f347]"
-          >
-            Pindai ulang
-          </button>
+      {settledFlag ? (
+        <div className="flex items-start gap-3 rounded-xl border border-[#6ae791]/40 bg-[#0f1720] p-4">
+          <PackageCheck className="mt-0.5 size-5 shrink-0 text-[#6ae791]" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-13 font-semibold text-[#6ae791]">
+              {settledFlag.status === 'AWAITING_PAYMENT'
+                ? 'Tiket tervalidasi, menunggu pembayaran pelanggan.'
+                : 'Tugas selesai. Tiket klaim sudah ditutup.'}
+            </p>
+            <p className="text-11 mt-1 text-neutral-600">{code || settledFlag.claimNumber}</p>
+          </div>
         </div>
       ) : (
-        <Button
-          variant="outline"
-          className="h-12 rounded-2xl"
-          leftIcon={<Camera className="size-5" />}
-          onClick={() => setScannerOpen(true)}
-        >
-          Pindai Tiket Pelanggan
-        </Button>
-      )}
+        <>
+          {code ? (
+            <div className="drive-card flex h-12 items-center justify-between rounded-xl border border-[#aded1f]/45 px-4">
+              <span className="text-14 font-semibold tracking-wide text-neutral-900">{code}</span>
+              <button
+                type="button"
+                onClick={() => setCode('')}
+                className="text-11 font-semibold text-[#c2f347]"
+              >
+                Pindai ulang
+              </button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="h-12 rounded-2xl"
+              leftIcon={<Camera className="size-5" />}
+              onClick={() => setScannerOpen(true)}
+            >
+              Pindai Tiket Pelanggan
+            </Button>
+          )}
 
-      <Button
-        className="h-12 rounded-2xl"
-        disabled={!code || settle.isPending}
-        isLoading={settle.isPending}
-        onClick={() => settle.mutate()}
-      >
-        Selesaikan
-      </Button>
+          <Button
+            className="h-12 rounded-2xl"
+            disabled={!code || settle.isPending}
+            isLoading={settle.isPending}
+            onClick={() => void handleSettle()}
+          >
+            Selesaikan
+          </Button>
+        </>
+      )}
 
       <Modal
         open={scannerOpen}
@@ -1643,8 +1689,8 @@ function DriverSettlementBox({ task }: { task: DriverTask }) {
         variant="sheet"
       >
         <p className="text-12 mb-3 text-neutral-700">
-          Minta pelanggan menekan <strong>Tampilkan kode</strong> di tiketnya, lalu arahkan kamera
-          ke kode QR.
+          Minta pelanggan menekan <strong>Tampilkan kode</strong> di tiketnya, lalu ketuk kodenya
+          sekali lagi supaya membesar, dan arahkan kamera ke barcode.
         </p>
 
         {cameraOn ? (
