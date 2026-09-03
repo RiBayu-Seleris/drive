@@ -1,1 +1,0 @@
-import{j as r}from"./react-vendor-ByvxUYVy.js";import{R as o}from"./index-2tuXXtZ4.js";import{N as t}from"./router-Oma9ZcEh.js";import"./query-kKlUmXTF.js";import"./forms-2pscTHAh.js";function s(){return r.jsx(t,{to:o.claimDocuments,replace:!0})}export{s as ClaimFormPage};

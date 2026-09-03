@@ -26,6 +26,7 @@ import {
   getRepairJob,
   repairJobStatusLabel,
   type RepairJob,
+  markRepairPaidCash,
 } from '../../repairJobApi';
 
 /** Detail satu pekerjaan perbaikan: rincian biaya, verifikasi tiket, selesai. */
@@ -35,6 +36,7 @@ export function WorkshopJobDetailPage() {
   const [job, setJob] = useState<RepairJob | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [cashPending, setCashPending] = useState(false);
 
   const load = useCallback(() => {
     if (!code) return;
@@ -90,6 +92,26 @@ export function WorkshopJobDetailPage() {
       toast.error(extractErrorMessage(error, 'Gagal menandai selesai.'));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleCashPayment = async () => {
+    if (!job) return;
+    const ok = await confirm({
+      title: 'Catat pembayaran tunai',
+      message: `Pelanggan sudah membayar ${formatCurrency(job.userPayable)} di kasir? Tagihannya akan ditutup dan tidak bisa dibatalkan.`,
+      confirmText: 'Sudah dibayar',
+    });
+    if (!ok) return;
+
+    setCashPending(true);
+    try {
+      setJob(await markRepairPaidCash(job.jobCode));
+      toast.success('Pembayaran tunai dicatat.');
+    } catch (error) {
+      toast.error(extractErrorMessage(error, 'Gagal mencatat pembayaran tunai.'));
+    } finally {
+      setCashPending(false);
     }
   };
 
@@ -227,6 +249,22 @@ export function WorkshopJobDetailPage() {
                 : 'Selesai dan lunas via asuransi.'}
             </p>
           </div>
+        )}
+
+        {/*
+          Pelanggan boleh membayar sisanya lewat aplikasi ATAU tunai di kasir.
+          Yang tunai hanya bengkel yang bisa mencatat — kalau tombolnya ada di
+          sisi pelanggan, tagihan bisa ditutup tanpa uang berpindah.
+        */}
+        {job.userPayable > 0 && (
+          <Button
+            variant="outline"
+            leftIcon={<Wallet className="size-5" />}
+            isLoading={cashPending}
+            onClick={handleCashPayment}
+          >
+            Pelanggan Bayar Tunai
+          </Button>
         )}
       </div>
 

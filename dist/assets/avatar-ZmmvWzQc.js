@@ -1,0 +1,1 @@
+import{q as s}from"./index-BcFR-2NC.js";const n="/assets/home/avatar.png";function e(r){const t=r==null?void 0:r.trim();return t?/^(https?:|data:|blob:)/i.test(t)?t:t.startsWith("/fs/")?`${s.apiBaseUrl}/v1${t}`:t.startsWith("fs/")?`${s.apiBaseUrl}/v1/${t}`:t.startsWith("/")?t:`${s.apiBaseUrl}/v1/fs/${encodeURIComponent(t)}`:n}export{n as D,e as r};

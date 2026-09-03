@@ -1,4 +1,11 @@
-export type PaymentType = 'AI_REPORT' | 'CLAIM_FEE' | 'TOWING' | 'POLICY_PREMIUM' | 'OTHER';
+export type PaymentType =
+  | 'AI_REPORT'
+  | 'CLAIM_FEE'
+  | 'TOWING'
+  /** Sisa biaya perbaikan yang tidak ditanggung asuransi. */
+  | 'REPAIR'
+  | 'POLICY_PREMIUM'
+  | 'OTHER';
 export type PaymentMethodKind = 'QRIS' | 'EWALLET' | 'VA';
 
 /** Konteks pembayaran yang dibawa antar-halaman (payment → waiting → success). */
@@ -162,6 +169,16 @@ export const DEFAULT_PRICING: Record<PaymentType, PaymentPricing> = {
     adminFee: 0,
     chargeAmount: 0,
     itemName: 'Biaya Klaim',
+  },
+  REPAIR: {
+    // Nominalnya selalu datang dari server (sisa yang tidak ditanggung
+    // asuransi, berbeda tiap pekerjaan); nol di sini hanya penampung.
+    paymentType: 'REPAIR',
+    currency: 'IDR',
+    baseAmount: 0,
+    adminFee: 0,
+    chargeAmount: 0,
+    itemName: 'Sisa Biaya Perbaikan',
   },
   TOWING: {
     paymentType: 'TOWING',

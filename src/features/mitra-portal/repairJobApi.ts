@@ -122,6 +122,19 @@ export async function completeRepairJob(code: string): Promise<RepairJob> {
   return parseRepairJob(asRecord(asRecord(res.data).data));
 }
 
+/**
+ * Mencatat pelanggan membayar sisa biaya di kasir bengkel.
+ *
+ * Uangnya tidak lewat platform, jadi yang tercatat adalah pengakuan bengkel —
+ * dan jejaknya dibedakan dari pembayaran lewat aplikasi.
+ */
+export async function markRepairPaidCash(code: string): Promise<RepairJob> {
+  const res = await mitraApi.post<{ data?: unknown }>('/v1/admin/repair-jobs/cash-payment', {
+    code,
+  });
+  return parseRepairJob(asRecord(asRecord(res.data).data));
+}
+
 export function repairJobStatusLabel(status: RepairJobStatus): string {
   switch (status) {
     case 'IN_PROGRESS':

@@ -167,7 +167,9 @@ export function ScanTicketSheet({ open, onClose, onScanned, expected }: ScanTick
         onKeyDown={(event) => {
           if (event.key === 'Enter') void handleSubmit();
         }}
-        placeholder="Contoh: RPJ-XXXXXX"
+        // Yang dibawa pelanggan adalah NOMOR KLAIM; kode pekerjaan hanya ada di
+        // portal ini. Contohnya mengikuti yang paling sering diketik petugas.
+        placeholder="Contoh: CLM-XXXXXXXX"
         autoCapitalize="characters"
         className="focus:border-deep-blue-500 focus:ring-deep-blue-200 h-12 w-full rounded-lg border border-neutral-300 bg-neutral-200 px-4 text-sm font-semibold tracking-wide text-neutral-900 shadow-sm transition placeholder:font-normal placeholder:tracking-normal placeholder:text-neutral-500 focus:ring-2 focus:outline-none"
       />

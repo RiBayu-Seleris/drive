@@ -1,5 +1,9 @@
 import axios from 'axios';
 import { userApi } from '@/lib/api/client';
+import {
+  parseClaimSettlementTicket,
+  type ClaimSettlementTicket,
+} from '@/features/towing/types';
 import { uploadDocument } from '@/lib/upload/publicUpload';
 import { recognizeChassisNumber, recognizeEngineNumber } from '@/lib/ocr/vehicleIdentity';
 
@@ -310,4 +314,17 @@ export async function createRepairJob(
     // tagihannya tidak pernah masuk ke pencairan asuransi.
     covered: typeof data.insurer_id === 'number' && data.insurer_id > 0,
   };
+}
+
+/**
+ * Penanda penyelesaian klaim (derek & perbaikan) — sumber kebenaran apakah
+ * sisa biaya sudah lunas, apa pun cara bayarnya.
+ */
+export async function getClaimSettlementTicket(
+  claimNumber: string,
+): Promise<ClaimSettlementTicket> {
+  const res = await userApi.get<{ data?: Record<string, unknown> }>(
+    `/v1/member/claims/${encodeURIComponent(claimNumber)}/settlement-ticket`,
+  );
+  return parseClaimSettlementTicket(res.data?.data ?? {});
 }

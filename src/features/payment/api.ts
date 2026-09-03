@@ -90,6 +90,8 @@ export async function getSupportedEwalletChannels(): Promise<string[]> {
 export interface CreateInvoiceArgs {
 	inferenceTicket: string;
 	policyNumber?: string;
+	/** Kode pekerjaan bengkel; wajib saat paymentType = REPAIR. */
+	jobCode?: string;
   paymentType: PaymentType;
   /** EWALLET / QRIS / VA. */
   paymentMethod: string;
@@ -104,6 +106,7 @@ export async function createInvoice(args: CreateInvoiceArgs): Promise<Invoice> {
   const res = await userApi.post<{ data?: unknown; stat_msg?: string }>('/v1/payment/invoice', {
 		inference_ticket: args.inferenceTicket,
 		policy_number: args.policyNumber,
+		job_code: args.jobCode,
     payment_method: args.paymentMethod,
     payment_channel: args.paymentChannel,
     bank_code: args.bankCode,

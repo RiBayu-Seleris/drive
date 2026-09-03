@@ -166,6 +166,8 @@ export function PaymentPage() {
 		const invoice = await createInvoice({
 			inferenceTicket: ticket,
 			policyNumber: paymentType === 'POLICY_PREMIUM' ? policyNumber : undefined,
+			// Untuk REPAIR, `ticket` yang dibawa halaman ini adalah kode pekerjaan.
+			jobCode: paymentType === 'REPAIR' ? ticket : undefined,
         paymentType,
         paymentMethod: selected.kind,
         paymentChannel: selected.kind === 'EWALLET' ? selected.value : '',

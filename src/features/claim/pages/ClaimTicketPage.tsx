@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Clock,
+  CreditCard,
   Info,
   Navigation,
   PackageCheck,
@@ -17,6 +18,8 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { formatCurrency } from '@/lib/utils/format';
 import { LoadingState } from '@/components/ui/Spinner';
 import { EmptyState, ErrorState } from '@/components/feedback/StateViews';
 import { MapView } from '@/components/map/MapView';
@@ -25,7 +28,13 @@ import { buildPath, ROUTES } from '@/app/routes';
 import { getRecommendations, type RecommendationPlace } from '@/features/workshop/api';
 import { getTowingOrders } from '@/features/towing/api/towingApi';
 import { isTowingOngoing, TOWING_ARRIVED, type TowingOrder } from '@/features/towing/types';
-import { getClaimRepairJob, isClaimTicketUsed, type Claim, type ClaimRepairJob } from '../api';
+import {
+  getClaimRepairJob,
+  getClaimSettlementTicket,
+  isClaimTicketUsed,
+  type Claim,
+  type ClaimRepairJob,
+} from '../api';
 import { useClaimDraftStore } from '../store/claimDraftStore';
 import { ClaimTicket, type ClaimTicketState } from '../components/ClaimTicket';
 
@@ -106,6 +115,22 @@ export function ClaimTicketPage() {
     towingQuery.data?.find(
       (order) => order.claimNumber === claimNumber && isTowingOngoing(order.status),
     ) ?? null;
+
+  /*
+   * Sisa biaya perbaikan: nominalnya dari pekerjaan bengkel, status lunasnya
+   * dari penanda penyelesaian — karena pelanggan boleh membayar lewat aplikasi
+   * ATAU tunai di kasir, dan penanda itu satu-satunya tempat kedua cara itu
+   * bertemu.
+   */
+  const settlementQuery = useQuery({
+    queryKey: ['claim-settlement', claimNumber],
+    queryFn: () => getClaimSettlementTicket(claimNumber),
+    enabled: Boolean(claimNumber) && isApproved,
+    retry: false,
+  });
+  const repairFlag = settlementQuery.data?.flags.find((flag) => flag.flagType === 'REPAIR') ?? null;
+  const repairPayable = job?.userPayable ?? 0;
+  const repairPaid = repairFlag?.status === 'SETTLED';
 
   /*
    * Kendaraan sudah berada di bengkel.
@@ -217,6 +242,57 @@ export function ClaimTicketPage() {
                 >
                   Pilih Bengkel
                 </Button>
+              </Card>
+            )}
+
+            {repairPayable > 0 && (
+              <Card className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-14 font-semibold text-neutral-900">Sisa Biaya Perbaikan</p>
+                    <p className="text-12 mt-1 text-neutral-700">
+                      Asuransi menanggung {formatCurrency(job?.insuranceCoverage ?? 0)} dari total{' '}
+                      {formatCurrency(job?.estimatedCost ?? 0)}.
+                    </p>
+                  </div>
+                  {repairPaid && <Badge tone="green">Lunas</Badge>}
+                </div>
+
+                <p className="text-[20px] font-semibold text-neutral-900">
+                  {formatCurrency(repairPayable)}
+                </p>
+
+                {!repairPaid && (
+                  <>
+                    <Button
+                      leftIcon={<CreditCard className="size-5" />}
+                      onClick={() =>
+                        navigate(ROUTES.payment, {
+                          state: {
+                            payment_type: 'REPAIR',
+                            redirect_route: ROUTES.claimTicket,
+                            redirect_state: claim,
+                            ticket: job?.jobCode ?? '',
+                            amount: repairPayable,
+                            item_name: 'Sisa Biaya Perbaikan',
+                          },
+                        })
+                      }
+                    >
+                      Bayar di Aplikasi
+                    </Button>
+                    {/*
+                      Tunai bukan tombol yang mengubah apa pun: yang mencatatnya
+                      bengkel, saat uangnya benar-benar diterima. Kalau tombol di
+                      sini bisa menandai lunas, pelanggan bisa menutup tagihan
+                      tanpa membayar sepeser pun.
+                    */}
+                    <p className="text-12 text-neutral-600">
+                      Mau bayar tunai? Bayar langsung di kasir bengkel — petugasnya yang akan
+                      mencatatnya, dan tanda lunas muncul di sini.
+                    </p>
+                  </>
+                )}
               </Card>
             )}
 
