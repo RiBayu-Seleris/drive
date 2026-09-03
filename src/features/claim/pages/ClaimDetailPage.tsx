@@ -74,6 +74,8 @@ export function ClaimDetailPage() {
   const browserTranscriptRef = useRef('');
   const startingRef = useRef(false);
   const recognitionReleaseRef = useRef<number | null>(null);
+  const recognitionActiveRef = useRef(false);
+  const recognitionRestartsRef = useRef(0);
 
   useEffect(() => {
     if (!previewUrl) return;
@@ -90,6 +92,7 @@ export function ClaimDetailPage() {
    */
   useEffect(
     () => () => {
+      recognitionActiveRef.current = false;
       if (recognitionReleaseRef.current !== null) {
         window.clearTimeout(recognitionReleaseRef.current);
       }
@@ -171,10 +174,30 @@ export function ClaimDetailPage() {
         };
         recognition.onerror = () => undefined;
         recognition.onend = () => {
+          /*
+           * Chrome Android mengakhiri sesi pengenalan suara tiap kali penutur
+           * berhenti sejenak — `continuous` tidak dihormati di sana. Selama
+           * perekaman masih hidup, sesinya dinyalakan lagi supaya kalimat
+           * berikutnya tidak hilang. Di desktop ini tidak pernah terpakai.
+           *
+           * Dibatasi supaya kalau mesinnya menolak berulang-ulang (mis.
+           * mikrofonnya dipegang perekam), ia berhenti mencoba alih-alih
+           * berputar tanpa henti.
+           */
+          if (recognitionActiveRef.current && recognitionRestartsRef.current < 40) {
+            recognitionRestartsRef.current += 1;
+            try {
+              recognition.start();
+              return;
+            } catch {
+              /* tidak bisa dilanjutkan; lepaskan seperti biasa */
+            }
+          }
           if (recognitionReleaseRef.current !== null) {
             window.clearTimeout(recognitionReleaseRef.current);
             recognitionReleaseRef.current = null;
           }
+          recognitionActiveRef.current = false;
           recognitionRef.current = null;
         };
         /*
@@ -183,9 +206,12 @@ export function ClaimDetailPage() {
          * suaranya tetap harus jalan. Rekaman itu yang jadi bukti klaim.
          */
         try {
+          recognitionRestartsRef.current = 0;
           recognition.start();
+          recognitionActiveRef.current = true;
           recognitionRef.current = recognition;
         } catch {
+          recognitionActiveRef.current = false;
           recognitionRef.current = null;
         }
       }
@@ -210,6 +236,7 @@ export function ClaimDetailPage() {
      * rekam di HP tetap menyala meski perekaman sudah selesai. Kalau sesinya
      * tidak juga berakhir, `abort()` melepasnya paksa.
      */
+    recognitionActiveRef.current = false;
     const recognition = recognitionRef.current;
     if (recognition) {
       recognition.stop();
